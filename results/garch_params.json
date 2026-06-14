@@ -1,0 +1,14 @@
+{
+  "mu": 4.768244563178552e-08,
+  "omega": 2.0827716693208136e-12,
+  "alpha": 0.67380683879522,
+  "beta": 0.31306103301687366,
+  "persistence": 0.9868678718120936,
+  "log_likelihood": 13303.906839078492,
+  "aic": -26599.813678156985,
+  "bic": -26579.648031501805,
+  "convergence_flag": 0,
+  "optimizer_message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+  "observations": 1143,
+  "return_scale": 10000.0
+}

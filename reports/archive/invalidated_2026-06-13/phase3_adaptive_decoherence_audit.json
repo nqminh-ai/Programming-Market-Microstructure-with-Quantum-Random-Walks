@@ -1,0 +1,150 @@
+{
+  "artifact_status": "stale_pre_causal_cleaner",
+  "invalidated_on": "2026-06-13",
+  "invalidation_reason": "June 1-7 inputs used a future-aware shift(-1) outlier filter and the holdout was repeatedly inspected.",
+  "development_days": [
+    "2026-06-01",
+    "2026-06-02",
+    "2026-06-03",
+    "2026-06-04"
+  ],
+  "test_days_names": [
+    "2026-06-05",
+    "2026-06-06",
+    "2026-06-07"
+  ],
+  "raw_features": [
+    "obi",
+    "tick_direction",
+    "obi_change",
+    "abs_obi",
+    "log_trade_intensity"
+  ],
+  "feature_mean": [
+    -0.03189511784202142,
+    -0.0419705113538318,
+    0.00017485554456673824,
+    0.8730760332887877,
+    5.394573557890365
+  ],
+  "feature_scale": [
+    0.9056116067656051,
+    0.9991188498751692,
+    0.05360347057341759,
+    0.2426683352800099,
+    1.146107855926566
+  ],
+  "rho_1": 0.9549639680360552,
+  "gamma_base": 0.046081669018371595,
+  "qrw_regularization": 0.0001,
+  "raw_logistic_regularization": 0.01,
+  "pairwise_logistic_regularization": 0.0001,
+  "structural_parameters": {
+    "obi_bias_initial": -0.0849045227516237,
+    "alpha_obi": 0.935865509162408,
+    "alpha_direction": 1.0655129627067306,
+    "alpha_obi_change": -0.061610836636308425,
+    "alpha_abs_obi": 0.021980185197749177,
+    "gamma_intensity": -1.9153818182247166
+  },
+  "test_days": [
+    {
+      "date": "2026-06-05",
+      "moving_events_total": 2488424,
+      "obi_bias": -0.07961112847163515,
+      "scores": {
+        "adaptive_qrw": {
+          "events": 2488424,
+          "brier": 0.06133739307638463,
+          "log_loss": 0.22814836941053757,
+          "accuracy": 0.9149156253114421
+        },
+        "logistic_raw": {
+          "events": 2488424,
+          "brier": 0.07208785322303188,
+          "log_loss": 0.265848616251813,
+          "accuracy": 0.9143068062355932
+        },
+        "logistic_pairwise": {
+          "events": 2488424,
+          "brier": 0.059835041831570734,
+          "log_loss": 0.22934123384534724,
+          "accuracy": 0.9281251908838687
+        }
+      }
+    },
+    {
+      "date": "2026-06-06",
+      "moving_events_total": 1089936,
+      "obi_bias": -0.07296881268008511,
+      "scores": {
+        "adaptive_qrw": {
+          "events": 1089936,
+          "brier": 0.054162692686995424,
+          "log_loss": 0.20396729450621345,
+          "accuracy": 0.9113351609635795
+        },
+        "logistic_raw": {
+          "events": 1089936,
+          "brier": 0.07009456171540417,
+          "log_loss": 0.2596171681228072,
+          "accuracy": 0.9214513512720013
+        },
+        "logistic_pairwise": {
+          "events": 1089936,
+          "brier": 0.049449311721932086,
+          "log_loss": 0.19575156135543245,
+          "accuracy": 0.9448582302080122
+        }
+      }
+    },
+    {
+      "date": "2026-06-07",
+      "moving_events_total": 1008840,
+      "obi_bias": -0.06872302206173889,
+      "scores": {
+        "adaptive_qrw": {
+          "events": 1008840,
+          "brier": 0.0625163569705316,
+          "log_loss": 0.22838601823402035,
+          "accuracy": 0.893429086872051
+        },
+        "logistic_raw": {
+          "events": 1008840,
+          "brier": 0.08163381224584206,
+          "log_loss": 0.289768130600886,
+          "accuracy": 0.9046875619523413
+        },
+        "logistic_pairwise": {
+          "events": 1008840,
+          "brier": 0.05584816654802876,
+          "log_loss": 0.2168849656286522,
+          "accuracy": 0.9355239681218033
+        }
+      }
+    }
+  ],
+  "bootstrap": {
+    "logistic_raw": {
+      "events": 4587200,
+      "blocks": 4482,
+      "model_minus_comparison": -0.013821693891971664,
+      "confidence_interval_95": [
+        -0.014107925276636317,
+        -0.013527368794676944
+      ],
+      "probability_model_improves": 1.0
+    },
+    "logistic_pairwise": {
+      "events": 4587200,
+      "blocks": 4482,
+      "model_minus_comparison": 0.0034014012285053697,
+      "confidence_interval_95": [
+        0.003210393525392258,
+        0.0036033294800713765
+      ],
+      "probability_model_improves": 0.0
+    }
+  },
+  "verdict": "Adaptive-decoherence QRW has a statistically significant edge over the registered nonlinear logistic baseline using the same raw features. Pairwise logistic remains stronger, so this is not a universal or uniquely quantum advantage."
+}

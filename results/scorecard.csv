@@ -1,0 +1,7 @@
+model,ks_statistic_rank,wasserstein_rank,variance_scaling_rank,acf_mse_rank,kurtosis_rank,var_99_rank,cvar_99_rank,mean_rank,overall_rank
+CRW Correlated,3.0,2.0,1.0,1.0,2.0,1.0,3.0,1.8571428571428572,1.0
+CRW Simple,1.0,1.0,6.0,3.0,4.0,1.0,2.0,2.5714285714285716,2.0
+QRW Adaptive,1.0,3.0,2.0,4.0,3.0,3.0,4.0,2.857142857142857,3.0
+CRW Biased,4.0,4.0,5.0,2.0,5.0,4.0,1.0,3.5714285714285716,4.0
+"GARCH(1,1)",5.0,6.0,4.0,6.0,1.0,6.0,6.0,4.857142857142857,5.0
+GBM,6.0,5.0,3.0,5.0,6.0,5.0,5.0,5.0,6.0

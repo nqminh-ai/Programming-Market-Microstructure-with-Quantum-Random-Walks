@@ -1,0 +1,118 @@
+{
+  "gamma": 0.14303942046569096,
+  "rho_1": 0.866719901719901,
+  "obi_bias": 1.1752454135841972,
+  "alpha_obi": 0.437291730931985,
+  "alpha_direction": -1.1469071775989756,
+  "alpha_obi_change": -0.6289594890011255,
+  "alpha_abs_obi": -1.7923999330339122,
+  "gamma_intensity": -0.9509648500986791,
+  "movement_probability": 0.17252228631358155,
+  "feature_names": [
+    "obi",
+    "tick_direction",
+    "obi_change",
+    "abs_obi",
+    "log_trade_intensity"
+  ],
+  "feature_mean": [
+    -0.29620683794581004,
+    -0.06493506493506493,
+    -0.004089998101443266,
+    0.6274062599833189,
+    2.8754377184825395
+  ],
+  "feature_scale": [
+    0.6543380285653434,
+    0.9978894915479756,
+    0.040225521879537235,
+    0.34965430271395137,
+    1.527855910951657
+  ],
+  "calibration_rows": 1908,
+  "structural_calibration_rows": 763,
+  "structural_moving_events": 103,
+  "structural_fit_moving_events": 77,
+  "selection_validation_events": 26,
+  "final_refit_includes_validation": false,
+  "events_per_structural_parameter": 12.833333333333334,
+  "low_sample_warning": true,
+  "moving_events": 327,
+  "bias_update_rows": 1145,
+  "bias_update_moving_events": 224,
+  "bias_update_start_row": 763,
+  "bias_update_reuses_warmup": false,
+  "selected_regularization": 0.0001,
+  "validation_brier": 0.07068487348087912,
+  "validation_log_loss": 0.27294572975288656,
+  "regularization_candidates": [
+    {
+      "regularization": 0.0001,
+      "parameters": [
+        0.11679910502209716,
+        0.437291730931985,
+        -1.1469071775989756,
+        -0.6289594890011255,
+        -1.7923999330339122,
+        -0.9509648500986791
+      ],
+      "validation_brier": 0.07068487348087912,
+      "validation_log_loss": 0.27294572975288656
+    },
+    {
+      "regularization": 0.001,
+      "parameters": [
+        0.09937438169786499,
+        0.40857733132279256,
+        -1.0452820434851866,
+        -0.5404772460790619,
+        -1.6611306162159545,
+        -0.9024281833401021
+      ],
+      "validation_brier": 0.07138169802720419,
+      "validation_log_loss": 0.2770791066071422
+    },
+    {
+      "regularization": 0.01,
+      "parameters": [
+        -0.04535466862902358,
+        0.27785661151081126,
+        -0.645603868934839,
+        0.020301879290030737,
+        -1.044128619124118,
+        -0.320937628713264
+      ],
+      "validation_brier": 0.08417595582771414,
+      "validation_log_loss": 0.32492633411939065
+    },
+    {
+      "regularization": 0.05,
+      "parameters": [
+        -0.0711407586569028,
+        0.20544626318396692,
+        -0.3296828800408528,
+        0.0023038163832202426,
+        -0.6708903798299798,
+        -0.10908531001496656
+      ],
+      "validation_brier": 0.09321929227249595,
+      "validation_log_loss": 0.35429536902058284
+    },
+    {
+      "regularization": 0.1,
+      "parameters": [
+        -0.07642569567765653,
+        0.17790466092795393,
+        -0.2154073115229335,
+        -0.0063635587254222215,
+        -0.5255365453161855,
+        -0.05998944382709115
+      ],
+      "validation_brier": 0.09982885482208002,
+      "validation_log_loss": 0.3725890658507173
+    }
+  ],
+  "calibration_method": "adaptive_decoherence_disjoint_two_stage_brier_validation",
+  "calibration_status": "fixed_structure_bias_updated",
+  "decoherence_channel": "basis_dephasing_gamma_times_exp_intensity"
+}

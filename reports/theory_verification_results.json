@@ -1,0 +1,16 @@
+{
+  "unitarity_frobenius_norm": 1.0467540502466446e-15,
+  "max_eigenvalue_radius_error": 1.4432899320127035e-15,
+  "max_probability_normalization_error": 1.7541523789077473e-14,
+  "max_symmetry_error": 1.5265566588595902e-16,
+  "T": 100,
+  "qrw_variance_exact": 2929.4223307939237,
+  "qrw_variance_asymptotic_corrected": 2928.9321881345254,
+  "original_plan_candidate_variance": 4975.0,
+  "crw_variance_exact": 100.0,
+  "variance_ratio_qrw_to_crw": 29.294223307939237,
+  "qrw_scaling_exponent_fit_T20_100": 1.9979960820955938,
+  "qrw_monte_carlo_variance_n1000": 2873.0583960000004,
+  "crw_monte_carlo_variance_n1000": 99.901104,
+  "random_seed": 2026
+}

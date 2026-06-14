@@ -1,0 +1,33 @@
+Phase 3 QRW performance benchmark
+Python: 3.14.5
+NumPy: 2.4.6
+Feature source: data\features\features_BTCUSDT_2026-06-12.parquet
+Calibration rows: 1908
+rho_1: 0.86671990172
+gamma: 0.143039420466
+alpha_obi: 0.437291730932
+alpha_direction: -1.1469071776
+alpha_obi_change: -0.628959489001
+alpha_abs_obi: -1.79239993303
+gamma_intensity: -0.950964850099
+obi_bias: 1.17524541358
+Calibration method: adaptive_decoherence_disjoint_two_stage_brier_validation
+Calibration status: fixed_structure_bias_updated
+Selected regularization: 0.0001
+Validation log loss: 0.272945729753
+Validation Brier: 0.0706848734809
+Market simulation max normalization error: 9.437e-15
+Exact density simulation seconds: 0.150607
+Benchmark paths: 1000
+Benchmark steps: 1000
+Elapsed seconds: 0.039382
+Target seconds: 60.0
+Target passed: True
+Paths use only local {-1, 0, +1} moves: True
+Maximum absolute path increment: 1
+Calibrated event move probability: 0.172522
+Simulated event move fraction: 0.173194
+Final sampled mean: 59.630000
+Final sampled variance: 168.119100
+
+Method: AdaptiveDecoherenceQRW with causal microstructure signal, trade-intensity-modulated basis dephasing, adaptive coin-shift, and local projective position measurement.

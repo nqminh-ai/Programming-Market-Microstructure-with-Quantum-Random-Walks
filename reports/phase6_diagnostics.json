@@ -1,0 +1,101 @@
+{
+  "feature_path": "data\\features\\features_BTCUSDT_2026-06-12.parquet",
+  "random_seed": 2026,
+  "benchmark_paths_per_model": 5000,
+  "benchmark_steps": 500,
+  "phase5_top_model": "CRW Correlated",
+  "phase5_qrw_rank": 3,
+  "inference_scope": "single_window_exploratory",
+  "confirmatory_superiority_claim_allowed": false,
+  "figures": {
+    "prob_evolution.gif": {
+      "path": "figures\\prob_evolution.gif",
+      "bytes": 337130,
+      "width": 3000,
+      "height": 1800,
+      "frames": 8,
+      "grayscale_range": 255,
+      "grayscale_stddev": 28.901742782680163,
+      "exists_and_nonblank": true,
+      "roadmap_size_over_50kb": true
+    },
+    "variance_scaling.png": {
+      "path": "figures\\variance_scaling.png",
+      "bytes": 263736,
+      "width": 2572,
+      "height": 1645,
+      "frames": 1,
+      "grayscale_range": 255,
+      "grayscale_stddev": 37.98480130246604,
+      "exists_and_nonblank": true,
+      "roadmap_size_over_50kb": true
+    },
+    "return_distributions.png": {
+      "path": "figures\\return_distributions.png",
+      "bytes": 318010,
+      "width": 2572,
+      "height": 1644,
+      "frames": 1,
+      "grayscale_range": 255,
+      "grayscale_stddev": 35.51472559992051,
+      "exists_and_nonblank": true,
+      "roadmap_size_over_50kb": true
+    },
+    "acf_comparison.png": {
+      "path": "figures\\acf_comparison.png",
+      "bytes": 96732,
+      "width": 2955,
+      "height": 1806,
+      "frames": 1,
+      "grayscale_range": 255,
+      "grayscale_stddev": 37.810943901331875,
+      "exists_and_nonblank": true,
+      "roadmap_size_over_50kb": true
+    },
+    "sample_paths.png": {
+      "path": "figures\\sample_paths.png",
+      "bytes": 165274,
+      "width": 2648,
+      "height": 1644,
+      "frames": 1,
+      "grayscale_range": 255,
+      "grayscale_stddev": 35.4469789955464,
+      "exists_and_nonblank": true,
+      "roadmap_size_over_50kb": true
+    },
+    "coin_operator_heatmap.png": {
+      "path": "figures\\coin_operator_heatmap.png",
+      "bytes": 122539,
+      "width": 2970,
+      "height": 1618,
+      "frames": 1,
+      "grayscale_range": 255,
+      "grayscale_stddev": 73.12554477986723,
+      "exists_and_nonblank": true,
+      "roadmap_size_over_50kb": true
+    },
+    "scorecard.png": {
+      "path": "figures\\scorecard.png",
+      "bytes": 108793,
+      "width": 2743,
+      "height": 1644,
+      "frames": 1,
+      "grayscale_range": 255,
+      "grayscale_stddev": 68.66857655859415,
+      "exists_and_nonblank": true,
+      "roadmap_size_over_50kb": true
+    }
+  },
+  "valid_figure_count": 7,
+  "large_figure_count": 7,
+  "figures_complete": true,
+  "figure_sizes_passed": true,
+  "report_page_count": 20,
+  "slide_page_count": 16,
+  "quantitative_table_present": true,
+  "readme_complete": true,
+  "pytest_passed": true,
+  "pytest_summary": "61 passed in 5.50s",
+  "pytest_output_tail": ".............................................................            [100%]\n61 passed in 5.50s",
+  "checkpoint_passed": true
+}

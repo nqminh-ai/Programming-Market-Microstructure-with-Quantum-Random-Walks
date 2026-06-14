@@ -1,0 +1,12 @@
+h5py>=3.16
+loguru>=0.7
+matplotlib>=3.10
+numpy>=2.0
+pandas>=3.0
+pyarrow>=24.0
+pytest>=9.0
+PyYAML>=6.0
+requests>=2.34
+scipy>=1.14
+sympy>=1.13
+websocket-client>=1.9

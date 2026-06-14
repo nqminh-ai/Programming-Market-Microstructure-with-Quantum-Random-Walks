@@ -1,0 +1,154 @@
+{
+  "artifact_status": "stale_pre_causal_cleaner",
+  "invalidated_on": "2026-06-13",
+  "invalidation_reason": "June 1-7 inputs used a future-aware shift(-1) outlier filter and the holdout was repeatedly inspected.",
+  "development_days": [
+    "2026-06-01",
+    "2026-06-02",
+    "2026-06-03",
+    "2026-06-04"
+  ],
+  "test_day_names": [
+    "2026-06-05",
+    "2026-06-06",
+    "2026-06-07"
+  ],
+  "fit_stride": 20,
+  "evaluation_stride": 1,
+  "rho_1": 0.9549639680360552,
+  "gamma": 0.046081669018371595,
+  "coherence": 0.9549639680360552,
+  "qrw_regularization": 0.001,
+  "logistic_regularization": 0.001,
+  "structural_parameters": {
+    "obi_bias_initial": -0.025219494819081777,
+    "alpha_obi": 0.9401213764540137,
+    "alpha_direction": 0.6727697709083761
+  },
+  "test_days": [
+    {
+      "date": "2026-06-05",
+      "moving_events_total": 2488424,
+      "alpha_obi": 0.9401213764540137,
+      "alpha_direction": 0.6727697709083761,
+      "obi_bias": -0.024186906570594288,
+      "scores": {
+        "qrw": {
+          "events": 2488424,
+          "brier": 0.0711236076938456,
+          "log_loss": 0.2584219494561614,
+          "accuracy": 0.9103854487820403,
+          "mean_probability": 0.4828160161325933,
+          "up_fraction": 0.48598550729296935
+        },
+        "affine_market": {
+          "events": 2488424,
+          "brier": 0.07196872738848588,
+          "log_loss": 0.2587036928271507,
+          "accuracy": 0.9165138256181422,
+          "mean_probability": 0.48335464101932585,
+          "up_fraction": 0.48598550729296935
+        },
+        "logistic_market": {
+          "events": 2488424,
+          "brier": 0.0711866958518929,
+          "log_loss": 0.2583667711780205,
+          "accuracy": 0.9111441619273886,
+          "mean_probability": 0.4830245823326259,
+          "up_fraction": 0.48598550729296935
+        }
+      }
+    },
+    {
+      "date": "2026-06-06",
+      "moving_events_total": 1089936,
+      "alpha_obi": 0.9401213764540137,
+      "alpha_direction": 0.6727697709083761,
+      "obi_bias": -0.019510703299460818,
+      "scores": {
+        "qrw": {
+          "events": 1089936,
+          "brier": 0.06981965823195403,
+          "log_loss": 0.2549220895906202,
+          "accuracy": 0.9142279913683006,
+          "mean_probability": 0.48997982963808795,
+          "up_fraction": 0.4927940723125028
+        },
+        "affine_market": {
+          "events": 1089936,
+          "brier": 0.06976248685346415,
+          "log_loss": 0.25186514666398674,
+          "accuracy": 0.9110030313706493,
+          "mean_probability": 0.4909089147062026,
+          "up_fraction": 0.4927940723125028
+        },
+        "logistic_market": {
+          "events": 1089936,
+          "brier": 0.06903533135970233,
+          "log_loss": 0.25230999580544905,
+          "accuracy": 0.9201558623625608,
+          "mean_probability": 0.4908283698383788,
+          "up_fraction": 0.4927940723125028
+        }
+      }
+    },
+    {
+      "date": "2026-06-07",
+      "moving_events_total": 1008840,
+      "alpha_obi": 0.9401213764540137,
+      "alpha_direction": 0.6727697709083761,
+      "obi_bias": -0.01672621765122348,
+      "scores": {
+        "qrw": {
+          "events": 1008840,
+          "brier": 0.0818824836836462,
+          "log_loss": 0.2879944413208492,
+          "accuracy": 0.8966595297569486,
+          "mean_probability": 0.4933319195298087,
+          "up_fraction": 0.49429344593790886
+        },
+        "affine_market": {
+          "events": 1008840,
+          "brier": 0.08153273969086149,
+          "log_loss": 0.2843038618461182,
+          "accuracy": 0.8930434954997819,
+          "mean_probability": 0.4942787403844331,
+          "up_fraction": 0.49429344593790886
+        },
+        "logistic_market": {
+          "events": 1008840,
+          "brier": 0.08117197793676519,
+          "log_loss": 0.2858836419874783,
+          "accuracy": 0.9032373815471234,
+          "mean_probability": 0.4939130253720532,
+          "up_fraction": 0.49429344593790886
+        }
+      }
+    }
+  ],
+  "bootstrap": {
+    "affine_market": {
+      "events": 4587200,
+      "blocks": 4482,
+      "block_size": 1024,
+      "model_minus_comparison": -0.00036795152985457324,
+      "confidence_interval_95": [
+        -0.0004433804484271845,
+        -0.00029126297564132855
+      ],
+      "probability_model_improves": 1.0
+    },
+    "logistic_market": {
+      "events": 4587200,
+      "blocks": 4482,
+      "block_size": 1024,
+      "model_minus_comparison": 0.0003083934916544496,
+      "confidence_interval_95": [
+        0.0002549176280415581,
+        0.0003585843487122648
+      ],
+      "probability_model_improves": 0.0
+    }
+  },
+  "verdict": "QRW shows a statistically significant multi-day Brier edge over the fair affine baseline, but not over the nonlinear logistic baseline. This is predictive edge for the QRW link relative to the registered affine benchmark, not evidence of a uniquely quantum edge."
+}

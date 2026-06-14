@@ -1,0 +1,42 @@
+{
+  "artifact_status": "stale_pre_causal_cleaner",
+  "invalidated_on": "2026-06-13",
+  "gamma": 0.046081669018371595,
+  "rho_1": 0.9549639680360552,
+  "obi_bias": -0.0849045227516237,
+  "alpha_obi": 0.935865509162408,
+  "alpha_direction": 1.0655129627067306,
+  "alpha_obi_change": -0.061610836636308425,
+  "alpha_abs_obi": 0.021980185197749177,
+  "gamma_intensity": -1.9153818182247166,
+  "feature_names": [
+    "obi",
+    "tick_direction",
+    "obi_change",
+    "abs_obi",
+    "log_trade_intensity"
+  ],
+  "feature_mean": [
+    -0.03189511784202142,
+    -0.0419705113538318,
+    0.00017485554456673824,
+    0.8730760332887877,
+    5.394573557890365
+  ],
+  "feature_scale": [
+    0.9056116067656051,
+    0.9991188498751692,
+    0.05360347057341759,
+    0.2426683352800099,
+    1.146107855926566
+  ],
+  "selected_regularization": 0.0001,
+  "calibration_method": "adaptive_decoherence_multiday_development_validation",
+  "development_days": [
+    "2026-06-01",
+    "2026-06-02",
+    "2026-06-03",
+    "2026-06-04"
+  ],
+  "decoherence_channel": "basis_dephasing_gamma_times_exp_intensity"
+}
