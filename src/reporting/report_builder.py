@@ -41,6 +41,7 @@ class ReportContext:
     empirical_tail_index: float
     qrw_tail_index: float
     qrw_acf_mse: float
+    robustness_markdown: str = ""
 
 
 REFERENCES = (
@@ -230,7 +231,7 @@ adaptive operator correctly.
 | QRW beta 95% interval | [{context.qrw_beta_ci_low:.4f}, {context.qrw_beta_ci_high:.4f}] |
 | Empirical tail index | {context.empirical_tail_index:.4f} |
 | QRW tail index | {context.qrw_tail_index:.4g} |
-
+{context.robustness_markdown}
 ## 7. Discussion
 
 The QRW is competitive on variance scaling and autocorrelation distance, but

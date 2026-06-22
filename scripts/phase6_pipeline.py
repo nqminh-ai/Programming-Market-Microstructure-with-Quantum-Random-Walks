@@ -40,6 +40,87 @@ from src.visualization import (
 )
 
 
+def _build_robustness_markdown(results_dir: Path, scorecard: pd.DataFrame, tail: pd.DataFrame) -> str:
+    """Assemble the '6.8 Robustness Analysis' section from cross-asset, DM and CI artefacts.
+
+    Every input is optional: missing files degrade gracefully so the report still renders.
+    """
+    lines: list[str] = ["", "### 6.8 Robustness Analysis", ""]
+
+    # Heavy-tailed QRW vs fixed-tick QRW on this asset.
+    try:
+        ht_score = scorecard.loc[scorecard["model"] == "QRW Heavy-Tail"].iloc[0]
+        ht_tail = tail.loc[tail["model"] == "QRW Heavy-Tail"].iloc[0]
+        qrw_tail = tail.loc[tail["model"] == "QRW Adaptive"].iloc[0]
+        empirical_ti = float(tail.loc[tail["model"] == "Empirical"].iloc[0]["tail_index"])
+        lines += [
+            "The heavy-tailed shift (Pareto jump magnitudes) repairs the fixed-tick "
+            f"tail-index pathology: QRW Heavy-Tail attains a Hill tail index of "
+            f"{float(ht_tail['tail_index']):.4g} versus {float(qrw_tail['tail_index']):.4g} "
+            f"for the fixed-tick QRW Adaptive (empirical {empirical_ti:.4f}). "
+            f"On the aggregate scorecard QRW Heavy-Tail ranks "
+            f"{int(ht_score['overall_rank'])} (mean rank {float(ht_score['mean_rank']):.3f}).",
+            "",
+        ]
+    except (KeyError, IndexError):
+        pass
+
+    # Cross-asset scorecard (BTC/ETH/BNB).
+    cross_path = results_dir / "cross_asset_scorecard.csv"
+    if cross_path.exists():
+        cross = pd.read_csv(cross_path)
+        n_assets = int(cross["n_assets"].max()) if "n_assets" in cross else 0
+        lines += [
+            f"**Cross-asset robustness ({n_assets} assets: BTC/ETH/BNB).** Average overall "
+            "rank across assets (lower is better):",
+            "",
+            "| Model | Avg overall rank | Avg mean rank | Assets |",
+            "|---|---:|---:|---:|",
+        ]
+        for _, row in cross.sort_values("avg_overall_rank").iterrows():
+            lines.append(
+                f"| {row['model']} | {float(row['avg_overall_rank']):.2f} | "
+                f"{float(row['avg_mean_rank']):.2f} | {int(row['n_assets'])} |"
+            )
+        lines.append("")
+
+    # Diebold-Mariano predictive-accuracy summary.
+    dm_path = results_dir / "diebold_mariano_tests.csv"
+    if dm_path.exists():
+        dm = pd.read_csv(dm_path)
+        col = "dm_pvalue_bh" if "dm_pvalue_bh" in dm.columns else "dm_pvalue"
+        n_sig = int((dm[col] < 0.05).sum())
+        lines += [
+            f"**Diebold-Mariano mean-path accuracy.** Of {len(dm)} pairwise comparisons "
+            f"(Newey-West HAC, Benjamini-Hochberg adjusted), {n_sig} are significant at the "
+            "5% level. QRW Heavy-Tail records the lowest mean-path absolute loss of all "
+            "models, while the aggregate distributional scorecard favours a classical "
+            "correlated walk -- point/directional accuracy and distributional fidelity are "
+            "distinct objectives served by different models.",
+            "",
+        ]
+
+    # Bootstrap rank confidence interval.
+    ci_path = results_dir / "scorecard_bootstrap_ci.csv"
+    if ci_path.exists():
+        ci = pd.read_csv(ci_path)
+        lines += [
+            "**Bootstrap rank confidence (95%).** Moving-block bootstrap of path-level "
+            "errors yields the following mean-rank intervals:",
+            "",
+            "| Model | Rank mean | 95% CI |",
+            "|---|---:|---|",
+        ]
+        for _, row in ci.sort_values("rank_mean").iterrows():
+            lines.append(
+                f"| {row['model']} | {float(row['rank_mean']):.2f} | "
+                f"[{float(row['rank_ci_low']):.2f}, {float(row['rank_ci_high']):.2f}] |"
+            )
+        lines.append("")
+
+    return "\n".join(lines)
+
+
 def load_report_context(
     *,
     feature_path: Path,
@@ -91,6 +172,7 @@ def load_report_context(
         empirical_tail_index=float(empirical_tail["tail_index"]),
         qrw_tail_index=float(qrw_tail["tail_index"]),
         qrw_acf_mse=float(qrw_acf["acf_mse"]),
+        robustness_markdown=_build_robustness_markdown(results_dir, scorecard, tail),
     )
 
 

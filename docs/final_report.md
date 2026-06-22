@@ -158,6 +158,36 @@ adaptive operator correctly.
 | Empirical tail index | 2.4748 |
 | QRW tail index | 1.598e+06 |
 
+### 6.8 Robustness Analysis
+
+The heavy-tailed shift (Pareto jump magnitudes) repairs the fixed-tick tail-index pathology: QRW Heavy-Tail attains a Hill tail index of 1.446 versus 1.598e+06 for the fixed-tick QRW Adaptive (empirical 2.4748). On the aggregate scorecard QRW Heavy-Tail ranks 6 (mean rank 4.714).
+
+**Cross-asset robustness (3 assets: BTC/ETH/BNB).** Average overall rank across assets (lower is better):
+
+| Model | Avg overall rank | Avg mean rank | Assets |
+|---|---:|---:|---:|
+| CRW Biased | 2.33 | 2.95 | 3 |
+| CRW Correlated | 2.33 | 2.62 | 3 |
+| QRW Heavy-Tail | 2.33 | 3.57 | 3 |
+| QRW Adaptive | 4.00 | 4.05 | 3 |
+| CRW Simple | 4.33 | 4.10 | 3 |
+| GBM | 5.33 | 5.00 | 3 |
+| GARCH(1,1) | 7.00 | 5.57 | 3 |
+
+**Diebold-Mariano mean-path accuracy.** Of 21 pairwise comparisons (Newey-West HAC, Benjamini-Hochberg adjusted), 21 are significant at the 5% level. QRW Heavy-Tail records the lowest mean-path absolute loss of all models, while the aggregate distributional scorecard favours a classical correlated walk -- point/directional accuracy and distributional fidelity are distinct objectives served by different models.
+
+**Bootstrap rank confidence (95%).** Moving-block bootstrap of path-level errors yields the following mean-rank intervals:
+
+| Model | Rank mean | 95% CI |
+|---|---:|---|
+| QRW Heavy-Tail | 1.00 | [1.00, 1.00] |
+| QRW Adaptive | 2.00 | [2.00, 2.00] |
+| CRW Simple | 3.05 | [3.00, 4.00] |
+| CRW Biased | 4.32 | [4.00, 5.00] |
+| CRW Correlated | 4.63 | [3.48, 5.00] |
+| GBM | 6.00 | [6.00, 6.00] |
+| GARCH(1,1) | 7.00 | [7.00, 7.00] |
+
 ## 7. Discussion
 
 The QRW is competitive on variance scaling and autocorrelation distance, but
