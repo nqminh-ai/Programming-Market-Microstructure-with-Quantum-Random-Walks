@@ -9,24 +9,23 @@ changes, and trade intensity into a unitary adaptive coin and an
 intensity-dependent dephasing channel. It compares the resulting QRW against
 simple, biased, and correlated classical random walks, GARCH(1,1), and
 geometric Brownian motion under one chronological train/holdout protocol.
-The active dataset contains 1,908
+The active dataset contains 3,115,358
 causally processed BTCUSDT observations from June 12, 2026. Phase 5 uses
-1,144 training rows, 764 later holdout
-rows, 5,000 simulated paths per model, and a fixed random seed of
+1,869,214 training rows, 1,246,144 later holdout
+rows, 3,000 simulated paths per model, and a fixed random seed of
 2026. The scorecard ranks CRW Correlated first with mean
-metric rank 1.857; QRW Adaptive ranks
-3 with mean rank 2.857. The QRW
+metric rank 2.143; QRW Adaptive ranks
+7 with mean rank 5.286. The QRW
 one-step distribution is rejected against the empirical sample
 (Benjamini-Hochberg adjusted KS p-value
-0.0058), while its variance exponent
-is 1.0023 with 95% interval
-[0.9853, 1.0192]. The empirical
-tail index is 1.2886, far from the QRW estimate of
-1.656e+06.
-
-## Related Work
-
-The application of Quantum Random Walks to financial modeling builds upon decades of research in market microstructure and econophysics. Classical LOB models [1, 2] capture statistical properties such as long memory and volatility clustering, but often rely on continuous geometric Brownian motion or standard Poisson jumps which underestimate extreme tail events. Quantum finance literature [3, 4] has proposed QRWs for their quadratic variance scaling speedup. However, few models couple real-time LOB features to the unitary coin operator and dephasing channels [5]. Furthermore, by integrating heavy-tailed jump dynamics [6], our framework bridges quantum probability with empirical high-frequency stylized facts, such as the Pareto tail behavior described by the Adaptive Markets Hypothesis [7].
+9.553e-04), while its variance exponent
+is 1.0026 with 95% interval
+[0.9841, 1.0183]. The empirical
+tail index is 2.4748, far from the QRW estimate of
+1.598e+06. These results validate a reproducible software
+and statistical pipeline, but this does not establish QRW predictive
+superiority. Confirmation requires a frozen protocol and fresh multi-day,
+synchronized limit-order-book holdout data.
 
 ## 1. Introduction
 
@@ -74,10 +73,10 @@ Active feature artifact: `data\features\features_BTCUSDT_2026-06-12.parquet`.
 
 | Protocol item | Value |
 |---|---:|
-| Chronological training rows | 1,144 |
-| Later holdout rows | 764 |
+| Chronological training rows | 1,869,214 |
+| Later holdout rows | 1,246,144 |
 | Simulation steps | 500 |
-| Paths per model | 5,000 |
+| Paths per model | 3,000 |
 | Random seed | 2026 |
 
 The active June 12 dataset is the only window used for the final benchmark.
@@ -108,9 +107,9 @@ symmetric CRW remains concentrated around a diffusive binomial envelope.
 
 ![Variance scaling](../figures/variance_scaling.png)
 
-The empirical fitted exponent is 1.3845. QRW Adaptive
-has beta 1.0023 with 95% interval
-[0.9853, 1.0192].
+The empirical fitted exponent is 1.2847. QRW Adaptive
+has beta 1.0026 with 95% interval
+[0.9841, 1.0183].
 
 ### 6.3 Return Distributions
 
@@ -123,7 +122,7 @@ The QRW and classical tick models do not reproduce the empirical heavy tail.
 
 ![ACF comparison](../figures/acf_comparison.png)
 
-QRW has return-ACF mean squared error 0.009905, the best
+QRW has return-ACF mean squared error 0.003275, the best
 scorecard value in this category, but no single metric supports a superiority
 claim.
 
@@ -149,15 +148,15 @@ adaptive operator correctly.
 | Quantity | Observed value |
 |---|---:|
 | Top-ranked model | CRW Correlated |
-| Top mean metric rank | 1.857 |
-| QRW overall rank | 3 |
-| QRW mean metric rank | 2.857 |
-| QRW KS p-value | 0.0058 |
-| QRW KS p-value, BH adjusted | 0.0058 |
-| QRW variance beta | 1.0023 |
-| QRW beta 95% interval | [0.9853, 1.0192] |
-| Empirical tail index | 1.2886 |
-| QRW tail index | 1.656e+06 |
+| Top mean metric rank | 2.143 |
+| QRW overall rank | 7 |
+| QRW mean metric rank | 5.286 |
+| QRW KS p-value | 5.459e-04 |
+| QRW KS p-value, BH adjusted | 9.553e-04 |
+| QRW variance beta | 1.0026 |
+| QRW beta 95% interval | [0.9841, 1.0183] |
+| Empirical tail index | 2.4748 |
+| QRW tail index | 1.598e+06 |
 
 ## 7. Discussion
 
@@ -199,18 +198,17 @@ continuous-time quantum walks with marked point-process baselines.
 
 ## References
 
-1. Aharonov, Y., Davidovich, L., & Zagury, N. (1993). Quantum random walks. *Phys. Rev. A*. DOI: 10.1103/PhysRevA.48.1687
-2. Ambainis et al. (2001). One-dimensional quantum walks. *STOC*. DOI: 10.1145/380752.380757
-3. Konno (2002). Quantum random walks in one dimension. *QIP*. DOI: 10.1007/s11128-002-0019-8
-4. Kempe (2003). Quantum random walks: an introductory overview. *Contemporary Physics*. DOI: 10.1080/00107500308734
-5. Kendon (2007). Decoherence in quantum walks. *Math. Struct. in Comp. Sci.* DOI: 10.1017/S096012950600588X
-6. Cont, R., & de Larrard, A. (2013). Price dynamics in a Markovian limit order market. *SIAM J. Finan. Math.* DOI: 10.1137/110856605
-7. Cont, Kukanov, and Stoikov (2014). The price impact of order book events. *J. Financial Econometrics*. DOI: 10.1093/jjfinec/nbt003
-8. Engle (1982). Autoregressive conditional heteroscedasticity. *Econometrica*. DOI: 10.2307/1912773
-9. Bollerslev (1986). Generalized autoregressive conditional heteroskedasticity. *J. Econometrics*. DOI: 10.1016/0304-4076(86)90063-1
-10. Black, F., & Scholes, M. (1973). The pricing of options and corporate liabilities. *JPE*. DOI: 10.1086/260062
-11. Mandelbrot (1963). The variation of certain speculative prices. *J. Business*. DOI: 10.1086/294632
-12. Hill (1975). A simple general approach to inference about the tail. *Ann. Statist.* DOI: 10.1214/aos/1176343247
-13. Ljung and Box (1978). On a measure of lack of fit in time series models. *Biometrika*. DOI: 10.1093/biomet/65.2.297
-14. Benjamini and Hochberg (1995). Controlling the false discovery rate. *JRSS-B*. DOI: 10.1111/j.2517-6161.1995.tb02031.x
-15. Bouchaud, J. P., Mézard, M., & Potters, M. (2002). Statistical properties of stock order books. *Quantitative Finance*. DOI: 10.1088/1469-7688/2/4/301
+1. Aharonov, Davidovich, and Zagury (1993). Quantum random walks.
+2. Ambainis et al. (2001). One-dimensional quantum walks.
+3. Konno (2002). Quantum random walks in one dimension.
+4. Kempe (2003). Quantum random walks: an introductory overview.
+5. Kendon (2007). Decoherence in quantum walks.
+6. Cont and de Larrard (2013). Price dynamics in a Markovian limit order market.
+7. Cont, Kukanov, and Stoikov (2014). The price impact of order book events.
+8. Engle (1982). Autoregressive conditional heteroscedasticity.
+9. Bollerslev (1986). Generalized autoregressive conditional heteroskedasticity.
+10. Black and Scholes (1973). The pricing of options and corporate liabilities.
+11. Mandelbrot (1963). The variation of certain speculative prices.
+12. Hill (1975). A simple general approach to inference about the tail.
+13. Ljung and Box (1978). On a measure of lack of fit in time series models.
+14. Benjamini and Hochberg (1995). Controlling the false discovery rate.

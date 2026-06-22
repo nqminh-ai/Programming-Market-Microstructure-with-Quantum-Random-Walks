@@ -24,7 +24,7 @@ Coherent QRW variance grows near t^2; symmetric CRW variance grows as t.
 
 # Active Data
 
-June 12, 2026 BTCUSDT: 1,144 train rows and 764 later holdout rows.
+June 12, 2026 BTCUSDT: 1,869,214 train rows and 1,246,144 later holdout rows.
 
 ---
 
@@ -78,7 +78,7 @@ Distribution, variance scaling, autocorrelation, tails, and an eight-metric rank
 
 # Scorecard
 
-CRW Correlated ranks first; QRW ranks 3.
+CRW Correlated ranks first; QRW ranks 7.
 
 ---
 

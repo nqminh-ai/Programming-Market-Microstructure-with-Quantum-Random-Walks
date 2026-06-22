@@ -1,0 +1,8 @@
+model,rank_mean,rank_ci_low,rank_ci_high
+CRW Biased,1.0,1.0,1.0
+CRW Correlated,3.99,4.0,4.0
+CRW Simple,2.93,2.0,3.0
+"GARCH(1,1)",5.0,5.0,5.0
+GBM,2.08,2.0,3.0
+QRW Adaptive,6.0,6.0,6.0
+QRW Heavy-Tail,7.0,7.0,7.0
