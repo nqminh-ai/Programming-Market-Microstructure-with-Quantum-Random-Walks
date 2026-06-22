@@ -1,0 +1,303 @@
+[32m2026-06-22 21:34:05.927[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-13.zip[0m
+[32m2026-06-22 21:34:21.163[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,350,570 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-13.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:34:21.168[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-14.zip[0m
+[32m2026-06-22 21:34:39.247[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,101,046 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-14.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:34:39.253[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-15.zip[0m
+[32m2026-06-22 21:34:57.718[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,184,114 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-15.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:34:57.726[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-16.zip[0m
+[32m2026-06-22 21:35:07.752[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,597,661 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-16.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:35:07.754[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-17.zip[0m
+[32m2026-06-22 21:35:17.469[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,570,433 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-17.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:35:17.473[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-18.zip[0m
+[32m2026-06-22 21:35:37.968[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,529,328 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-18.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:35:37.978[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-19.zip[0m
+[32m2026-06-22 21:35:51.980[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,315,121 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-19.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:35:51.982[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-20.zip[0m
+[32m2026-06-22 21:36:06.649[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,437,754 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-20.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:36:06.653[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-21.zip[0m
+[32m2026-06-22 21:36:21.562[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,473,146 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-21.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:36:21.570[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-22.zip[0m
+[32m2026-06-22 21:36:35.936[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,370,783 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-22.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:36:35.942[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-23.zip[0m
+[32m2026-06-22 21:36:49.106[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,103,536 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-23.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:36:49.110[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-24.zip[0m
+[32m2026-06-22 21:36:59.914[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,612,969 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-24.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:36:59.916[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-25.zip[0m
+[32m2026-06-22 21:37:11.022[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,778,509 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-25.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:37:11.024[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-26.zip[0m
+[32m2026-06-22 21:37:30.999[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,360,745 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-26.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:37:31.006[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-27.zip[0m
+[32m2026-06-22 21:37:51.010[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,367,068 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-27.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:37:51.016[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-28.zip[0m
+[32m2026-06-22 21:38:13.793[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,799,713 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-28.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:38:13.801[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-29.zip[0m
+[32m2026-06-22 21:38:31.192[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,897,318 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-29.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:38:31.196[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-30.zip[0m
+[32m2026-06-22 21:38:38.689[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,124,406 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-30.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:38:38.690[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-05-31.zip[0m
+[32m2026-06-22 21:38:47.512[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,363,437 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-05-31.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:38:47.514[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-01.zip[0m
+[32m2026-06-22 21:39:12.355[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 4,237,773 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-01.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:39:12.368[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-02.zip[0m
+[32m2026-06-22 21:39:49.124[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 6,250,677 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-02.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:39:49.142[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-03.zip[0m
+[32m2026-06-22 21:40:27.580[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 6,676,358 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-03.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:40:27.592[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-04.zip[0m
+[32m2026-06-22 21:41:21.238[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 9,057,976 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-04.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:41:21.265[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-05.zip[0m
+[32m2026-06-22 21:42:27.941[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 11,658,856 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-05.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:42:27.971[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-06.zip[0m
+[32m2026-06-22 21:42:57.439[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 5,000,874 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-06.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:42:57.448[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-07.zip[0m
+[32m2026-06-22 21:43:25.352[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 4,752,461 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-07.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:43:25.360[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-08.zip[0m
+[32m2026-06-22 21:43:57.625[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 4,887,564 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-08.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:43:57.636[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-09.zip[0m
+[32m2026-06-22 21:44:29.228[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 4,347,332 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-09.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:44:29.236[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-10.zip[0m
+[32m2026-06-22 21:45:03.596[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 4,655,686 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-10.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:45:03.606[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-11.zip[0m
+[32m2026-06-22 21:45:29.737[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,446,803 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-11.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:45:29.744[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2026-06-12.zip[0m
+[32m2026-06-22 21:45:52.623[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,154,052 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw\tick_BTCUSDT_2026-06-12.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 21:45:56.091[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,316,000 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-13.parquet[0m
+[32m2026-06-22 21:46:00.111[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,056,755 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-14.parquet[0m
+[32m2026-06-22 21:46:04.306[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,142,351 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-15.parquet[0m
+[32m2026-06-22 21:46:06.095[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,574,777 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-16.parquet[0m
+[32m2026-06-22 21:46:07.749[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,547,966 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-17.parquet[0m
+[32m2026-06-22 21:46:11.693[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,477,464 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-18.parquet[0m
+[32m2026-06-22 21:46:14.362[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,279,674 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-19.parquet[0m
+[32m2026-06-22 21:46:17.320[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,403,027 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-20.parquet[0m
+[32m2026-06-22 21:46:20.454[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,437,340 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-21.parquet[0m
+[32m2026-06-22 21:46:23.383[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,333,449 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-22.parquet[0m
+[32m2026-06-22 21:46:26.053[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,071,390 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-23.parquet[0m
+[32m2026-06-22 21:46:28.052[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,587,404 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-24.parquet[0m
+[32m2026-06-22 21:46:30.312[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,750,211 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-25.parquet[0m
+[32m2026-06-22 21:46:34.467[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,310,024 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-26.parquet[0m
+[32m2026-06-22 21:46:38.633[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,314,864 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-27.parquet[0m
+[32m2026-06-22 21:46:43.450[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,740,874 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-28.parquet[0m
+[32m2026-06-22 21:46:46.923[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,853,827 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-29.parquet[0m
+[32m2026-06-22 21:46:48.367[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,105,409 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-30.parquet[0m
+[32m2026-06-22 21:46:50.213[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,341,588 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-05-31.parquet[0m
+[32m2026-06-22 21:46:55.570[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 4,176,913 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-01.parquet[0m
+[32m2026-06-22 21:47:03.790[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 6,176,304 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-02.parquet[0m
+[32m2026-06-22 21:47:12.560[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 6,595,717 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-03.parquet[0m
+[32m2026-06-22 21:47:24.290[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 8,963,508 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-04.parquet[0m
+[32m2026-06-22 21:47:39.848[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 11,545,602 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-05.parquet[0m
+[32m2026-06-22 21:47:46.762[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 4,946,773 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-06.parquet[0m
+[32m2026-06-22 21:47:52.937[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 4,693,189 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-07.parquet[0m
+[32m2026-06-22 21:47:58.814[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 4,833,869 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-08.parquet[0m
+[32m2026-06-22 21:48:04.730[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 4,296,748 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-09.parquet[0m
+[32m2026-06-22 21:48:10.547[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 4,610,117 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-10.parquet[0m
+[32m2026-06-22 21:48:14.933[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,407,262 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-11.parquet[0m
+[32m2026-06-22 21:48:18.744[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,115,358 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed\tick_processed_BTCUSDT_2026-06-12.parquet[0m
+[32m2026-06-22 21:48:19.740[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8703[0m
+[32m2026-06-22 21:48:25.443[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,316,000 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-13.parquet[0m
+[32m2026-06-22 21:48:26.447[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8765[0m
+[32m2026-06-22 21:48:33.357[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,056,755 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-14.parquet[0m
+[32m2026-06-22 21:48:34.413[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8539[0m
+[32m2026-06-22 21:48:41.298[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,142,351 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-15.parquet[0m
+[32m2026-06-22 21:48:41.961[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8306[0m
+[32m2026-06-22 21:48:45.158[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,574,777 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-16.parquet[0m
+[32m2026-06-22 21:48:45.725[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8733[0m
+[32m2026-06-22 21:48:48.588[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,547,966 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-17.parquet[0m
+[32m2026-06-22 21:48:49.761[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8784[0m
+[32m2026-06-22 21:48:58.676[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,477,464 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-18.parquet[0m
+[32m2026-06-22 21:48:59.523[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8736[0m
+[32m2026-06-22 21:49:04.864[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,279,674 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-19.parquet[0m
+[32m2026-06-22 21:49:05.707[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8736[0m
+[32m2026-06-22 21:49:11.484[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,403,027 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-20.parquet[0m
+[32m2026-06-22 21:49:12.308[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8668[0m
+[32m2026-06-22 21:49:17.704[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,437,340 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-21.parquet[0m
+[32m2026-06-22 21:49:18.606[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8560[0m
+[32m2026-06-22 21:49:24.055[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,333,449 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-22.parquet[0m
+[32m2026-06-22 21:49:24.890[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8528[0m
+[32m2026-06-22 21:49:29.564[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,071,390 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-23.parquet[0m
+[32m2026-06-22 21:49:30.155[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8545[0m
+[32m2026-06-22 21:49:33.604[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,587,404 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-24.parquet[0m
+[32m2026-06-22 21:49:34.221[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8648[0m
+[32m2026-06-22 21:49:38.160[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,750,211 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-25.parquet[0m
+[32m2026-06-22 21:49:39.397[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8885[0m
+[32m2026-06-22 21:49:47.370[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,310,024 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-26.parquet[0m
+[32m2026-06-22 21:49:48.619[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8764[0m
+[32m2026-06-22 21:49:56.816[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,314,864 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-27.parquet[0m
+[32m2026-06-22 21:49:58.215[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8707[0m
+[32m2026-06-22 21:50:09.085[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,740,874 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-28.parquet[0m
+[32m2026-06-22 21:50:10.205[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8601[0m
+[32m2026-06-22 21:50:17.226[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,853,827 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-29.parquet[0m
+[32m2026-06-22 21:50:17.764[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8455[0m
+[32m2026-06-22 21:50:20.218[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,105,409 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-30.parquet[0m
+[32m2026-06-22 21:50:20.755[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8754[0m
+[32m2026-06-22 21:50:23.472[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,341,588 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-05-31.parquet[0m
+[32m2026-06-22 21:50:24.864[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8811[0m
+[32m2026-06-22 21:50:36.238[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 4,176,913 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-01.parquet[0m
+[32m2026-06-22 21:50:38.967[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8723[0m
+[32m2026-06-22 21:50:55.111[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 6,176,304 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-02.parquet[0m
+[32m2026-06-22 21:50:58.007[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8830[0m
+[32m2026-06-22 21:51:18.584[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 6,595,717 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-03.parquet[0m
+[32m2026-06-22 21:51:22.598[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8625[0m
+[32m2026-06-22 21:51:51.015[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 8,963,508 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-04.parquet[0m
+[32m2026-06-22 21:51:56.097[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8681[0m
+[32m2026-06-22 21:52:29.230[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 11,545,602 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-05.parquet[0m
+[32m2026-06-22 21:52:31.708[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8727[0m
+[32m2026-06-22 21:52:44.461[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 4,946,773 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-06.parquet[0m
+[32m2026-06-22 21:52:46.398[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8606[0m
+[32m2026-06-22 21:52:59.073[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 4,693,189 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-07.parquet[0m
+[32m2026-06-22 21:53:01.119[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8836[0m
+[32m2026-06-22 21:53:14.052[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 4,833,869 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-08.parquet[0m
+[32m2026-06-22 21:53:15.814[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8747[0m
+[32m2026-06-22 21:53:27.164[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 4,296,748 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-09.parquet[0m
+[32m2026-06-22 21:53:28.730[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8791[0m
+[32m2026-06-22 21:53:41.456[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 4,610,117 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-10.parquet[0m
+[32m2026-06-22 21:53:42.751[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8734[0m
+[32m2026-06-22 21:53:52.559[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,407,262 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-11.parquet[0m
+[32m2026-06-22 21:53:53.732[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8728[0m
+[32m2026-06-22 21:54:00.922[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,115,358 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features\features_BTCUSDT_2026-06-12.parquet[0m
+=== Phase 7A: Data Expansion ===
+Symbol  : BTC/USDT
+Range   : 2026-05-13 -> 2026-06-12 (31 calendar days)
+Raw dir : C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw
+
+--- Step 1: Download (31 days) ---
+  [OK]   Downloaded tick_BTCUSDT_2026-05-13.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-14.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-15.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-16.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-17.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-18.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-19.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-20.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-21.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-22.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-23.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-24.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-25.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-26.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-27.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-28.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-29.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-30.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-05-31.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-01.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-02.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-03.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-04.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-05.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-06.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-07.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-08.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-09.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-10.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-11.csv.gz
+  [OK]   Downloaded tick_BTCUSDT_2026-06-12.csv.gz
+
+  Downloaded/found: 31 files
+
+--- Step 2: Process (31 raw files) ---
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-13.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-14.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-15.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-16.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-17.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-18.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-19.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-20.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-21.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-22.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-23.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-24.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-25.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-26.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-27.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-28.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-29.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-30.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-05-31.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-01.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-02.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-03.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-04.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-05.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-06.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-07.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-08.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-09.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-10.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-11.parquet
+  [OK]   Processed → tick_processed_BTCUSDT_2026-06-12.parquet
+
+  Processed: 31 files
+
+--- Step 3: Featurize (31 processed files) ---
+  2026-05-13: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-13.parquet  (2,316,000 rows)
+  2026-05-14: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-14.parquet  (3,056,755 rows)
+  2026-05-15: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-15.parquet  (3,142,351 rows)
+  2026-05-16: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-16.parquet  (1,574,777 rows)
+  2026-05-17: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-17.parquet  (1,547,966 rows)
+  2026-05-18: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-18.parquet  (3,477,464 rows)
+  2026-05-19: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-19.parquet  (2,279,674 rows)
+  2026-05-20: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-20.parquet  (2,403,027 rows)
+  2026-05-21: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-21.parquet  (2,437,340 rows)
+  2026-05-22: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-22.parquet  (2,333,449 rows)
+  2026-05-23: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-23.parquet  (2,071,390 rows)
+  2026-05-24: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-24.parquet  (1,587,404 rows)
+  2026-05-25: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-25.parquet  (1,750,211 rows)
+  2026-05-26: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-26.parquet  (3,310,024 rows)
+  2026-05-27: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-27.parquet  (3,314,864 rows)
+  2026-05-28: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-28.parquet  (3,740,874 rows)
+  2026-05-29: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-29.parquet  (2,853,827 rows)
+  2026-05-30: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-30.parquet  (1,105,409 rows)
+  2026-05-31: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-05-31.parquet  (1,341,588 rows)
+  2026-06-01: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-01.parquet  (4,176,913 rows)
+  2026-06-02: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-02.parquet  (6,176,304 rows)
+  2026-06-03: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-03.parquet  (6,595,717 rows)
+  2026-06-04: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-04.parquet  (8,963,508 rows)
+  2026-06-05: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-05.parquet  (11,545,602 rows)
+  2026-06-06: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-06.parquet  (4,946,773 rows)
+  2026-06-07: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-07.parquet  (4,693,189 rows)
+  2026-06-08: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-08.parquet  (4,833,869 rows)
+  2026-06-09: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-09.parquet  (4,296,748 rows)
+  2026-06-10: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-10.parquet  (4,610,117 rows)
+  2026-06-11: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-11.parquet  (3,407,262 rows)
+  2026-06-12: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BTCUSDT_2026-06-12.parquet  (3,115,358 rows)
+
+  Feature files: 31
+
+--- Step 4: Build multi-day store ---
+
+[STORE] Multi-day files stored individually in C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features
+        Total rows : 113,005,754
+        Days       : 31
+
+=== Phase 7A Complete ===

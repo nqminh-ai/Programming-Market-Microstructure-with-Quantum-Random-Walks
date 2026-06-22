@@ -1,0 +1,365 @@
+=== Phase 7B: Cross-Asset Robustness ===
+Assets: ['BTC/USDT', 'ETH/USDT', 'BNB/USDT']
+n_paths: 2000, n_steps: 500
+
+============================================================
+  Asset: BTC/USDT
+  Config: data_config.yaml
+============================================================
+
+--- Download (31 days) ---
+  [SKIP] tick_BTCUSDT_2026-05-13.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-14.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-15.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-16.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-17.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-18.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-19.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-20.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-21.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-22.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-23.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-24.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-25.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-26.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-27.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-28.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-29.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-30.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-31.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-01.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-02.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-03.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-04.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-05.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-06.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-07.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-08.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-09.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-10.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-11.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-12.csv.gz already exists
+  Found: 31 raw files
+
+--- Process (31 files) ---
+  [SKIP] tick_processed_BTCUSDT_2026-05-13.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-14.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-15.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-16.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-17.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-18.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-19.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-20.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-21.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-22.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-23.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-24.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-25.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-26.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-27.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-28.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-29.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-30.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-31.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-01.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-02.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-03.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-04.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-05.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-06.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-07.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-08.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-09.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-10.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-11.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-12.parquet already processed
+  Processed: 31 files
+
+--- Featurize (31 files) ---
+  [SKIP] features_BTCUSDT_2026-05-13.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-14.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-15.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-16.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-17.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-18.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-19.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-20.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-21.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-22.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-23.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-24.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-25.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-26.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-27.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-28.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-29.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-30.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-31.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-01.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-02.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-03.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-04.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-05.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-06.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-07.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-08.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-09.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-10.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-11.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-12.parquet already featurized
+  Feature files: 31
+
+[STORE] Multi-day files stored individually in C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features
+        Total rows : 113,005,754
+        Days       : 31
+
+--- Benchmark: BTC/USDT on day 2026-06-12 (3,115,358 rows) ---
+  Top model: CRW Correlated
+  QRW rank: 6
+
+============================================================
+  Asset: ETH/USDT
+  Config: data_config_eth.yaml
+============================================================
+
+--- Download (31 days) ---
+  [SKIP] tick_ETHUSDT_2026-05-13.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-14.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-15.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-16.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-17.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-18.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-19.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-20.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-21.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-22.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-23.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-24.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-25.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-26.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-27.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-28.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-29.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-30.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-05-31.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-01.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-02.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-03.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-04.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-05.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-06.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-07.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-08.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-09.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-10.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-11.csv.gz already exists
+  [SKIP] tick_ETHUSDT_2026-06-12.csv.gz already exists
+  Found: 31 raw files
+
+--- Process (31 files) ---
+  [SKIP] tick_processed_ETHUSDT_2026-05-13.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-14.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-15.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-16.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-17.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-18.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-19.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-20.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-21.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-22.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-23.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-24.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-25.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-26.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-27.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-28.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-29.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-30.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-05-31.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-01.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-02.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-03.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-04.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-05.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-06.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-07.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-08.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-09.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-10.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-11.parquet already processed
+  [SKIP] tick_processed_ETHUSDT_2026-06-12.parquet already processed
+  Processed: 31 files
+
+--- Featurize (31 files) ---
+  [SKIP] features_ETHUSDT_2026-05-13.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-14.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-15.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-16.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-17.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-18.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-19.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-20.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-21.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-22.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-23.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-24.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-25.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-26.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-27.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-28.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-29.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-30.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-05-31.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-01.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-02.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-03.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-04.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-05.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-06.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-07.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-08.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-09.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-10.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-11.parquet already featurized
+  [SKIP] features_ETHUSDT_2026-06-12.parquet already featurized
+  Feature files: 31
+
+[STORE] Multi-day files stored individually in C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth
+        Total rows : 115,141,055
+        Days       : 31
+
+--- Benchmark: ETH/USDT on day 2026-06-12 (2,872,918 rows) ---
+  Top model: QRW Heavy-Tail
+  QRW rank: 2
+
+============================================================
+  Asset: BNB/USDT
+  Config: data_config_bnb.yaml
+============================================================
+
+--- Download (31 days) ---
+  [SKIP] tick_BNBUSDT_2026-05-13.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-14.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-15.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-16.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-17.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-18.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-19.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-20.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-21.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-22.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-23.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-24.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-25.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-26.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-27.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-28.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-29.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-30.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-05-31.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-01.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-02.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-03.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-04.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-05.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-06.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-07.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-08.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-09.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-10.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-11.csv.gz already exists
+  [SKIP] tick_BNBUSDT_2026-06-12.csv.gz already exists
+  Found: 31 raw files
+
+--- Process (31 files) ---
+  [SKIP] tick_processed_BNBUSDT_2026-05-13.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-14.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-15.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-16.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-17.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-18.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-19.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-20.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-21.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-22.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-23.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-24.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-25.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-26.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-27.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-28.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-29.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-30.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-05-31.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-01.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-02.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-03.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-04.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-05.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-06.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-07.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-08.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-09.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-10.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-11.parquet already processed
+  [SKIP] tick_processed_BNBUSDT_2026-06-12.parquet already processed
+  Processed: 31 files
+
+--- Featurize (31 files) ---
+  [SKIP] features_BNBUSDT_2026-05-13.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-14.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-15.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-16.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-17.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-18.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-19.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-20.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-21.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-22.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-23.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-24.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-25.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-26.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-27.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-28.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-29.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-30.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-05-31.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-01.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-02.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-03.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-04.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-05.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-06.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-07.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-08.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-09.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-10.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-11.parquet already featurized
+  [SKIP] features_BNBUSDT_2026-06-12.parquet already featurized
+  Feature files: 31
+
+[STORE] Multi-day files stored individually in C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb
+        Total rows : 31,503,940
+        Days       : 31
+
+--- Benchmark: BNB/USDT on day 2026-06-12 (562,007 rows) ---
+  Top model: CRW Correlated
+  QRW rank: 4
+
+[SUMMARY] Saved: C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\results\cross_asset_summary.json
+
+[CROSS-ASSET] Saved: C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\results\cross_asset_scorecard.csv
+         model  avg_mean_rank  avg_overall_rank  n_assets
+    CRW Biased       2.952381          2.333333         3
+CRW Correlated       2.619048          2.333333         3
+QRW Heavy-Tail       3.571429          2.333333         3
+  QRW Adaptive       4.047619          4.000000         3
+    CRW Simple       4.095238          4.333333         3
+           GBM       5.000000          5.333333         3
+    GARCH(1,1)       5.571429          7.000000         3
+
+=== Phase 7B Complete ===
+  BTC/USDT: status=ok, QRW rank=6
+  ETH/USDT: status=ok, QRW rank=2
+  BNB/USDT: status=ok, QRW rank=4

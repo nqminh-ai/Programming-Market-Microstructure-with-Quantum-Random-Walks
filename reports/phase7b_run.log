@@ -1,0 +1,736 @@
+[32m2026-06-22 22:04:36.240[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-13.zip[0m
+[32m2026-06-22 22:04:53.530[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,145,600 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-13.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:04:53.534[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-14.zip[0m
+[32m2026-06-22 22:05:14.844[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,730,407 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-14.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:05:14.849[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-15.zip[0m
+[32m2026-06-22 22:05:37.566[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,977,308 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-15.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:05:37.572[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-16.zip[0m
+[32m2026-06-22 22:05:53.282[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,541,883 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-16.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:05:53.285[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-17.zip[0m
+[32m2026-06-22 22:06:06.450[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,638,605 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-17.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:06:06.454[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-18.zip[0m
+[32m2026-06-22 22:06:36.644[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,981,985 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-18.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:06:36.653[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-19.zip[0m
+[32m2026-06-22 22:06:54.700[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,356,965 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-19.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:06:54.705[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-20.zip[0m
+[32m2026-06-22 22:07:12.686[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,256,505 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-20.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:07:12.691[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-21.zip[0m
+[32m2026-06-22 22:07:31.882[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,526,150 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-21.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:07:31.887[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-22.zip[0m
+[32m2026-06-22 22:07:56.307[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,344,218 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-22.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:07:56.311[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-23.zip[0m
+[32m2026-06-22 22:08:17.174[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,641,732 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-23.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:08:17.179[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-24.zip[0m
+[32m2026-06-22 22:08:32.310[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,928,016 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-24.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:08:32.314[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-25.zip[0m
+[32m2026-06-22 22:08:46.603[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,786,621 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-25.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:08:46.606[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-26.zip[0m
+[32m2026-06-22 22:09:08.740[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,963,706 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-26.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:09:08.746[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-27.zip[0m
+[32m2026-06-22 22:09:32.233[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,056,962 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-27.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:09:32.239[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-28.zip[0m
+[32m2026-06-22 22:10:00.047[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,609,031 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-28.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:10:00.054[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-29.zip[0m
+[32m2026-06-22 22:10:23.137[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,925,370 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-29.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:10:23.143[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-30.zip[0m
+[32m2026-06-22 22:10:30.805[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 969,371 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-30.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:10:30.808[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-05-31.zip[0m
+[32m2026-06-22 22:10:42.518[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,454,319 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-05-31.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:10:42.521[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-01.zip[0m
+[32m2026-06-22 22:11:10.525[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,806,222 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-01.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:11:10.531[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-02.zip[0m
+[32m2026-06-22 22:11:43.567[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 5,759,311 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-02.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:11:43.579[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-03.zip[0m
+[32m2026-06-22 22:12:21.014[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 6,496,256 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-03.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:12:21.024[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-04.zip[0m
+[32m2026-06-22 22:13:09.134[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 8,222,751 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-04.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:13:09.149[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-05.zip[0m
+[32m2026-06-22 22:14:39.296[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 13,017,779 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-05.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:14:39.325[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-06.zip[0m
+[32m2026-06-22 22:15:27.132[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 6,254,953 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-06.csv.gz (time gaps >5m: 0)[0m
+=== Phase 7B: Cross-Asset Robustness ===
+Assets: ['BTC/USDT', 'ETH/USDT', 'BNB/USDT']
+n_paths: 2000, n_steps: 500
+
+============================================================
+  Asset: BTC/USDT
+  Config: data_config.yaml
+============================================================
+
+--- Download (31 days) ---
+  [SKIP] tick_BTCUSDT_2026-05-13.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-14.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-15.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-16.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-17.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-18.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-19.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-20.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-21.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-22.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-23.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-24.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-25.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-26.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-27.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-28.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-29.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-30.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-05-31.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-01.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-02.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-03.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-04.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-05.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-06.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-07.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-08.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-09.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-10.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-11.csv.gz already exists
+  [SKIP] tick_BTCUSDT_2026-06-12.csv.gz already exists
+  Found: 31 raw files
+
+--- Process (31 files) ---
+  [SKIP] tick_processed_BTCUSDT_2026-05-13.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-14.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-15.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-16.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-17.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-18.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-19.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-20.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-21.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-22.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-23.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-24.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-25.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-26.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-27.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-28.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-29.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-30.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-05-31.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-01.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-02.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-03.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-04.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-05.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-06.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-07.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-08.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-09.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-10.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-11.parquet already processed
+  [SKIP] tick_processed_BTCUSDT_2026-06-12.parquet already processed
+  Processed: 31 files
+
+--- Featurize (31 files) ---
+  [SKIP] features_BTCUSDT_2026-05-13.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-14.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-15.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-16.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-17.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-18.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-19.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-20.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-21.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-22.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-23.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-24.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-25.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-26.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-27.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-28.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-29.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-30.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-05-31.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-01.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-02.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-03.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-04.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-05.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-06.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-07.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-08.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-09.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-10.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-11.parquet already featurized
+  [SKIP] features_BTCUSDT_2026-06-12.parquet already featurized
+  Feature files: 31
+
+[STORE] Multi-day files stored individually in C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features
+        Total rows : 113,005,754
+        Days       : 31
+
+--- Benchmark: BTC/USDT on day 2026-06-12 (3,115,358 rows) ---
+  Top model: CRW Correlated
+  QRW rank: 6
+
+============================================================
+  Asset: ETH/USDT
+  Config: data_config_eth.yaml
+============================================================
+
+--- Download (31 days) ---
+  [OK]   Downloaded tick_ETHUSDT_2026-05-13.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-14.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-15.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-16.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-17.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-18.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-19.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-20.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-21.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-22.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-23.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-24.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-25.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-26.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-27.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-28.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-29.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-30.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-05-31.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-06-01.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-06-02.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-06-03.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-06-04.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-06-05.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-06-06.csv.gz[32m2026-06-22 22:15:27.150[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-07.zip[0m
+[32m2026-06-22 22:16:05.974[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 5,095,675 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-07.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:16:05.984[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-08.zip[0m
+[32m2026-06-22 22:16:50.849[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 5,759,621 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-08.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:16:50.860[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-09.zip[0m
+[32m2026-06-22 22:17:26.445[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 4,501,516 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-09.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:17:26.454[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-10.zip[0m
+[32m2026-06-22 22:18:02.414[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 4,680,030 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-10.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:18:02.423[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-11.zip[0m
+[32m2026-06-22 22:18:30.672[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 3,410,263 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-11.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:18:30.678[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/ETHUSDT/ETHUSDT-trades-2026-06-12.zip[0m
+[32m2026-06-22 22:18:53.825[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,888,517 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_eth\tick_ETHUSDT_2026-06-12.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:18:56.741[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,130,515 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-13.parquet[0m
+[32m2026-06-22 22:19:00.714[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,712,242 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-14.parquet[0m
+[32m2026-06-22 22:19:04.327[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,958,986 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-15.parquet[0m
+[32m2026-06-22 22:19:06.309[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,530,877 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-16.parquet[0m
+[32m2026-06-22 22:19:08.514[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,628,367 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-17.parquet[0m
+[32m2026-06-22 22:19:14.515[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,960,624 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-18.parquet[0m
+[32m2026-06-22 22:19:17.884[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,342,683 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-19.parquet[0m
+[32m2026-06-22 22:19:20.957[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,243,059 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-20.parquet[0m
+[32m2026-06-22 22:19:24.321[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,510,836 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-21.parquet[0m
+[32m2026-06-22 22:19:27.626[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,329,327 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-22.parquet[0m
+[32m2026-06-22 22:19:31.321[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,623,719 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-23.parquet[0m
+[32m2026-06-22 22:19:34.158[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,917,103 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-24.parquet[0m
+[32m2026-06-22 22:19:36.739[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,772,923 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-25.parquet[0m
+[32m2026-06-22 22:19:41.087[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,943,903 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-26.parquet[0m
+[32m2026-06-22 22:19:45.129[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,036,677 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-27.parquet[0m
+[32m2026-06-22 22:19:50.331[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,585,616 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-28.parquet[0m
+[32m2026-06-22 22:19:54.122[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,907,673 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-29.parquet[0m
+[32m2026-06-22 22:19:55.432[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 960,778 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-30.parquet[0m
+[32m2026-06-22 22:19:57.553[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,442,279 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-05-31.parquet[0m
+[32m2026-06-22 22:20:03.246[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,780,816 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-01.parquet[0m
+[32m2026-06-22 22:20:12.744[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 5,729,576 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-02.parquet[0m
+[32m2026-06-22 22:20:26.534[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 6,463,763 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-03.parquet[0m
+[32m2026-06-22 22:20:38.147[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 8,195,185 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-04.parquet[0m
+[32m2026-06-22 22:20:58.701[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 12,971,272 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-05.parquet[0m
+[32m2026-06-22 22:21:07.213[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 6,235,724 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-06.parquet[0m
+[32m2026-06-22 22:21:14.511[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 5,077,178 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-07.parquet[0m
+[32m2026-06-22 22:21:22.776[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 5,737,489 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-08.parquet[0m
+[32m2026-06-22 22:21:29.284[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 4,482,493 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-09.parquet[0m
+[32m2026-06-22 22:21:36.159[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 4,663,012 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-10.parquet[0m
+[32m2026-06-22 22:21:41.359[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 3,393,442 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-11.parquet[0m
+[32m2026-06-22 22:21:45.517[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,872,918 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_eth\tick_processed_ETHUSDT_2026-06-12.parquet[0m
+[32m2026-06-22 22:21:46.252[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8379[0m
+[32m2026-06-22 22:21:51.398[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,130,515 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-13.parquet[0m
+[32m2026-06-22 22:21:52.413[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8629[0m
+[32m2026-06-22 22:21:58.850[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,712,242 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-14.parquet[0m
+[32m2026-06-22 22:22:00.019[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8734[0m
+[32m2026-06-22 22:22:07.005[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,958,986 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-15.parquet[0m
+[32m2026-06-22 22:22:07.648[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8413[0m
+[32m2026-06-22 22:22:10.835[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,530,877 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-16.parquet[0m
+[32m2026-06-22 22:22:11.488[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8627[0m
+[32m2026-06-22 22:22:15.027[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,628,367 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-17.parquet[0m
+[32m2026-06-22 22:22:16.406[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8871[0m
+[32m2026-06-22 22:22:27.128[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,960,624 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-18.parquet[0m
+[32m2026-06-22 22:22:28.002[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8762[0m
+[32m2026-06-22 22:22:33.709[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,342,683 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-19.parquet[0m
+[32m2026-06-22 22:22:34.564[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8748[0m
+[32m2026-06-22 22:22:40.020[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,243,059 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-20.parquet[0m
+[32m2026-06-22 22:22:40.936[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8782[0m
+[32m2026-06-22 22:22:47.164[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,510,836 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-21.parquet[0m
+[32m2026-06-22 22:22:48.293[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8773[0m
+[32m2026-06-22 22:22:55.905[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,329,327 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-22.parquet[0m
+[32m2026-06-22 22:22:57.082[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8668[0m
+[32m2026-06-22 22:23:04.601[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,623,719 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-23.parquet[0m
+[32m2026-06-22 22:23:05.370[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8759[0m
+[32m2026-06-22 22:23:09.977[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,917,103 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-24.parquet[0m
+[32m2026-06-22 22:23:10.628[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8756[0m
+[32m2026-06-22 22:23:14.731[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,772,923 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-25.parquet[0m
+[32m2026-06-22 22:23:15.751[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8708[0m
+[32m2026-06-22 22:23:22.247[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,943,903 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-26.parquet[0m
+[32m2026-06-22 22:23:23.354[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8828[0m
+[32m2026-06-22 22:23:30.211[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,036,677 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-27.parquet[0m
+[32m2026-06-22 22:23:31.533[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8781[0m
+[32m2026-06-22 22:23:41.446[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,585,616 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-28.parquet[0m
+[32m2026-06-22 22:23:42.481[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8819[0m
+[32m2026-06-22 22:23:49.750[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,907,673 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-29.parquet[0m
+[32m2026-06-22 22:23:50.240[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8480[0m
+[32m2026-06-22 22:23:52.529[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 960,778 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-30.parquet[0m
+[32m2026-06-22 22:23:53.148[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8413[0m
+[32m2026-06-22 22:23:56.264[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,442,279 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-05-31.parquet[0m
+[32m2026-06-22 22:23:57.389[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8616[0m
+[32m2026-06-22 22:24:07.489[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,780,816 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-01.parquet[0m
+[32m2026-06-22 22:24:09.503[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8732[0m
+[32m2026-06-22 22:24:24.242[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 5,729,576 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-02.parquet[0m
+[32m2026-06-22 22:24:26.608[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8648[0m
+[32m2026-06-22 22:24:44.371[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 6,463,763 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-03.parquet[0m
+[32m2026-06-22 22:24:47.278[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8717[0m
+[32m2026-06-22 22:25:10.410[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 8,195,185 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-04.parquet[0m
+[32m2026-06-22 22:25:14.973[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8515[0m
+[32m2026-06-22 22:25:52.523[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 12,971,272 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-05.parquet[0m
+[32m2026-06-22 22:25:55.220[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8521[0m
+[32m2026-06-22 22:26:11.783[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 6,235,724 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-06.parquet[0m
+[32m2026-06-22 22:26:13.706[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8502[0m
+[32m2026-06-22 22:26:27.344[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 5,077,178 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-07.parquet[0m
+[32m2026-06-22 22:26:29.248[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8782[0m
+[32m2026-06-22 22:26:43.713[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 5,737,489 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-08.parquet[0m
+[32m2026-06-22 22:26:45.325[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8580[0m
+[32m2026-06-22 22:26:56.940[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 4,482,493 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-09.parquet[0m
+[32m2026-06-22 22:26:58.583[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8671[0m
+[32m2026-06-22 22:27:10.898[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 4,663,012 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-10.parquet[0m
+[32m2026-06-22 22:27:12.132[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8628[0m
+[32m2026-06-22 22:27:21.521[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 3,393,442 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-11.parquet[0m
+[32m2026-06-22 22:27:22.605[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.8501[0m
+[32m2026-06-22 22:27:29.250[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,872,918 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth\features_ETHUSDT_2026-06-12.parquet[0m
+[32m2026-06-22 22:31:25.533[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-13.zip[0m
+[32m2026-06-22 22:31:35.853[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,254,124 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-13.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:31:35.856[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-14.zip[0m
+[32m2026-06-22 22:31:44.093[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,052,466 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-14.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:31:44.095[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-15.zip[0m
+[32m2026-06-22 22:31:51.900[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,067,843 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-15.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:31:51.903[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-16.zip[0m
+[32m2026-06-22 22:31:58.615[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 826,379 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-16.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:31:58.617[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-17.zip[0m
+[32m2026-06-22 22:32:03.812[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 560,711 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-17.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:32:03.813[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-18.zip[0m
+[32m2026-06-22 22:32:10.639[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 813,577 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-18.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:32:10.641[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-19.zip[0m
+[32m2026-06-22 22:32:15.804[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 564,331 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-19.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:32:15.805[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-20.zip[0m
+[32m2026-06-22 22:32:20.885[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 548,397 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-20.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:32:20.886[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-21.zip[0m
+[32m2026-06-22 22:32:26.638[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 616,029 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-21.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:32:26.639[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-22.zip[0m
+[32m2026-06-22 22:32:32.810[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 660,506 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-22.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:32:32.812[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-23.zip[0m
+[32m2026-06-22 22:32:38.531[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 651,522 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-23.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:32:38.532[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-24.zip[0m
+[32m2026-06-22 22:32:43.207[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 490,374 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-24.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:32:43.209[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-25.zip[0m
+[32m2026-06-22 22:32:49.013[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 631,699 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-25.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:32:49.015[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-26.zip[0m
+[32m2026-06-22 22:32:56.045[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 830,144 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-26.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:32:56.047[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-27.zip[0m
+[32m2026-06-22 22:33:02.060[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 665,191 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-27.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:33:02.062[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-28.zip[0m
+[32m2026-06-22 22:33:09.299[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 854,477 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-28.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:33:09.301[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-29.zip[0m
+[32m2026-06-22 22:33:15.647[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 702,285 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-29.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:33:15.649[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-30.zip[0m
+[32m2026-06-22 22:33:30.873[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,943,687 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-30.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:33:30.878[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-05-31.zip[0m
+[32m2026-06-22 22:33:46.628[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,939,172 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-05-31.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:33:46.632[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-01.zip[0m
+[32m2026-06-22 22:34:05.952[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,485,041 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-01.csv.gz (time gaps >5m: 0)[0m
+
+  [OK]   Downloaded tick_ETHUSDT_2026-06-07.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-06-08.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-06-09.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-06-10.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-06-11.csv.gz
+  [OK]   Downloaded tick_ETHUSDT_2026-06-12.csv.gz
+  Found: 31 raw files
+
+--- Process (31 files) ---
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-13.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-14.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-15.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-16.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-17.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-18.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-19.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-20.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-21.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-22.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-23.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-24.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-25.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-26.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-27.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-28.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-29.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-30.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-05-31.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-01.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-02.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-03.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-04.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-05.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-06.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-07.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-08.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-09.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-10.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-11.parquet
+  [OK]   Processed → tick_processed_ETHUSDT_2026-06-12.parquet
+  Processed: 31 files
+
+--- Featurize (31 files) ---
+  2026-05-13: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-13.parquet  (2,130,515 rows)
+  2026-05-14: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-14.parquet  (2,712,242 rows)
+  2026-05-15: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-15.parquet  (2,958,986 rows)
+  2026-05-16: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-16.parquet  (1,530,877 rows)
+  2026-05-17: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-17.parquet  (1,628,367 rows)
+  2026-05-18: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-18.parquet  (3,960,624 rows)
+  2026-05-19: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-19.parquet  (2,342,683 rows)
+  2026-05-20: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-20.parquet  (2,243,059 rows)
+  2026-05-21: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-21.parquet  (2,510,836 rows)
+  2026-05-22: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-22.parquet  (2,329,327 rows)
+  2026-05-23: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-23.parquet  (2,623,719 rows)
+  2026-05-24: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-24.parquet  (1,917,103 rows)
+  2026-05-25: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-25.parquet  (1,772,923 rows)
+  2026-05-26: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-26.parquet  (2,943,903 rows)
+  2026-05-27: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-27.parquet  (3,036,677 rows)
+  2026-05-28: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-28.parquet  (3,585,616 rows)
+  2026-05-29: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-29.parquet  (2,907,673 rows)
+  2026-05-30: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-30.parquet  (960,778 rows)
+  2026-05-31: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-05-31.parquet  (1,442,279 rows)
+  2026-06-01: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-01.parquet  (3,780,816 rows)
+  2026-06-02: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-02.parquet  (5,729,576 rows)
+  2026-06-03: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-03.parquet  (6,463,763 rows)
+  2026-06-04: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-04.parquet  (8,195,185 rows)
+  2026-06-05: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-05.parquet  (12,971,272 rows)
+  2026-06-06: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-06.parquet  (6,235,724 rows)
+  2026-06-07: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-07.parquet  (5,077,178 rows)
+  2026-06-08: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-08.parquet  (5,737,489 rows)
+  2026-06-09: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-09.parquet  (4,482,493 rows)
+  2026-06-10: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-10.parquet  (4,663,012 rows)
+  2026-06-11: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-11.parquet  (3,393,442 rows)
+  2026-06-12: using causal trade-volume imbalance proxy
+  [OK]   Features → features_ETHUSDT_2026-06-12.parquet  (2,872,918 rows)
+  Feature files: 31
+
+[STORE] Multi-day files stored individually in C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_eth
+        Total rows : 115,141,055
+        Days       : 31
+
+--- Benchmark: ETH/USDT on day 2026-06-12 (2,872,918 rows) ---
+  Top model: CRW Simple
+  QRW rank: 2
+
+============================================================
+  Asset: BNB/USDT
+  Config: data_config_bnb.yaml
+============================================================
+
+--- Download (31 days) ---
+  [OK]   Downloaded tick_BNBUSDT_2026-05-13.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-14.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-15.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-16.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-17.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-18.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-19.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-20.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-21.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-22.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-23.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-24.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-25.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-26.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-27.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-28.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-29.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-30.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-05-31.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-06-01.csv.gz[32m2026-06-22 22:34:05.958[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-02.zip[0m
+[32m2026-06-22 22:34:19.470[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,717,553 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-02.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:34:19.474[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-03.zip[0m
+[32m2026-06-22 22:34:31.393[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,444,090 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-03.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:34:31.396[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-04.zip[0m
+[32m2026-06-22 22:34:46.567[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,936,141 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-04.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:34:46.572[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-05.zip[0m
+[32m2026-06-22 22:35:05.402[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 2,256,688 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-05.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:35:05.409[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-06.zip[0m
+[32m2026-06-22 22:35:14.866[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 1,039,286 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-06.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:35:14.869[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-07.zip[0m
+[32m2026-06-22 22:35:22.210[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 792,564 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-07.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:35:22.213[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-08.zip[0m
+[32m2026-06-22 22:35:28.564[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 689,316 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-08.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:35:28.566[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-09.zip[0m
+[32m2026-06-22 22:35:36.061[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 819,473 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-09.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:35:36.063[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-10.zip[0m
+[32m2026-06-22 22:35:42.084[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 710,105 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-10.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:35:42.086[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-11.zip[0m
+[32m2026-06-22 22:35:47.206[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 594,193 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-11.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:35:47.208[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36mdownload_day[0m:[36m115[0m - [1mDownloading https://data.binance.vision/data/spot/daily/trades/BNBUSDT/BNBUSDT-trades-2026-06-12.zip[0m
+[32m2026-06-22 22:35:52.679[0m | [1mINFO    [0m | [36msrc.data.tick_downloader[0m:[36m_log_quality[0m:[36m188[0m - [1mSaved 565,770 records to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\raw_bnb\tick_BNBUSDT_2026-06-12.csv.gz (time gaps >5m: 0)[0m
+[32m2026-06-22 22:35:54.695[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,241,734 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-13.parquet[0m
+[32m2026-06-22 22:35:56.036[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,043,985 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-14.parquet[0m
+[32m2026-06-22 22:35:57.396[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,060,437 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-15.parquet[0m
+[32m2026-06-22 22:35:58.453[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 818,009 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-16.parquet[0m
+[32m2026-06-22 22:35:59.183[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 556,028 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-17.parquet[0m
+[32m2026-06-22 22:36:00.225[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 808,435 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-18.parquet[0m
+[32m2026-06-22 22:36:00.960[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 560,172 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-19.parquet[0m
+[32m2026-06-22 22:36:01.755[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 544,593 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-20.parquet[0m
+[32m2026-06-22 22:36:02.602[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 611,575 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-21.parquet[0m
+[32m2026-06-22 22:36:03.490[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 655,570 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-22.parquet[0m
+[32m2026-06-22 22:36:04.368[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 646,407 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-23.parquet[0m
+[32m2026-06-22 22:36:05.010[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 486,469 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-24.parquet[0m
+[32m2026-06-22 22:36:05.851[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 626,319 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-25.parquet[0m
+[32m2026-06-22 22:36:06.968[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 823,547 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-26.parquet[0m
+[32m2026-06-22 22:36:07.865[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 660,279 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-27.parquet[0m
+[32m2026-06-22 22:36:08.976[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 848,209 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-28.parquet[0m
+[32m2026-06-22 22:36:09.891[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 696,299 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-29.parquet[0m
+[32m2026-06-22 22:36:12.594[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,927,065 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-30.parquet[0m
+[32m2026-06-22 22:36:15.112[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,925,222 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-05-31.parquet[0m
+[32m2026-06-22 22:36:18.457[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,466,103 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-01.parquet[0m
+[32m2026-06-22 22:36:20.998[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,706,518 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-02.parquet[0m
+[32m2026-06-22 22:36:23.163[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,435,955 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-03.parquet[0m
+[32m2026-06-22 22:36:26.189[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,925,486 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-04.parquet[0m
+[32m2026-06-22 22:36:29.765[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 2,245,105 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-05.parquet[0m
+[32m2026-06-22 22:36:31.254[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 1,033,832 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-06.parquet[0m
+[32m2026-06-22 22:36:32.436[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 789,319 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-07.parquet[0m
+[32m2026-06-22 22:36:33.478[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 686,952 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-08.parquet[0m
+[32m2026-06-22 22:36:34.737[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 815,235 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-09.parquet[0m
+[32m2026-06-22 22:36:35.822[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 706,609 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-10.parquet[0m
+[32m2026-06-22 22:36:36.771[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 590,465 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-11.parquet[0m
+[32m2026-06-22 22:36:37.684[0m | [1mINFO    [0m | [36msrc.data.tick_processor[0m:[36mprocess_file[0m:[36m161[0m - [1mProcessed 562,007 ticks into C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\processed_bnb\tick_processed_BNBUSDT_2026-06-12.parquet[0m
+[32m2026-06-22 22:36:38.168[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7127[0m
+[32m2026-06-22 22:36:40.556[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,241,734 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-13.parquet[0m
+[32m2026-06-22 22:36:41.037[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7054[0m
+[32m2026-06-22 22:36:42.904[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,043,985 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-14.parquet[0m
+[32m2026-06-22 22:36:43.344[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7312[0m
+[32m2026-06-22 22:36:45.415[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,060,437 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-15.parquet[0m
+[32m2026-06-22 22:36:45.715[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7142[0m
+[32m2026-06-22 22:36:47.342[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 818,009 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-16.parquet[0m
+[32m2026-06-22 22:36:47.548[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7161[0m
+[32m2026-06-22 22:36:48.703[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 556,028 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-17.parquet[0m
+[32m2026-06-22 22:36:48.993[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7278[0m
+[32m2026-06-22 22:36:50.544[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 808,435 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-18.parquet[0m
+[32m2026-06-22 22:36:50.806[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7021[0m
+[32m2026-06-22 22:36:51.978[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 560,172 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-19.parquet[0m
+[32m2026-06-22 22:36:52.221[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7088[0m
+[32m2026-06-22 22:36:53.434[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 544,593 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-20.parquet[0m
+[32m2026-06-22 22:36:53.749[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7218[0m
+[32m2026-06-22 22:36:54.999[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 611,575 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-21.parquet[0m
+[32m2026-06-22 22:36:55.343[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7218[0m
+[32m2026-06-22 22:36:56.566[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 655,570 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-22.parquet[0m
+[32m2026-06-22 22:36:56.845[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7331[0m
+[32m2026-06-22 22:36:58.116[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 646,407 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-23.parquet[0m
+[32m2026-06-22 22:36:58.345[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7175[0m
+[32m2026-06-22 22:36:59.342[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 486,469 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-24.parquet[0m
+[32m2026-06-22 22:36:59.590[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7646[0m
+[32m2026-06-22 22:37:00.806[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 626,319 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-25.parquet[0m
+[32m2026-06-22 22:37:01.169[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7193[0m
+[32m2026-06-22 22:37:02.675[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 823,547 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-26.parquet[0m
+[32m2026-06-22 22:37:02.959[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7148[0m
+[32m2026-06-22 22:37:04.215[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 660,279 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-27.parquet[0m
+[32m2026-06-22 22:37:04.548[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7473[0m
+[32m2026-06-22 22:37:06.212[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 848,209 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-28.parquet[0m
+[32m2026-06-22 22:37:06.498[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7121[0m
+[32m2026-06-22 22:37:07.872[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 696,299 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-29.parquet[0m
+[32m2026-06-22 22:37:08.703[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7939[0m
+[32m2026-06-22 22:37:13.174[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,927,065 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-30.parquet[0m
+[32m2026-06-22 22:37:14.044[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7757[0m
+[32m2026-06-22 22:37:18.496[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,925,222 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-05-31.parquet[0m
+[32m2026-06-22 22:37:19.493[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7812[0m
+[32m2026-06-22 22:37:25.625[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,466,103 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-01.parquet[0m
+[32m2026-06-22 22:37:26.378[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7453[0m
+[32m2026-06-22 22:37:30.447[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,706,518 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-02.parquet[0m
+[32m2026-06-22 22:37:30.990[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7331[0m
+[32m2026-06-22 22:37:33.585[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,435,955 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-03.parquet[0m
+[32m2026-06-22 22:37:34.284[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7269[0m
+[32m2026-06-22 22:37:38.774[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,925,486 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-04.parquet[0m
+[32m2026-06-22 22:37:39.635[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7135[0m
+[32m2026-06-22 22:37:45.023[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 2,245,105 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-05.parquet[0m
+[32m2026-06-22 22:37:45.452[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.7123[0m
+[32m2026-06-22 22:37:47.487[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 1,033,832 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-06.parquet[0m
+[32m2026-06-22 22:37:47.818[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.6819[0m
+[32m2026-06-22 22:37:49.291[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 789,319 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-07.parquet[0m
+[32m2026-06-22 22:37:49.550[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.6643[0m
+[32m2026-06-22 22:37:50.846[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 686,952 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-08.parquet[0m
+[32m2026-06-22 22:37:51.179[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.6757[0m
+[32m2026-06-22 22:37:52.778[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 815,235 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-09.parquet[0m
+[32m2026-06-22 22:37:53.055[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.6810[0m
+[32m2026-06-22 22:37:54.402[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 706,609 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-10.parquet[0m
+[32m2026-06-22 22:37:54.619[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.6722[0m
+[32m2026-06-22 22:37:55.855[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 590,465 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-11.parquet[0m
+[32m2026-06-22 22:37:56.077[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36m_compute_synthetic_lob[0m:[36m370[0m - [1mComputed synthetic OBI from trade imbalance: window=100, OBI range=[-1.0000, 1.0000], OBI std=0.6842[0m
+[32m2026-06-22 22:37:57.246[0m | [1mINFO    [0m | [36msrc.data.feature_engineer[0m:[36msave[0m:[36m236[0m - [1mSaved feature matrix with 562,007 rows to C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb\features_BNBUSDT_2026-06-12.parquet[0m
+
+  [OK]   Downloaded tick_BNBUSDT_2026-06-02.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-06-03.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-06-04.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-06-05.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-06-06.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-06-07.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-06-08.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-06-09.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-06-10.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-06-11.csv.gz
+  [OK]   Downloaded tick_BNBUSDT_2026-06-12.csv.gz
+  Found: 31 raw files
+
+--- Process (31 files) ---
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-13.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-14.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-15.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-16.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-17.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-18.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-19.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-20.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-21.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-22.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-23.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-24.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-25.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-26.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-27.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-28.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-29.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-30.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-05-31.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-01.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-02.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-03.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-04.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-05.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-06.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-07.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-08.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-09.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-10.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-11.parquet
+  [OK]   Processed → tick_processed_BNBUSDT_2026-06-12.parquet
+  Processed: 31 files
+
+--- Featurize (31 files) ---
+  2026-05-13: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-13.parquet  (1,241,734 rows)
+  2026-05-14: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-14.parquet  (1,043,985 rows)
+  2026-05-15: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-15.parquet  (1,060,437 rows)
+  2026-05-16: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-16.parquet  (818,009 rows)
+  2026-05-17: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-17.parquet  (556,028 rows)
+  2026-05-18: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-18.parquet  (808,435 rows)
+  2026-05-19: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-19.parquet  (560,172 rows)
+  2026-05-20: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-20.parquet  (544,593 rows)
+  2026-05-21: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-21.parquet  (611,575 rows)
+  2026-05-22: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-22.parquet  (655,570 rows)
+  2026-05-23: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-23.parquet  (646,407 rows)
+  2026-05-24: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-24.parquet  (486,469 rows)
+  2026-05-25: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-25.parquet  (626,319 rows)
+  2026-05-26: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-26.parquet  (823,547 rows)
+  2026-05-27: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-27.parquet  (660,279 rows)
+  2026-05-28: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-28.parquet  (848,209 rows)
+  2026-05-29: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-29.parquet  (696,299 rows)
+  2026-05-30: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-30.parquet  (1,927,065 rows)
+  2026-05-31: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-05-31.parquet  (1,925,222 rows)
+  2026-06-01: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-01.parquet  (2,466,103 rows)
+  2026-06-02: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-02.parquet  (1,706,518 rows)
+  2026-06-03: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-03.parquet  (1,435,955 rows)
+  2026-06-04: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-04.parquet  (1,925,486 rows)
+  2026-06-05: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-05.parquet  (2,245,105 rows)
+  2026-06-06: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-06.parquet  (1,033,832 rows)
+  2026-06-07: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-07.parquet  (789,319 rows)
+  2026-06-08: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-08.parquet  (686,952 rows)
+  2026-06-09: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-09.parquet  (815,235 rows)
+  2026-06-10: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-10.parquet  (706,609 rows)
+  2026-06-11: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-11.parquet  (590,465 rows)
+  2026-06-12: using causal trade-volume imbalance proxy
+  [OK]   Features → features_BNBUSDT_2026-06-12.parquet  (562,007 rows)
+  Feature files: 31
+
+[STORE] Multi-day files stored individually in C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\data\features_bnb
+        Total rows : 31,503,940
+        Days       : 31
+
+--- Benchmark: BNB/USDT on day 2026-06-12 (562,007 rows) ---
+  Top model: CRW Biased
+  QRW rank: 4
+
+[SUMMARY] Saved: C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\results\cross_asset_summary.json
+
+[CROSS-ASSET] Saved: C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\results\cross_asset_scorecard.csv
+         model  avg_mean_rank  avg_overall_rank  n_assets
+    CRW Biased       2.571429          2.000000         3
+CRW Correlated       3.000000          2.333333         3
+    CRW Simple       2.857143          2.333333         3
+  QRW Adaptive       3.666667          4.000000         3
+    GARCH(1,1)       4.428571          5.000000         3
+           GBM       4.428571          5.000000         3
+
+=== Phase 7B Complete ===
+  BTC/USDT: status=ok, QRW rank=6
+  ETH/USDT: status=ok, QRW rank=2
+  BNB/USDT: status=ok, QRW rank=4

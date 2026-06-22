@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\scripts\phase6_pipeline.py", line 516, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\MYPC\OneDrive\Desktop\Programming-Market-Microstructure-with-Quantum-Random-Walks\scripts\phase6_pipeline.py", line 332, in main
+    raise FileNotFoundError(
+    ...<2 lines>...
+    )
+FileNotFoundError: Phase 5 artifacts are required; run `python scripts/phase5_pipeline.py` first.

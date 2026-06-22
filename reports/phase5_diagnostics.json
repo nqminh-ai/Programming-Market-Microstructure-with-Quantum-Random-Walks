@@ -1,0 +1,36 @@
+{
+  "protocol_version": "fixed_origin_ex_ante_zero_inflated_v2",
+  "feature_path": "data\\features\\features_BTCUSDT_2026-06-12.parquet",
+  "feature_bytes": 117333001,
+  "feature_mtime_ns": 1782140036430536100,
+  "train_fraction": 0.6,
+  "requested_n_steps": 500,
+  "random_seed": 2026,
+  "train_rows": 1869214,
+  "holdout_rows": 1246144,
+  "simulated_steps": 500,
+  "simulated_paths_per_model": 3000,
+  "movement_probability": 0.18728844706301528,
+  "model_count": 7,
+  "distribution_horizons": [
+    1,
+    10,
+    50,
+    100
+  ],
+  "complete_test_categories": true,
+  "qrw_ks_pvalue": 0.0005458774578140435,
+  "qrw_ks_pvalue_bh": 0.0009552855511745761,
+  "qrw_variance_beta": 1.0025628502761799,
+  "qrw_variance_beta_ci": [
+    0.984137008840411,
+    1.018336048485178
+  ],
+  "qrw_tail_index": 1597808.9782231543,
+  "empirical_tail_index": 2.4747687558943223,
+  "scorecard_complete": true,
+  "top_ranked_model": "CRW Correlated",
+  "checkpoint_passed": true,
+  "inference_scope": "single_window_exploratory",
+  "confirmatory_superiority_claim_allowed": false
+}
