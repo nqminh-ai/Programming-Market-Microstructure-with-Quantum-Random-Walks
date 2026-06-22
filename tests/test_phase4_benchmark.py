@@ -66,9 +66,9 @@ def test_benchmark_suite_writes_complete_reproducible_outputs(tmp_path) -> None:
         diagnostics_output=diagnostics,
     )
 
-    assert results["model"].nunique() == 6
+    assert results["model"].nunique() == 7
     assert set(results["metric"]) == set(BenchmarkSuite.METRICS)
-    assert len(results) == 6 * len(BenchmarkSuite.METRICS)
+    assert len(results) == 7 * len(BenchmarkSuite.METRICS)
     assert np.isfinite(results[["value", "std"]].to_numpy()).all()
     assert benchmark.exists()
     assert comparison.exists()
@@ -85,6 +85,43 @@ def test_benchmark_suite_writes_complete_reproducible_outputs(tmp_path) -> None:
     assert stored["roadmap_simple_crw_target_0_5_corrected"] is True
     assert stored["protocol_version"] == BenchmarkSuite.PROTOCOL_VERSION
     assert stored["uses_holdout_features_for_simulation"] is False
+
+
+def _heavy_tailed_market(count: int = 400) -> pd.DataFrame:
+    """Market whose tick moves vary in size (a few large jumps among small ones)."""
+    frame = _benchmark_market(count)
+    rng = np.random.default_rng(7)
+    direction = frame["tick_direction"].to_numpy(dtype=np.float64)
+    magnitude = np.full(count - 1, 0.01)
+    # Inject a heavy upper tail of occasional large jumps.
+    large = rng.random(count - 1) < 0.1
+    magnitude[large] = rng.choice([0.05, 0.1, 0.3], size=int(large.sum()))
+    changes = magnitude * direction[:-1]
+    frame["price"] = 100.0 + np.concatenate([[0.0], np.cumsum(changes)])
+    return frame
+
+
+def test_benchmark_includes_heavy_tail_qrw_with_larger_jumps() -> None:
+    suite = BenchmarkSuite(
+        _heavy_tailed_market(),
+        n_steps=50,
+        n_paths=300,
+        random_seed=2026,
+    )
+    suite.run()
+
+    assert "QRW Heavy-Tail" in suite.simulated_paths
+    heavy = suite.simulated_paths["QRW Heavy-Tail"]
+    adaptive = suite.simulated_paths["QRW Adaptive"]
+    assert heavy.shape == (300, 51)
+    assert np.isfinite(heavy).all()
+    assert np.all(heavy > 0.0)
+
+    # The heavy-tailed shift must produce at least one increment strictly
+    # larger than the fixed-tick adaptive QRW can ever generate.
+    heavy_max_jump = np.abs(np.diff(heavy, axis=1)).max()
+    adaptive_max_jump = np.abs(np.diff(adaptive, axis=1)).max()
+    assert heavy_max_jump > adaptive_max_jump
 
 
 def test_qrw_forecast_does_not_use_holdout_covariates() -> None:

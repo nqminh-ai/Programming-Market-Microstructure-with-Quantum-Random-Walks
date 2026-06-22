@@ -15,6 +15,7 @@ from src.models.classical_rw import ClassicalRandomWalk
 from src.models.garch_model import GARCHBaseline
 from src.models.gbm_model import GBMBaseline
 from src.models.qrw_core import QuantumRandomWalk
+from src.models.qrw_heavy_tail import HeavyTailAdaptiveQRW
 
 
 class BenchmarkSuite:
@@ -162,6 +163,68 @@ class BenchmarkSuite:
         )
         paths[:, 0] = self.initial_price
         paths[:, 1:] = self.initial_price + np.cumsum(increments, axis=1)
+        return paths
+
+    def _fit_qrw_heavy_tail(
+        self,
+    ) -> tuple[HeavyTailAdaptiveQRW, dict[str, Any]]:
+        model = HeavyTailAdaptiveQRW(self.train, {"n_positions": 101})
+        parameters = model.calibrate_two_stage(output_path=None)
+        return model, parameters
+
+    def _training_jump_cap(self) -> float:
+        """Largest absolute price move observed in training (within a segment).
+
+        Sampled Pareto jumps are capped here so the simulation never produces a
+        move larger than anything actually seen in the data, which also keeps
+        prices finite and positive.
+        """
+        change = np.abs(np.diff(self.train["price"].to_numpy(dtype=np.float64)))
+        valid = change > 1e-12
+        if "segment_id" in self.train:
+            segment = self.train["segment_id"].to_numpy(copy=False)
+            valid &= segment[:-1] == segment[1:]
+        observed = change[valid]
+        if observed.size == 0:
+            return self.tick_size
+        return float(np.max(observed))
+
+    def _simulate_qrw_heavy_tail(
+        self,
+        model: HeavyTailAdaptiveQRW,
+        *,
+        seed: int,
+    ) -> np.ndarray:
+        probability_up = float(model.predict_probability()[-1])
+        jump_scale = max(float(model.jump_scale), 1e-12)
+        tail_index = max(float(model.tail_index), 1e-3)
+        jump_cap = self._training_jump_cap()
+
+        rng = np.random.default_rng(seed)
+        moving = (
+            rng.random((self.n_paths, self.n_steps))
+            < self.movement_probability
+        )
+        direction = np.where(
+            rng.random((self.n_paths, self.n_steps)) < probability_up,
+            1.0,
+            -1.0,
+        )
+        # Inverse-transform sampling of a discrete Pareto jump magnitude.
+        uniform = rng.random((self.n_paths, self.n_steps))
+        jumps = jump_scale / np.power(1.0 - uniform, 1.0 / tail_index)
+        jumps = np.round(jumps / jump_scale) * jump_scale
+        jumps = np.minimum(jumps, jump_cap)
+        increments = np.where(moving, jumps * direction, 0.0)
+        paths = np.empty(
+            (self.n_paths, self.n_steps + 1),
+            dtype=np.float64,
+        )
+        paths[:, 0] = self.initial_price
+        paths[:, 1:] = self.initial_price + np.cumsum(increments, axis=1)
+        # Heavy-tailed down-moves can in principle exceed the initial price;
+        # floor at one tick so prices stay strictly positive for downstream tests.
+        np.maximum(paths, self.tick_size, out=paths)
         return paths
 
     def _score_paths(
@@ -374,6 +437,31 @@ class BenchmarkSuite:
                 observations=len(train_target),
                 empirical_volatility=float(np.std(train_returns)),
                 model_volatility=model_volatility,
+                likelihood_type="directional_bernoulli",
+            )
+        )
+
+        heavy_tail_qrw, _ = self._fit_qrw_heavy_tail()
+        heavy_tail_paths = self._simulate_qrw_heavy_tail(
+            heavy_tail_qrw,
+            seed=seeds[0],
+        )
+        self.simulated_paths["QRW Heavy-Tail"] = heavy_tail_paths
+        rows, heavy_tail_volatility = self._score_paths(
+            "QRW Heavy-Tail",
+            heavy_tail_paths,
+        )
+        metric_rows.extend(rows)
+        # The directional coin is identical to QRW Adaptive, so the Bernoulli
+        # log-likelihood matches; the Pareto tail adds one parameter (tail index).
+        comparison_rows.append(
+            self._comparison_row(
+                "QRW Heavy-Tail",
+                log_likelihood=qrw_log_likelihood,
+                parameter_count=qrw_parameter_count + 1,
+                observations=len(train_target),
+                empirical_volatility=float(np.std(train_returns)),
+                model_volatility=heavy_tail_volatility,
                 likelihood_type="directional_bernoulli",
             )
         )
