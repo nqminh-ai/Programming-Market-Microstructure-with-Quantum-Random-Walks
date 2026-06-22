@@ -351,6 +351,15 @@ class AdaptiveDecoherenceQRW:
         self.coefficients = parameters[1:5].copy()
         self.gamma_intensity = float(parameters[5])
 
+        final_probability = self._probability(bias_normalized, parameters, self.gamma)
+        final_log_loss = self._log_loss(final_probability, bias_target)
+        n_obs = len(bias_target)
+        k_params = 6  # bias + 4 features + gamma_intensity
+        final_nll = final_log_loss * n_obs
+        
+        aic = 2 * k_params + 2 * final_nll
+        bic = k_params * np.log(n_obs) + 2 * final_nll
+
         output = {
             "gamma": self.gamma,
             "rho_1": rho_1,
@@ -380,6 +389,9 @@ class AdaptiveDecoherenceQRW:
             "selected_regularization": selected["regularization"],
             "validation_brier": selected["validation_brier"],
             "validation_log_loss": selected["validation_log_loss"],
+            "final_log_loss": final_log_loss,
+            "aic": aic,
+            "bic": bic,
             "regularization_candidates": candidates,
             "calibration_method": (
                 "adaptive_decoherence_disjoint_two_stage_brier_validation"

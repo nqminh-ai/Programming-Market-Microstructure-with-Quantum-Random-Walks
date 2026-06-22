@@ -60,6 +60,8 @@ def test_statistical_suite_writes_all_categories_and_figures(tmp_path) -> None:
         "variance_scaling",
         "autocorrelation",
         "tail",
+        "diebold_mariano",
+        "scorecard_ci",
     }
     distribution = results["distribution"]
     assert len(distribution) == 2 * 4
@@ -103,6 +105,8 @@ def test_statistical_suite_writes_all_categories_and_figures(tmp_path) -> None:
         tmp_path / "results" / "variance_scaling_results.csv",
         tmp_path / "results" / "autocorrelation_tests.csv",
         tmp_path / "results" / "tail_analysis.csv",
+        tmp_path / "results" / "diebold_mariano_tests.csv",
+        tmp_path / "results" / "scorecard_bootstrap_ci.csv",
         tmp_path / "figures" / "variance_scaling.png",
         tmp_path / "figures" / "acf_comparison.png",
     ]

@@ -670,6 +670,111 @@ class StatisticalTestSuite:
         self._write_csv(output, frame)
         return frame
 
+    def diebold_mariano_tests(
+        self,
+        *,
+        output: str | Path | None = None,
+        loss_type: str = "absolute",
+    ) -> pd.DataFrame:
+        """Run pairwise Diebold-Mariano tests on path prediction errors."""
+        realized = self.comparison_prices[1:]
+        
+        # Calculate mean predicted path for each model
+        predictions = {}
+        for model, paths in self.simulated_paths.items():
+            predictions[model] = np.mean(paths[:, 1:], axis=0)
+            
+        models = list(self.simulated_paths.keys())
+        rows = []
+        for i, model1 in enumerate(models):
+            for j, model2 in enumerate(models):
+                if i >= j:
+                    continue
+                e1 = predictions[model1] - realized
+                e2 = predictions[model2] - realized
+                if loss_type == "absolute":
+                    d = np.abs(e1) - np.abs(e2)
+                else:
+                    d = e1**2 - e2**2
+                
+                mean_d = np.mean(d)
+                n = len(d)
+                
+                # HAC variance (Newey-West style, lag = max_lag)
+                gamma0 = np.var(d, ddof=1)
+                variance_d = gamma0
+                for lag in range(1, self.max_lag + 1):
+                    if lag >= len(d):
+                        break
+                    gamma_lag = np.cov(d[:-lag], d[lag:])[0, 1]
+                    weight = 1.0 - lag / (self.max_lag + 1)
+                    variance_d += 2 * weight * gamma_lag
+                
+                variance_d = max(variance_d, 1e-12)
+                stat = float(mean_d / np.sqrt(variance_d / n))
+                pvalue = float(2.0 * stats.norm.sf(np.abs(stat)))
+                
+                rows.append({
+                    "model1": model1,
+                    "model2": model2,
+                    "dm_statistic": stat,
+                    "dm_pvalue": pvalue,
+                    "loss_type": loss_type,
+                    "model1_better": stat < 0.0,
+                })
+        
+        frame = pd.DataFrame(rows)
+        if not frame.empty:
+            frame["dm_pvalue_bh"] = self._benjamini_hochberg(frame["dm_pvalue"])
+        self._write_csv(output, frame)
+        return frame
+
+    def run_bootstrap_scorecard_ci(
+        self,
+        *,
+        output: str | Path | None = None,
+    ) -> pd.DataFrame:
+        """Estimate 95% CI for scorecard mean rank using simulated metric resampling."""
+        # This provides a proxy CI by resampling the path-level metrics
+        models = list(self.simulated_paths.keys())
+        if not models:
+            return pd.DataFrame()
+            
+        realized = self.comparison_prices[1:]
+        
+        # We will collect path-wise errors and use them to bootstrap ranks
+        iterations = min(self.bootstrap_iterations, 100)  # Keep it fast
+        
+        results = []
+        rng = np.random.default_rng(self.random_seed)
+        for _ in range(iterations):
+            ranks = {}
+            # Simplified proxy for rank variation: resample the paths
+            idx = rng.choice(
+                len(next(iter(self.simulated_paths.values()))),
+                size=len(next(iter(self.simulated_paths.values()))),
+                replace=True
+            )
+            for m in models:
+                paths = self.simulated_paths[m][idx]
+                e = np.mean(np.abs(paths[:, 1:] - realized[None, :]), axis=0)
+                ranks[m] = np.mean(e)
+            
+            # Rank models based on this simple error metric for the bootstrap
+            sorted_m = sorted(models, key=lambda x: ranks[x])
+            for rank, m in enumerate(sorted_m, 1):
+                results.append({"model": m, "rank": rank})
+                
+        df = pd.DataFrame(results)
+        summary = df.groupby("model")["rank"].agg(
+            rank_mean="mean",
+            rank_ci_low=lambda x: np.percentile(x, 2.5),
+            rank_ci_high=lambda x: np.percentile(x, 97.5)
+        ).reset_index()
+        
+        self._write_csv(output, summary)
+        return summary
+
     def run_all(
         self,
         *,
@@ -693,5 +798,11 @@ class StatisticalTestSuite:
             ),
             "tail": self.tail_analysis(
                 output=results_path / "tail_analysis.csv",
+            ),
+            "diebold_mariano": self.diebold_mariano_tests(
+                output=results_path / "diebold_mariano_tests.csv",
+            ),
+            "scorecard_ci": self.run_bootstrap_scorecard_ci(
+                output=results_path / "scorecard_bootstrap_ci.csv",
             ),
         }

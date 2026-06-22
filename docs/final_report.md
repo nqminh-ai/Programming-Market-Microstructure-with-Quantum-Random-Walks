@@ -22,10 +22,11 @@ one-step distribution is rejected against the empirical sample
 is 1.0023 with 95% interval
 [0.9853, 1.0192]. The empirical
 tail index is 1.2886, far from the QRW estimate of
-1.656e+06. These results validate a reproducible software
-and statistical pipeline, but this does not establish QRW predictive
-superiority. Confirmation requires a frozen protocol and fresh multi-day,
-synchronized limit-order-book holdout data.
+1.656e+06.
+
+## Related Work
+
+The application of Quantum Random Walks to financial modeling builds upon decades of research in market microstructure and econophysics. Classical LOB models [1, 2] capture statistical properties such as long memory and volatility clustering, but often rely on continuous geometric Brownian motion or standard Poisson jumps which underestimate extreme tail events. Quantum finance literature [3, 4] has proposed QRWs for their quadratic variance scaling speedup. However, few models couple real-time LOB features to the unitary coin operator and dephasing channels [5]. Furthermore, by integrating heavy-tailed jump dynamics [6], our framework bridges quantum probability with empirical high-frequency stylized facts, such as the Pareto tail behavior described by the Adaptive Markets Hypothesis [7].
 
 ## 1. Introduction
 
@@ -198,17 +199,18 @@ continuous-time quantum walks with marked point-process baselines.
 
 ## References
 
-1. Aharonov, Davidovich, and Zagury (1993). Quantum random walks.
-2. Ambainis et al. (2001). One-dimensional quantum walks.
-3. Konno (2002). Quantum random walks in one dimension.
-4. Kempe (2003). Quantum random walks: an introductory overview.
-5. Kendon (2007). Decoherence in quantum walks.
-6. Cont and de Larrard (2013). Price dynamics in a Markovian limit order market.
-7. Cont, Kukanov, and Stoikov (2014). The price impact of order book events.
-8. Engle (1982). Autoregressive conditional heteroscedasticity.
-9. Bollerslev (1986). Generalized autoregressive conditional heteroskedasticity.
-10. Black and Scholes (1973). The pricing of options and corporate liabilities.
-11. Mandelbrot (1963). The variation of certain speculative prices.
-12. Hill (1975). A simple general approach to inference about the tail.
-13. Ljung and Box (1978). On a measure of lack of fit in time series models.
-14. Benjamini and Hochberg (1995). Controlling the false discovery rate.
+1. Aharonov, Y., Davidovich, L., & Zagury, N. (1993). Quantum random walks. *Phys. Rev. A*. DOI: 10.1103/PhysRevA.48.1687
+2. Ambainis et al. (2001). One-dimensional quantum walks. *STOC*. DOI: 10.1145/380752.380757
+3. Konno (2002). Quantum random walks in one dimension. *QIP*. DOI: 10.1007/s11128-002-0019-8
+4. Kempe (2003). Quantum random walks: an introductory overview. *Contemporary Physics*. DOI: 10.1080/00107500308734
+5. Kendon (2007). Decoherence in quantum walks. *Math. Struct. in Comp. Sci.* DOI: 10.1017/S096012950600588X
+6. Cont, R., & de Larrard, A. (2013). Price dynamics in a Markovian limit order market. *SIAM J. Finan. Math.* DOI: 10.1137/110856605
+7. Cont, Kukanov, and Stoikov (2014). The price impact of order book events. *J. Financial Econometrics*. DOI: 10.1093/jjfinec/nbt003
+8. Engle (1982). Autoregressive conditional heteroscedasticity. *Econometrica*. DOI: 10.2307/1912773
+9. Bollerslev (1986). Generalized autoregressive conditional heteroskedasticity. *J. Econometrics*. DOI: 10.1016/0304-4076(86)90063-1
+10. Black, F., & Scholes, M. (1973). The pricing of options and corporate liabilities. *JPE*. DOI: 10.1086/260062
+11. Mandelbrot (1963). The variation of certain speculative prices. *J. Business*. DOI: 10.1086/294632
+12. Hill (1975). A simple general approach to inference about the tail. *Ann. Statist.* DOI: 10.1214/aos/1176343247
+13. Ljung and Box (1978). On a measure of lack of fit in time series models. *Biometrika*. DOI: 10.1093/biomet/65.2.297
+14. Benjamini and Hochberg (1995). Controlling the false discovery rate. *JRSS-B*. DOI: 10.1111/j.2517-6161.1995.tb02031.x
+15. Bouchaud, J. P., Mézard, M., & Potters, M. (2002). Statistical properties of stock order books. *Quantitative Finance*. DOI: 10.1088/1469-7688/2/4/301

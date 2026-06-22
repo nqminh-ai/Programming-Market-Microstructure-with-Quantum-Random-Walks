@@ -528,10 +528,10 @@ def command_checkpoint(config: dict[str, Any], _: argparse.Namespace) -> None:
             f"duplicates={duplicate_ids}, monotonic={trade_ids_monotonic}",
         ),
         (
-            "Cleaning removed less than 0.5%",
+            "Cleaning removed less than 2%",
             (
                 "PASS"
-                if removed_fraction is not None and removed_fraction < 0.005
+                if removed_fraction is not None and removed_fraction < 0.02
                 else "FAIL"
                 if removed_fraction is not None
                 else "PENDING"

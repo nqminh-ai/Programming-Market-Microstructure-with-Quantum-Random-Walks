@@ -52,6 +52,19 @@ class ClassicalRandomWalk:
         else:
             persistence = 0.5
             self.rho = 0.0
+        log_probs = self.direction_log_probabilities(directions)
+        final_log_loss = float(-np.mean(log_probs)) if len(log_probs) > 0 else float("nan")
+        k_params = {"simple": 0, "biased": 1, "correlated": 2}[self.kind.lower()]
+        n_obs = len(log_probs)
+        
+        if n_obs > 0:
+            final_nll = final_log_loss * n_obs
+            aic = 2 * k_params + 2 * final_nll
+            bic = k_params * np.log(n_obs) + 2 * final_nll
+        else:
+            aic = float("nan")
+            bic = float("nan")
+
         return {
             "model": self.model_name,
             "observations": int(len(values)),
@@ -60,6 +73,9 @@ class ClassicalRandomWalk:
             "p_up": self.p_up,
             "rho": self.rho,
             "p_same": persistence,
+            "final_log_loss": final_log_loss,
+            "aic": aic,
+            "bic": bic,
         }
 
     @property

@@ -1,0 +1,33 @@
+exchange: binance
+market: spot
+symbol: BNB/USDT
+historical_dataset: trades
+historical_base_url: https://data.binance.vision/data/spot/daily
+rest_base_url: https://api.binance.com
+start_date: "2026-05-13"
+end_date: "2026-06-12"
+tick_granularity: event
+
+paths:
+  raw: data/raw_bnb
+  processed: data/processed_bnb
+  features: data/features_bnb
+  reports: reports/bnb
+
+order_book:
+  depth: 20
+  top_levels_for_obi: 5
+  snapshot_interval_seconds: 1.0
+
+processing:
+  rolling_window: 100
+  outlier_z_score: 3.0
+  gap_threshold_seconds: 300
+
+features:
+  autocorrelation_lags: 20
+  lob_tolerance_seconds: 5
+  minimum_lob_match_fraction: 0.95
+  obi_source: trade_imbalance
+  trade_imbalance_window: 100
+  trade_imbalance_min_periods: 20

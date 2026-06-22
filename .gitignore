@@ -1,18 +1,29 @@
+# Python
 __pycache__/
 *.py[cod]
+*.pyo
+
+# Testing
 .pytest_cache/
 .test-tmp-*/
+reports/.pytest-tmp*/
 .coverage
 htmlcov/
 
+# Virtual environments
 .venv/
 venv/
 
+# Data (large files - download via pipeline)
 data/raw/*
 data/processed/*
 data/features/*
+data/raw_*/
+data/processed_*/
+data/features_*/
 !data/README.md
 
+# Temp files
 *.tmp
 *.bak
 *~

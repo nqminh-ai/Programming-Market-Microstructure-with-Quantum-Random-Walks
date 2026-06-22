@@ -382,6 +382,22 @@ class MarketQRW:
                 else "accepted_below_linear_market"
             )
 
+        final_probability = self._direction_probability(
+            predictor[:, 0],
+            bias=self.obi_bias,
+            alpha=self.alpha_obi,
+            tick_direction=predictor[:, 1],
+            alpha_direction=self.alpha_direction,
+            coherence=coherence,
+        )
+        final_log_loss = float(self._log_loss(final_probability, target))
+        n_obs = len(target)
+        k_params = 3  # bias, alpha_obi, alpha_direction
+        final_nll = final_log_loss * n_obs
+        
+        aic = 2 * k_params + 2 * final_nll
+        bic = k_params * np.log(n_obs) + 2 * final_nll
+
         parameters: dict[str, Any] = {
             "gamma": self.gamma,
             "gamma_estimate": gamma_estimate,
@@ -433,6 +449,9 @@ class MarketQRW:
                 selected["validation_log_loss"]
                 < linear_market_validation_log_loss
             ),
+            "final_log_loss": final_log_loss,
+            "aic": aic,
+            "bic": bic,
             "regularization_candidates": candidates,
             "coin_type": self.coin_type,
             "decoherence_channel": "basis_dephasing_exp_minus_gamma",

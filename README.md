@@ -23,26 +23,48 @@ Research code for quantum-random-walk market microstructure experiments.
 See:
 
 - `docs/ke_hoach_QRW_market_microstructure.md`
-- `reports/phase3_checkpoint.md`
-- `reports/phase5_checkpoint.md`
-- `reports/phase6_checkpoint.md`
+- `reports/checkpoints/phase3_checkpoint.md`
+- `reports/checkpoints/phase5_checkpoint.md`
+- `reports/checkpoints/phase6_checkpoint.md`
 
 The June 13 audit files remain available as historical remediation snapshots.
 
 ## Structure
 
 ```text
-config/       Runtime configuration
-data/         Raw, processed and feature data
-docs/         Project plan and compiled documents
-notebooks/    Theory verification notebooks
-notes/        Theory source notes
-reports/      Current checkpoints, audits and diagnostics
-results/      Current model parameters/results
-figures/      Generated statistical comparison figures
-scripts/      Reproducible pipeline entry points
-src/          Data and model implementation
-tests/        Automated tests
+config/                  Runtime configuration (data_config.yaml)
+data/
+├── raw/                 Compressed tick CSVs and LOB snapshots
+├── processed/           Cleaned Parquet files
+└── features/            Feature matrices for modeling
+docs/
+├── theory/              QRW formalism, QRW-vs-CRW, market mapping notes
+├── ke_hoach_*.md        Master project plan
+├── bao_cao_toan_dien.md Full report (Vietnamese)
+├── final_report.*       Summary report + PDF
+└── presentation_slides  Slides source + PDF
+figures/                 Generated statistical comparison figures (DPI=300)
+notebooks/               Theory verification notebooks
+reports/
+├── checkpoints/         Phase 1-6 checkpoint reports and diagnostics
+├── data_quality/        Per-day data quality reports
+├── feature_metadata/    Per-day feature metadata and statistics
+├── audits/              Overfitting audits and remediation logs
+└── archive/             Invalidated outputs (audit history only)
+results/
+├── *.csv / *.json       Current model parameters and comparison tables
+└── archive/             Invalidated results (audit history only)
+scripts/
+├── phase*_pipeline.py   Reproducible pipeline entry points
+└── audits/              Standalone overfitting audit scripts
+src/
+├── models/              QRW core, adaptive QRW, classical RW, GARCH, GBM
+├── data/                Tick download, processing, feature engineering
+├── evaluation/          Benchmark suite and statistical tests
+├── visualization/       Plot suite
+├── reporting/           Report builder
+└── dashboard/           Streamlit interactive dashboard
+tests/                   61 automated tests
 ```
 
 Invalidated outputs are retained under `reports/archive/` and
@@ -59,7 +81,7 @@ pip install -r requirements.txt
 ```text
 python -m pytest
 python scripts/phase2_pipeline.py checkpoint
-python scripts/phase3_overfitting_audit.py
+python scripts/audits/phase3_overfitting_audit.py
 python scripts/phase4_pipeline.py
 python scripts/phase5_pipeline.py
 ```

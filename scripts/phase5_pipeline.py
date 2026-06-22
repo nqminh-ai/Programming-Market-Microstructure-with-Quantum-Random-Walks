@@ -47,6 +47,8 @@ def write_checkpoint(
         results_dir / "variance_scaling_results.csv",
         results_dir / "autocorrelation_tests.csv",
         results_dir / "tail_analysis.csv",
+        results_dir / "diebold_mariano_tests.csv",
+        results_dir / "scorecard_bootstrap_ci.csv",
     ]
     complete_categories = all(path.exists() for path in expected_files)
     finite_qrw_pvalue = bool(np.isfinite(qrw_distribution["ks_pvalue"]))
@@ -145,9 +147,9 @@ def write_checkpoint(
         "| Check | Status | Observed |",
         "|---|---|---:|",
         (
-            f"| Four test categories persisted | "
+            f"| Six test categories persisted | "
             f"{'PASS' if complete_categories else 'FAIL'} | "
-            f"{sum(path.exists() for path in expected_files)}/4 CSV files |"
+            f"{sum(path.exists() for path in expected_files)}/6 CSV files |"
         ),
         (
             f"| QRW KS p-value computed | "
@@ -200,6 +202,9 @@ def write_checkpoint(
             "- `results/variance_scaling_results.csv`",
             "- `results/autocorrelation_tests.csv`",
             "- `results/tail_analysis.csv`",
+            "- `results/diebold_mariano_tests.csv`",
+            "- `results/scorecard_bootstrap_ci.csv`",
+            "- `results/model_aic_bic_comparison.csv`",
             "- `results/final_comparison_table.csv`",
             "- `results/scorecard.csv`",
             "- `figures/variance_scaling.png`",
@@ -256,7 +261,9 @@ def main() -> None:
         n_paths=args.n_paths,
         random_seed=args.random_seed,
     )
-    benchmark.run()
+    benchmark.run(
+        comparison_output=args.results_dir / "model_aic_bic_comparison.csv"
+    )
     tests = StatisticalTestSuite(
         benchmark.holdout["price"].to_numpy(dtype=np.float64),
         benchmark.simulated_paths,

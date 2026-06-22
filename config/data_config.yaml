@@ -4,8 +4,8 @@ symbol: BTC/USDT
 historical_dataset: trades
 historical_base_url: https://data.binance.vision/data/spot/daily
 rest_base_url: https://api.binance.com
-start_date: "2026-06-01"
-end_date: "2026-06-07"
+start_date: "2026-05-13"
+end_date: "2026-06-12"
 tick_granularity: event
 
 paths:
