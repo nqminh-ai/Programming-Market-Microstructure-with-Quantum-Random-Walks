@@ -1,7 +1,7 @@
-"""Phase 7B: Cross-asset robustness check (ETH/USDT and BNB/USDT).
+"""Phase 7B: Cross-asset robustness check (BTC/USDT, ETH/USDT and BNB/USDT).
 
-Runs the full Phase 2 + Phase 5 pipeline for ETH/USDT and BNB/USDT and
-produces a combined cross-asset scorecard for robustness validation.
+Runs the full Phase 2 + Phase 5 pipeline for BTC/USDT, ETH/USDT and BNB/USDT
+and produces a combined cross-asset scorecard for robustness validation.
 
 Usage
 -----
@@ -290,6 +290,7 @@ def main() -> None:
     args = parse_args()
 
     configs = {
+        "BTC/USDT": ROOT / "config" / "data_config.yaml",
         "ETH/USDT": ROOT / "config" / "data_config_eth.yaml",
         "BNB/USDT": ROOT / "config" / "data_config_bnb.yaml",
     }

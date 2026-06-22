@@ -1,5 +1,89 @@
 [
   {
+    "asset": "BTC/USDT",
+    "status": "ok",
+    "benchmark_day": "2026-06-12",
+    "train_rows": 1869214,
+    "holdout_rows": 1246144,
+    "qrw_overall_rank": 6,
+    "qrw_mean_rank": 4.285714285714286,
+    "top_model": "CRW Correlated",
+    "scorecard": [
+      {
+        "model": "CRW Correlated",
+        "ks_statistic_rank": 3.0,
+        "wasserstein_rank": 2.0,
+        "variance_scaling_rank": 1.0,
+        "acf_mse_rank": 1.0,
+        "kurtosis_rank": 4.0,
+        "var_99_rank": 3.0,
+        "cvar_99_rank": 2.0,
+        "mean_rank": 2.2857142857142856,
+        "overall_rank": 1.0
+      },
+      {
+        "model": "CRW Biased",
+        "ks_statistic_rank": 1.0,
+        "wasserstein_rank": 1.0,
+        "variance_scaling_rank": 3.0,
+        "acf_mse_rank": 5.0,
+        "kurtosis_rank": 3.0,
+        "var_99_rank": 4.0,
+        "cvar_99_rank": 4.0,
+        "mean_rank": 3.0,
+        "overall_rank": 2.0
+      },
+      {
+        "model": "CRW Simple",
+        "ks_statistic_rank": 1.0,
+        "wasserstein_rank": 3.0,
+        "variance_scaling_rank": 6.0,
+        "acf_mse_rank": 4.0,
+        "kurtosis_rank": 2.0,
+        "var_99_rank": 5.0,
+        "cvar_99_rank": 3.0,
+        "mean_rank": 3.4285714285714284,
+        "overall_rank": 3.0
+      },
+      {
+        "model": "GBM",
+        "ks_statistic_rank": 5.0,
+        "wasserstein_rank": 5.0,
+        "variance_scaling_rank": 5.0,
+        "acf_mse_rank": 3.0,
+        "kurtosis_rank": 6.0,
+        "var_99_rank": 1.0,
+        "cvar_99_rank": 1.0,
+        "mean_rank": 3.7142857142857144,
+        "overall_rank": 4.0
+      },
+      {
+        "model": "GARCH(1,1)",
+        "ks_statistic_rank": 6.0,
+        "wasserstein_rank": 6.0,
+        "variance_scaling_rank": 2.0,
+        "acf_mse_rank": 6.0,
+        "kurtosis_rank": 1.0,
+        "var_99_rank": 2.0,
+        "cvar_99_rank": 6.0,
+        "mean_rank": 4.142857142857143,
+        "overall_rank": 5.0
+      },
+      {
+        "model": "QRW Adaptive",
+        "ks_statistic_rank": 4.0,
+        "wasserstein_rank": 4.0,
+        "variance_scaling_rank": 4.0,
+        "acf_mse_rank": 2.0,
+        "kurtosis_rank": 5.0,
+        "var_99_rank": 6.0,
+        "cvar_99_rank": 5.0,
+        "mean_rank": 4.285714285714286,
+        "overall_rank": 6.0
+      }
+    ]
+  },
+  {
     "asset": "ETH/USDT",
     "status": "ok",
     "benchmark_day": "2026-06-12",
