@@ -200,6 +200,10 @@ def run_asset_pipeline(
             results_dir=results_dir,
             figures_dir=figures_dir,
         )
+        tests.run_model_selection_tests(
+            suite.model_comparison,
+            output=results_dir / "model_selection_corrected.csv",
+        )
 
         _, scorecard = ResultsCompiler().compile(
             stat_results,

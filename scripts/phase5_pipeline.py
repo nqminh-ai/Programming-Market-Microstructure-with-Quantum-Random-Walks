@@ -275,6 +275,10 @@ def main() -> None:
         results_dir=args.results_dir,
         figures_dir=args.figures_dir,
     )
+    tests.run_model_selection_tests(
+        benchmark.model_comparison,
+        output=args.results_dir / "model_selection_corrected.csv",
+    )
     comparison, scorecard = ResultsCompiler().compile(
         statistical_results,
         comparison_output=args.results_dir / "final_comparison_table.csv",

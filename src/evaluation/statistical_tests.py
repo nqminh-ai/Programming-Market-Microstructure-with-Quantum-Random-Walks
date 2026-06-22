@@ -775,6 +775,71 @@ class StatisticalTestSuite:
         self._write_csv(output, summary)
         return summary
 
+    def run_model_selection_tests(
+        self,
+        comparison_table: pd.DataFrame | str | Path,
+        *,
+        output: str | Path | None = None,
+    ) -> pd.DataFrame:
+        """Rank AIC/BIC strictly within each likelihood family (issue #8 fix).
+
+        Cross-family comparison (directional Bernoulli vs continuous Gaussian)
+        is meaningless: the likelihoods use different units and observation
+        counts, so a large-negative continuous AIC must not be ranked against a
+        directional one. We rank models only against peers in the same family
+        and flag the best model per family.
+        """
+        table = (
+            comparison_table.copy()
+            if isinstance(comparison_table, pd.DataFrame)
+            else pd.read_csv(comparison_table)
+        )
+        required = {"model", "aic", "bic", "likelihood_type"}
+        missing = sorted(required.difference(table.columns))
+        if missing:
+            raise ValueError(f"comparison_table missing columns: {missing}")
+
+        family = table.groupby("likelihood_type")
+        table["aic_rank_within_family"] = family["aic"].rank(
+            method="min", ascending=True
+        )
+        table["bic_rank_within_family"] = family["bic"].rank(
+            method="min", ascending=True
+        )
+        table["delta_aic_within_family"] = table["aic"] - family["aic"].transform(
+            "min"
+        )
+        table["delta_bic_within_family"] = table["bic"] - family["bic"].transform(
+            "min"
+        )
+        table["is_best_in_family"] = table["aic_rank_within_family"] == 1.0
+
+        ordered = [
+            "model",
+            "likelihood_type",
+            "aic",
+            "bic",
+            "log_likelihood",
+            "parameter_count",
+            "observations",
+            "aic_rank_within_family",
+            "bic_rank_within_family",
+            "delta_aic_within_family",
+            "delta_bic_within_family",
+            "is_best_in_family",
+        ]
+        columns = [column for column in ordered if column in table.columns]
+        result = (
+            table[columns]
+            .sort_values(
+                ["likelihood_type", "aic_rank_within_family", "model"],
+                kind="stable",
+            )
+            .reset_index(drop=True)
+        )
+        self._write_csv(output, result)
+        return result
+
     def run_all(
         self,
         *,
