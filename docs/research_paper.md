@@ -64,7 +64,7 @@ Kết quả được trình bày như một **khung kiểm chứng (falsificatio
 
 ---
 
-## Nomenclature / Bảng ký hiệu
+## List of Abbreviations and Symbols / Danh mục từ viết tắt và ký hiệu
 
 | Symbol | Meaning (EN) | Ý nghĩa (VI) |
 |---|---|---|
@@ -85,6 +85,45 @@ Kết quả được trình bày như một **khung kiểm chứng (falsificatio
 | δp | Tick size | Bước giá (tick) |
 
 ---
+
+## List of Tables / Danh mục bảng
+
+| No. | Title |
+|---|---|
+| Table 0 | Empirical (holdout) stylised facts of the three assets |
+| Table 0b | BTC daily event counts (31 days) |
+| Table 1 | One-step return distribution (KS, Wasserstein) — BTC |
+| Table 2 | Variance-scaling exponent β — BTC |
+| Table 3 | Autocorrelation fidelity (ACF MSE, Ljung–Box) — BTC |
+| Table 4 | Tail index, kurtosis and tail risk — BTC |
+| Table 5 | Seven-metric distributional scorecard — BTC |
+| Table 6 | Diebold–Mariano mean-path accuracy (selected pairs) |
+| Table 7 | Within-family model selection (AIC) |
+| Table 8 | Three-asset average scorecard rank |
+| Table 9 | ETH/USDT key metrics |
+| Table 10 | BNB/USDT key metrics |
+| Table 11 | Multi-horizon Wasserstein distance — BTC |
+| Table 12 | Full Diebold–Mariano matrix (21 pairs) — BTC |
+| Table 13 | Per-criterion winner — BTC |
+| Table 14 | Monte-Carlo sensitivity (2000 vs 3000 paths) — BTC |
+| Table 15 | Consolidated cross-asset rank vs empirical character |
+
+## List of Figures / Danh mục hình
+
+| No. | Title |
+|---|---|
+| Figure 1 | Distributional scorecard heatmap |
+| Figure 2 | Return-distribution comparison |
+| Figure 3 | Variance scaling (log Var vs log horizon) |
+| Figure 4 | Autocorrelation function comparison |
+| Figure 5 | Example simulated price paths |
+| Figure 6 | Coin-operator heatmap |
+| Figure 7 | Cross-asset comparison heatmap |
+| Figure 8 | Interactive dashboard preview |
+
+---
+
+# Part I — Introduction / Phần I — Giới thiệu
 
 # 1. Introduction / Giới thiệu
 
@@ -136,7 +175,9 @@ Section 2 reviews the relevant literature across microstructure, quantum finance
 
 ---
 
-# 2. Background and Related Work / Nền tảng và công trình liên quan
+# Part II — Literature Review / Phần II — Tổng quan tài liệu
+
+# 2. Literature Review (Background and Related Work) / Tổng quan tài liệu
 
 This section synthesises three strands of literature. Citations use the numbered reference list in Section 12; the 22 core references were independently verified with DOIs.
 
@@ -159,6 +200,10 @@ That asset returns are heavy-tailed and non-Gaussian is among the oldest stylise
 > **Tóm tắt 2 (VI):** Ba mạch tài liệu: (1) Vi cấu trúc LOB — OBI và dòng lệnh có dấu dự báo hướng ngắn hạn (Cont–Stoikov–Talreja, Gould và cộng sự, Glosten–Milgrom, Kyle); (2) QRW & quantum finance — QRW (Aharonov 1993; Kempe 2003), decoherence (Kendon 2007), quantum finance (Baaquie 2004; Orús và cộng sự 2019), nhưng thiếu kiểm định thực nghiệm trên dữ liệu LOB thật; (3) Đuôi nặng & scaling — Mandelbrot 1963, Gabaix 2003, Cont 2001, ước lượng Hill 1975, cùng nền phương pháp DM (1995), Newey–West (1987), bootstrap (Politis–Romano 1994), FDR (Benjamini–Hochberg 1995).
 
 ---
+
+# Part III — Methodology / Phần III — Phương pháp nghiên cứu
+
+> **Methodology overview / Tổng quan phương pháp.** Per the IMRAD convention, this Part bundles the full research design: the QRW formalism (§3), the market mapping and heavy-tailed extension (§4), the data and ex-ante evaluation protocol (§5), the seven competing models (§6), and the statistical test battery (§7). / Theo IMRAD, Phần III gồm toàn bộ thiết kế nghiên cứu: hình thức QRW (§3), ánh xạ thị trường + mở rộng đuôi nặng (§4), dữ liệu và giao thức đánh giá ex-ante (§5), bảy mô hình (§6), và bộ kiểm định thống kê (§7).
 
 # 3. Theoretical Framework: Discrete-Time Coined QRW / Khung lý thuyết
 
@@ -572,6 +617,8 @@ The scorecard converts seven heterogeneous metrics (different units and directio
 
 ---
 
+# Part IV — Results / Phần IV — Kết quả nghiên cứu
+
 # 8. Results / Kết quả
 
 All numbers below are produced by the reproducible pipeline on the regenerated 7-model benchmark. Section 8.1–8.3 analyse the **BTC/USDT single-asset deep run (n_paths = 3000, holdout day 2026-06-12)**; Section 8.4 reports the **three-asset robustness study (n_paths = 2000)** and the Monte-Carlo sensitivity.
@@ -868,6 +915,8 @@ Bringing the per-asset results together, Table 15 places each model's overall ra
 
 ---
 
+# Part V — Discussion / Phần V — Bàn luận
+
 # 9. Discussion / Thảo luận
 
 ## 9.1 What the quantum walk does and does not buy
@@ -941,7 +990,9 @@ Our results carry a constructive message for the broader quantum-finance agenda.
 
 ---
 
-# 11. Conclusion and Future Work / Kết luận và hướng phát triển
+# Part VI — Conclusion and Recommendations / Phần VI — Kết luận và kiến nghị
+
+# 11. Conclusion and Recommendations / Kết luận và kiến nghị
 
 We built an adaptive, ex-ante discrete-time coined QRW for cryptocurrency market microstructure, extended it with a maximum-likelihood-calibrated heavy-tailed (Pareto) shift, and benchmarked it against six alternatives on 31 days of BTC/ETH/BNB tick data under a rigorous, reproducible, multiple-testing-corrected protocol. The heavy-tailed extension **repairs the QRW's catastrophic tail-index pathology** (Hill index 1.6×10⁶ → 1.45 vs 2.47 empirical) and the **QRW family is the best directional/point predictor** (highest within-family directional AIC; best Wasserstein and Diebold–Mariano). Yet the QRW **does not beat a parsimonious correlated classical walk on aggregate distributional fidelity**: it now overshoots kurtosis, and the empirical super-diffusive variance scaling is reproduced by the classical — not the quantum — model, because calibration suppresses the QRW's ballistic mechanism. The pattern is consistent across three assets, modulo a documented Monte-Carlo sensitivity of tail metrics.
 
@@ -964,6 +1015,8 @@ Each direction is a falsifiable extension that the released benchmark can score 
 > **Tóm tắt 11 (VI):** QRW thích nghi + bước đuôi nặng Pareto **sửa được lỗi tail-index** và là **bộ dự báo hướng/điểm tốt nhất**, nhưng **không vượt CRW tương quan** ở phân phối tổng hợp (vượt ngưỡng kurtosis; siêu khuếch tán do CRW tái tạo, không phải QRW — vì calibration triệt tiêu cơ chế ballistic). Nhất quán trên 3 tài sản, kèm lưu ý nhạy Monte-Carlo. Công bố như **benchmark kiểm chứng tái lập**. Hướng tới: QRW 2-D/đa coin, coin học được, CTQW, decoherence η_t theo spread/latency, OBI từ L2 đầy đủ, đánh giá rolling-origin nhiều đường.
 
 ---
+
+# Part VII — References and Appendices / Phần VII — Tài liệu tham khảo và Phụ lục
 
 # 12. References / Tài liệu tham khảo
 
