@@ -5,7 +5,7 @@ produces a combined cross-asset scorecard for robustness validation.
 
 Usage
 -----
-    python scripts/phase7b_cross_asset.py [--skip-existing] [--n-paths 2000]
+    python scripts/research/cross_asset_benchmark.py [--skip-existing] [--n-paths 2000]
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -87,7 +87,7 @@ def run_asset_pipeline(
     # ------------------------------------------------------------------
     # Step 1: Download
     # ------------------------------------------------------------------
-    from scripts.phase7a_data_expansion import (
+    from scripts.research.data_expansion import (
         date_range,
         download_day,
         process_day,
@@ -318,14 +318,16 @@ def main() -> None:
         summaries.append(summary)
 
     # Save per-asset summaries
-    summary_path = ROOT / "results" / "cross_asset_summary.json"
+    cross_asset_dir = ROOT / "results" / "cross_asset"
+    cross_asset_dir.mkdir(parents=True, exist_ok=True)
+    summary_path = cross_asset_dir / "summary.json"
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     with summary_path.open("w", encoding="utf-8") as f:
         json.dump(summaries, f, indent=2, default=str)
     print(f"\n[SUMMARY] Saved: {summary_path}")
 
     # Build cross-asset scorecard
-    scorecard_path = ROOT / "results" / "cross_asset_scorecard.csv"
+    scorecard_path = cross_asset_dir / "scorecard.csv"
     build_cross_asset_scorecard(summaries, scorecard_path)
 
     print("\n=== Phase 7B Complete ===")

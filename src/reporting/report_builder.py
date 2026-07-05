@@ -29,18 +29,14 @@ class ReportContext:
     n_paths: int
     random_seed: int
     top_model: str
-    top_mean_rank: float
+    top_mean_marginal_crps: float
     qrw_rank: int
-    qrw_mean_rank: float
-    qrw_ks_pvalue: float
-    qrw_ks_pvalue_bh: float
+    qrw_mean_marginal_crps: float
+    qrw_mean_direction_log_loss: float
     empirical_beta: float
     qrw_beta: float
     qrw_beta_ci_low: float
     qrw_beta_ci_high: float
-    empirical_tail_index: float
-    qrw_tail_index: float
-    qrw_acf_mse: float
 
 
 REFERENCES = (
@@ -85,18 +81,16 @@ geometric Brownian motion under one chronological train/holdout protocol.
 The active dataset contains {context.train_rows + context.holdout_rows:,}
 causally processed BTCUSDT observations from June 12, 2026. Phase 5 uses
 {context.train_rows:,} training rows, {context.holdout_rows:,} later holdout
-rows, {context.n_paths:,} simulated paths per model, and a fixed random seed of
-{context.random_seed}. The scorecard ranks {context.top_model} first with mean
-metric rank {context.top_mean_rank:.3f}; QRW Adaptive ranks
-{context.qrw_rank} with mean rank {context.qrw_mean_rank:.3f}. The QRW
-one-step distribution is rejected against the empirical sample
-(Benjamini-Hochberg adjusted KS p-value
-{_format_probability(context.qrw_ks_pvalue_bh)}), while its variance exponent
-is {context.qrw_beta:.4f} with 95% interval
-[{context.qrw_beta_ci_low:.4f}, {context.qrw_beta_ci_high:.4f}]. The empirical
-tail index is {context.empirical_tail_index:.4f}, far from the QRW estimate of
-{context.qrw_tail_index:.4g}. These results validate a reproducible software
-and statistical pipeline, but this does not establish QRW predictive
+rows, {context.n_paths:,} marginal draws per model and horizon, and a fixed
+random seed of {context.random_seed}. The pre-registered primary endpoint is
+mean fixed-origin marginal CRPS; directional log loss is used only as a
+tie-break. {context.top_model} has the lowest primary score
+({context.top_mean_marginal_crps:.6g}); QRW Adaptive ranks {context.qrw_rank}
+with CRPS {context.qrw_mean_marginal_crps:.6g} and directional log loss
+{context.qrw_mean_direction_log_loss:.6g}. QRW horizon samples are independent
+marginals, so no return differences, ACF, tail index, or path-based
+Diebold-Mariano statistic is computed from them. These results validate a
+reproducible software pipeline but do not establish QRW predictive
 superiority. Confirmation requires a frozen protocol and fresh multi-day,
 synchronized limit-order-book holdout data.
 
@@ -149,15 +143,16 @@ Active feature artifact: `{context.feature_path}`.
 | Chronological training rows | {context.train_rows:,} |
 | Later holdout rows | {context.holdout_rows:,} |
 | Simulation steps | {context.n_steps:,} |
-| Paths per model | {context.n_paths:,} |
+| Marginal draws per model/horizon | {context.n_paths:,} |
 | Random seed | {context.random_seed} |
 
 The active June 12 dataset is the only window used for the final benchmark.
 Historical June 1-7 processed and feature artifacts were rebuilt with the
 causal pipeline, but remain development-only rather than confirmatory data.
-Distribution and tail tests use matched empirical and simulated sample sizes.
-Variance scaling uses the same comparison horizon for empirical and simulated
-paths. Test-family p-values receive Benjamini-Hochberg correction.
+QRW is evaluated with proper fixed-origin marginal scores and marginal
+variance scaling. ACF and tail diagnostics are explicitly trajectory-only and
+exclude QRW. Diebold-Mariano comparisons use aligned rolling-origin one-step
+losses rather than columns from a fixed-origin forecast.
 
 ## 5. Model Implementations
 
@@ -184,27 +179,26 @@ The empirical fitted exponent is {context.empirical_beta:.4f}. QRW Adaptive
 has beta {context.qrw_beta:.4f} with 95% interval
 [{context.qrw_beta_ci_low:.4f}, {context.qrw_beta_ci_high:.4f}].
 
-### 6.3 Return Distributions
+### 6.3 Trajectory-only Return Distributions
 
 ![Return distributions](../figures/return_distributions.png)
 
-The plot standardizes each model separately to compare shape rather than scale.
-The QRW and classical tick models do not reproduce the empirical heavy tail.
+This diagnostic excludes QRW because its independently sampled horizon
+marginals are not a return trajectory.
 
 ### 6.4 Autocorrelation
 
 ![ACF comparison](../figures/acf_comparison.png)
 
-QRW has return-ACF mean squared error {context.qrw_acf_mse:.6f}, the best
-scorecard value in this category, but no single metric supports a superiority
-claim.
+This diagnostic includes only empirical data and classical models with jointly
+sampled trajectories. It is not part of the QRW scorecard.
 
 ### 6.5 Sample Paths
 
 ![Sample paths](../figures/sample_paths.png)
 
-Sample paths expose the scale mismatch and directional behavior that aggregate
-rankings can hide.
+The QRW layer is a 90% marginal interval and median at each horizon, not a set
+of joined paths. Classical models retain genuine sample trajectories.
 
 ### 6.6 Adaptive Coin
 
@@ -221,25 +215,20 @@ adaptive operator correctly.
 | Quantity | Observed value |
 |---|---:|
 | Top-ranked model | {context.top_model} |
-| Top mean metric rank | {context.top_mean_rank:.3f} |
+| Top mean marginal CRPS | {context.top_mean_marginal_crps:.6g} |
 | QRW overall rank | {context.qrw_rank} |
-| QRW mean metric rank | {context.qrw_mean_rank:.3f} |
-| QRW KS p-value | {_format_probability(context.qrw_ks_pvalue)} |
-| QRW KS p-value, BH adjusted | {_format_probability(context.qrw_ks_pvalue_bh)} |
+| QRW mean marginal CRPS | {context.qrw_mean_marginal_crps:.6g} |
+| QRW direction log loss | {context.qrw_mean_direction_log_loss:.6g} |
 | QRW variance beta | {context.qrw_beta:.4f} |
 | QRW beta 95% interval | [{context.qrw_beta_ci_low:.4f}, {context.qrw_beta_ci_high:.4f}] |
-| Empirical tail index | {context.empirical_tail_index:.4f} |
-| QRW tail index | {context.qrw_tail_index:.4g} |
 
 ## 7. Discussion
 
-The QRW is competitive on variance scaling and autocorrelation distance, but
-CRW Simple has the best aggregate rank. More importantly, the empirical return
-distribution is strongly rejected for every model at the one-step horizon.
-QRW tail behavior is especially unrealistic because its zero-inflated,
-fixed-tick local moves still produce an extremely thin effective tail. GARCH
-better represents heavy tails but performs poorly under other scorecard
-components.
+The primary CRPS scorecard and marginal variance scaling answer narrower
+questions than path diagnostics. QRW is not assigned an ACF or tail score,
+because doing so would require inventing temporal coupling between independent
+horizon draws. The current primary endpoint does not support a general QRW
+advantage.
 
 The Phase 3 predictive audit is mixed after the causal rebuild: QRW beats the
 fair affine baseline on the final holdout but loses in pooled walk-forward
@@ -252,7 +241,7 @@ questions, but neither supports a current general superiority claim.
 2. Structural QRW calibration has a low observations-per-parameter ratio.
 3. Rebuilt June 1-7 data remain development-only after prior inspection.
 4. Real synchronized limit-order-book coverage is limited.
-5. The scorecard averages ranks and therefore hides metric scale and dependence.
+5. The scorecard uses CRPS as its primary endpoint; other metrics are diagnostic.
 6. Fixed tick moves cannot reproduce empirical jump size or heavy tails.
 7. The optional dashboard is exploratory and does not alter inference.
 
@@ -286,7 +275,7 @@ def build_presentation_markdown(context: ReportContext) -> str:
         ("Causal Pipeline", "Trailing cleaner, chronological split, disjoint validation, fixed seed, and matched samples."),
         ("Market Mapping", "OBI and direction enter a unitary phase-adaptive coin; intensity controls dephasing."),
         ("Benchmark Models", "QRW Adaptive, three CRWs, GARCH(1,1), and GBM."),
-        ("Evaluation", "Distribution, variance scaling, autocorrelation, tails, and an eight-metric rank scorecard."),
+        ("Evaluation", "Marginal CRPS, direction log loss, marginal variance scaling, and aligned rolling one-step DM."),
         ("Probability Evolution", "../figures/prob_evolution.gif"),
         ("Variance Scaling", "../figures/variance_scaling.png"),
         ("Distribution Shape", "../figures/return_distributions.png"),
@@ -408,20 +397,20 @@ def _quantitative_page(
     )
     rows = (
         ("Top model", context.top_model),
-        ("Top mean rank", f"{context.top_mean_rank:.3f}"),
+        ("Top mean marginal CRPS", f"{context.top_mean_marginal_crps:.6g}"),
         ("QRW overall rank", str(context.qrw_rank)),
-        ("QRW mean rank", f"{context.qrw_mean_rank:.3f}"),
-        ("QRW KS p-value", _format_probability(context.qrw_ks_pvalue)),
-        ("QRW KS p-value, BH", _format_probability(context.qrw_ks_pvalue_bh)),
+        ("QRW mean marginal CRPS", f"{context.qrw_mean_marginal_crps:.6g}"),
+        (
+            "QRW direction log loss",
+            f"{context.qrw_mean_direction_log_loss:.6g}",
+        ),
         ("Empirical variance beta", f"{context.empirical_beta:.4f}"),
         ("QRW variance beta", f"{context.qrw_beta:.4f}"),
         (
             "QRW beta 95% CI",
             f"[{context.qrw_beta_ci_low:.4f}, {context.qrw_beta_ci_high:.4f}]",
         ),
-        ("Empirical tail index", f"{context.empirical_tail_index:.4f}"),
-        ("QRW tail index", f"{context.qrw_tail_index:.4g}"),
-        ("QRW ACF MSE", f"{context.qrw_acf_mse:.6f}"),
+        ("QRW path-dependent metrics", "not applicable"),
     )
     table = axis.table(
         cellText=rows,
@@ -510,7 +499,7 @@ def render_final_report_pdf(
             "Benchmark Scorecard",
             figures / "scorecard.png",
             f"{context.top_model} is first overall. QRW is rank "
-            f"{context.qrw_rank}; this is an exploratory rank average.",
+            f"{context.qrw_rank} under the primary CRPS endpoint.",
         ),
     )
     for _title, path, _caption in figure_pages:
@@ -627,15 +616,16 @@ def render_final_report_pdf(
             (
                 "5. Benchmark and Statistical Protocol",
                 (
-                    f"The benchmark uses {context.n_paths:,} paths per model, "
+                    f"The benchmark uses {context.n_paths:,} marginal draws "
+                    "per model and horizon, "
                     f"{context.n_steps} simulation steps, and random seed "
                     f"{context.random_seed}.",
-                    "Evaluation covers distribution tests, variance scaling "
-                    "with bootstrap intervals, return autocorrelation, tail "
-                    "metrics, and an eight-metric rank scorecard.",
-                    "P-values are corrected within families using the "
-                    "Benjamini-Hochberg procedure. AIC and BIC are interpreted "
-                    "only within matching likelihood families.",
+                    "The primary endpoint is fixed-origin marginal CRPS; "
+                    "directional log loss is a tie-break. Marginal variance "
+                    "scaling is diagnostic.",
+                    "ACF and tail outputs are trajectory-only and exclude QRW. "
+                    "Diebold-Mariano uses aligned rolling one-step losses. "
+                    "AIC and BIC remain within matching likelihood families.",
                 ),
             ),
             (
@@ -671,13 +661,11 @@ def render_final_report_pdf(
             (
                 "7. Discussion",
                 (
-                    f"{context.top_model} has the best aggregate scorecard "
-                    f"rank. QRW ranks {context.qrw_rank}, performing well on "
-                    "variance scaling and ACF distance but poorly on the "
-                    "one-step distribution test.",
-                    "Zero-inflated fixed-tick local moves yield tails that are "
-                    "much thinner than the empirical sample. GARCH captures "
-                    "heavy tails more plausibly but loses rank on other metrics.",
+                    f"{context.top_model} has the lowest primary marginal CRPS. "
+                    f"QRW ranks {context.qrw_rank}; no path-dependent score is "
+                    "assigned to QRW.",
+                    "This restriction is intentional: independent horizon "
+                    "marginals do not define returns, ACF, or a tail sample.",
                     "Phase 3 is mixed: QRW wins the final holdout but loses the "
                     "pooled walk-forward comparison against a fair affine "
                     "baseline.",
@@ -781,8 +769,8 @@ def render_presentation_pdf(
         ),
         (
             "Evaluation",
-            "Distribution tests\nVariance scaling\nAutocorrelation\n"
-            "Tail risk\nEight-metric scorecard",
+            "Marginal CRPS\nDirection log loss\nMarginal variance scaling\n"
+            "Rolling one-step DM",
             None,
         ),
         (
@@ -794,19 +782,18 @@ def render_presentation_pdf(
         ),
         (
             "Distribution Shape",
-            f"QRW adjusted KS p-value = "
-            f"{_format_probability(context.qrw_ks_pvalue_bh)}",
+            "Trajectory-only diagnostic; QRW marginal draws are excluded.",
             "return_distributions.png",
         ),
         (
             "Autocorrelation",
-            f"QRW ACF MSE = {context.qrw_acf_mse:.6f}",
+            "Trajectory-only diagnostic; QRW marginal draws are excluded.",
             "acf_comparison.png",
         ),
         (
             "Sample Paths",
-            "Path overlays expose scale and directional differences hidden by "
-            "aggregate ranks.",
+            "QRW is shown as a marginal interval; only classical trajectory "
+            "models are drawn as paths.",
             "sample_paths.png",
         ),
         (

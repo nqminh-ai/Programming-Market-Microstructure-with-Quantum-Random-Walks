@@ -49,27 +49,17 @@ def load_report_context(
     """Load the frozen Phase 5 values used by every Phase 6 document."""
     diagnostics = json.loads(phase5_diagnostics.read_text(encoding="utf-8"))
     scorecard = pd.read_csv(results_dir / "scorecard.csv")
-    distribution = pd.read_csv(results_dir / "distribution_tests.csv")
+    marginal = pd.read_csv(results_dir / "marginal_score_tests.csv")
     scaling = pd.read_csv(results_dir / "variance_scaling_results.csv")
-    autocorrelation = pd.read_csv(results_dir / "autocorrelation_tests.csv")
-    tail = pd.read_csv(results_dir / "tail_analysis.csv")
 
     top = scorecard.sort_values("overall_rank", kind="stable").iloc[0]
     qrw_score = scorecard.loc[scorecard["model"] == "QRW Adaptive"].iloc[0]
-    qrw_distribution = distribution.loc[
-        (distribution["model"] == "QRW Adaptive")
-        & (distribution["horizon"] == 1)
-    ].iloc[0]
+    qrw_marginal = marginal.loc[marginal["model"] == "QRW Adaptive"]
     qrw_scaling = scaling.loc[
         scaling["model"] == "QRW Adaptive"
     ].iloc[0]
     empirical_scaling = scaling.loc[
         scaling["model"] == "Empirical"
-    ].iloc[0]
-    qrw_tail = tail.loc[tail["model"] == "QRW Adaptive"].iloc[0]
-    empirical_tail = tail.loc[tail["model"] == "Empirical"].iloc[0]
-    qrw_acf = autocorrelation.loc[
-        autocorrelation["model"] == "QRW Adaptive"
     ].iloc[0]
     return ReportContext(
         feature_path=str(feature_path),
@@ -79,18 +69,18 @@ def load_report_context(
         n_paths=int(diagnostics["simulated_paths_per_model"]),
         random_seed=int(diagnostics["random_seed"]),
         top_model=str(top["model"]),
-        top_mean_rank=float(top["mean_rank"]),
+        top_mean_marginal_crps=float(top["mean_marginal_crps"]),
         qrw_rank=int(qrw_score["overall_rank"]),
-        qrw_mean_rank=float(qrw_score["mean_rank"]),
-        qrw_ks_pvalue=float(qrw_distribution["ks_pvalue"]),
-        qrw_ks_pvalue_bh=float(qrw_distribution["ks_pvalue_bh"]),
+        qrw_mean_marginal_crps=float(
+            qrw_score["mean_marginal_crps"]
+        ),
+        qrw_mean_direction_log_loss=float(
+            qrw_marginal["direction_log_loss"].mean()
+        ),
         empirical_beta=float(empirical_scaling["beta"]),
         qrw_beta=float(qrw_scaling["beta"]),
         qrw_beta_ci_low=float(qrw_scaling["beta_ci_low"]),
         qrw_beta_ci_high=float(qrw_scaling["beta_ci_high"]),
-        empirical_tail_index=float(empirical_tail["tail_index"]),
-        qrw_tail_index=float(qrw_tail["tail_index"]),
-        qrw_acf_mse=float(qrw_acf["acf_mse"]),
     )
 
 
@@ -318,10 +308,10 @@ def main() -> None:
     feature_path = resolve_feature_path(args.feature_path)
     required_results = (
         "scorecard.csv",
-        "distribution_tests.csv",
+        "marginal_score_tests.csv",
         "variance_scaling_results.csv",
-        "autocorrelation_tests.csv",
-        "tail_analysis.csv",
+        "trajectory_autocorrelation_tests.csv",
+        "trajectory_tail_analysis.csv",
     )
     missing = [
         args.results_dir / name
@@ -352,7 +342,7 @@ def main() -> None:
     )
     benchmark.run()
     empirical_prices = benchmark.test["price"].to_numpy(dtype=np.float64)
-    paths = benchmark.simulated_paths
+    paths = benchmark.forecast_samples
     args.figures_dir.mkdir(parents=True, exist_ok=True)
     args.docs_dir.mkdir(parents=True, exist_ok=True)
 
@@ -363,22 +353,26 @@ def main() -> None:
     plot_variance_scaling(
         empirical_prices,
         paths,
+        sample_semantics=benchmark.sample_semantics,
         output_path=args.figures_dir / "variance_scaling.png",
     )
     plot_return_distribution_comparison(
         empirical_prices,
         paths,
+        sample_semantics=benchmark.sample_semantics,
         output_path=args.figures_dir / "return_distributions.png",
         random_seed=args.random_seed,
     )
     plot_acf_comparison(
         empirical_prices,
         paths,
+        sample_semantics=benchmark.sample_semantics,
         output_path=args.figures_dir / "acf_comparison.png",
     )
     plot_sample_paths(
         empirical_prices,
         paths,
+        sample_semantics=benchmark.sample_semantics,
         output_path=args.figures_dir / "sample_paths.png",
     )
     calibration = benchmark.diagnostics["qrw_calibration"]
@@ -444,8 +438,8 @@ def main() -> None:
     quantitative_table_present = all(
         marker in report_markdown
         for marker in (
-            "| QRW KS p-value |",
-            "| QRW KS p-value, BH adjusted |",
+            "| QRW mean marginal CRPS |",
+            "| QRW direction log loss |",
             "does not establish QRW predictive",
         )
     )

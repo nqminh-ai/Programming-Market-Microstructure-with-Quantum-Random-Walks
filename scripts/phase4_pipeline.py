@@ -35,11 +35,11 @@ def write_checkpoint(
     summary_rows = [
         (
             f"| {model} | "
-            f"{row['wasserstein_path_mae']:.6f} | "
-            f"{row['hit_rate_h1']:.2%} | "
-            f"{row['hit_rate_h5']:.2%} | "
-            f"{row['hit_rate_h10']:.2%} | "
-            f"{row['mean_direction_log_likelihood']:.6f} |"
+            f"{row['mean_marginal_crps']:.6f} | "
+            f"{row['direction_brier_score']:.6f} | "
+            f"{row['direction_log_loss']:.6f} | "
+            f"{row['coverage_90']:.2%} | "
+            f"{row['mean_interval_width_90']:.3f} |"
         )
         for model, row in summary.iterrows()
     ]
@@ -54,7 +54,7 @@ def write_checkpoint(
         "",
         f"- Chronological train rows: `{diagnostics['train_rows']}`",
         f"- Later test rows: `{diagnostics['test_rows']}`",
-        f"- Simulated paths per model: `{diagnostics['n_paths']}`",
+        f"- Marginal draws per horizon: `{diagnostics['n_paths']}`",
         f"- Steps: `{diagnostics['n_steps']}`",
         f"- Tick size: `{diagnostics['tick_size']:.8g}`",
         f"- Event move probability: `{diagnostics['movement_probability']:.4f}`",
@@ -90,22 +90,22 @@ def write_checkpoint(
         "",
         "## Observed Test Metrics",
         "",
-        "| Model | Wasserstein path MAE | Hit@1 | Hit@5 | Hit@10 | Mean direction log likelihood |",
+        "| Model | Mean marginal CRPS | Direction Brier | Direction log loss | 90% coverage | Mean 90% width (ticks) |",
         "|---|---:|---:|---:|---:|---:|",
         *summary_rows,
         "",
-        "Lower Wasserstein error and less-negative direction log likelihood are",
-        "better. These are single-window descriptive results.",
+        "Lower CRPS, Brier score, and log loss are better. Coverage is a",
+        "calibration diagnostic, not a ranking endpoint.",
         "",
         "## Interpretation Notes",
         "",
-        "- Paths use the empirical event move probability, so a symmetric",
-        "  zero-inflated CRW targets `Var(X_T)/T = P(move)`.",
-        "- QRW path forecasts use only the last feature vector observed before",
-        "  the holdout; later holdout OBI/intensity values are not inputs.",
-        "- `wasserstein_path_mae` is the mean one-dimensional Wasserstein",
-        "  distance between each forecast cross-section and the realized price.",
-        "- Directional log likelihood is Bernoulli and comparable across models.",
+        "- Every model is scored only as a fixed-origin marginal forecast.",
+        "  QRW horizon draws are never differenced or treated as trajectories.",
+        "- QRW forecasts evolve a density matrix at every horizon. OBI follows",
+        "  a train-only AR(1) conditional-mean path; later holdout covariates",
+        "  are never simulation inputs.",
+        "- CRPS is the pre-registered primary endpoint; directional log loss",
+        "  is the tie-break endpoint. Other metrics remain diagnostics.",
         "  AIC/BIC should only be compared within the same `likelihood_type` in",
         "  `model_comparison_table.csv`.",
         "- QRW superiority is not inferred from this engineering checkpoint.",

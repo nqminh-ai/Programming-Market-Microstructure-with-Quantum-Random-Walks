@@ -9,6 +9,7 @@ import pytest
 
 from scripts.phase6_pipeline import validate_phase5_artifacts
 from src.evaluation.benchmark_suite import BenchmarkSuite
+from src.reporting import ReportContext, build_final_report_markdown
 from src.visualization.plot_suite import _variance_by_horizon
 
 
@@ -67,3 +68,52 @@ def test_variance_plot_skips_single_observation_horizons() -> None:
 
     assert np.isfinite(variances[0])
     assert np.isnan(variances[1])
+
+
+def test_fixed_origin_variance_ignores_cross_horizon_row_pairing() -> None:
+    rng = np.random.default_rng(21)
+    samples = rng.normal(100.0, 0.2, size=(100, 11))
+    samples[:, 0] = 100.0
+    shuffled = samples.copy()
+    for horizon in range(1, shuffled.shape[1]):
+        rng.shuffle(shuffled[:, horizon])
+
+    expected = _variance_by_horizon(
+        samples,
+        np.array([1, 5, 10]),
+        paths=True,
+        fixed_origin=True,
+    )
+    observed = _variance_by_horizon(
+        shuffled,
+        np.array([1, 5, 10]),
+        paths=True,
+        fixed_origin=True,
+    )
+    assert observed == pytest.approx(expected)
+
+
+def test_report_does_not_claim_path_statistics_for_qrw() -> None:
+    context = ReportContext(
+        feature_path="data/assets/btcusdt/features/example.parquet",
+        train_rows=100,
+        holdout_rows=50,
+        n_steps=40,
+        n_paths=200,
+        random_seed=2026,
+        top_model="CRW Simple",
+        top_mean_marginal_crps=0.01,
+        qrw_rank=3,
+        qrw_mean_marginal_crps=0.02,
+        qrw_mean_direction_log_loss=0.7,
+        empirical_beta=1.0,
+        qrw_beta=1.2,
+        qrw_beta_ci_low=0.9,
+        qrw_beta_ci_high=1.5,
+    )
+    report = build_final_report_markdown(context)
+
+    assert "QRW KS p-value" not in report
+    assert "QRW tail index" not in report
+    assert "QRW has return-ACF" not in report
+    assert "independent\nhorizon draws" in report

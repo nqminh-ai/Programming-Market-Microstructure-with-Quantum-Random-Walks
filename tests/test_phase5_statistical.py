@@ -40,11 +40,24 @@ def _phase5_inputs() -> tuple[np.ndarray, dict[str, np.ndarray]]:
     return empirical, paths
 
 
+def _aligned_losses(
+    empirical: np.ndarray,
+    paths: dict[str, np.ndarray],
+) -> dict[str, np.ndarray]:
+    steps = next(iter(paths.values())).shape[1] - 1
+    realized = empirical[1 : steps + 1]
+    return {
+        model: np.abs(values[:, 1:].mean(axis=0) - realized)
+        for model, values in paths.items()
+    }
+
+
 def test_statistical_suite_writes_all_categories_and_figures(tmp_path) -> None:
     empirical, paths = _phase5_inputs()
     suite = StatisticalTestSuite(
         empirical,
         paths,
+        rolling_one_step_losses=_aligned_losses(empirical, paths),
         bootstrap_iterations=60,
         max_lag=10,
         random_seed=2026,
@@ -56,19 +69,17 @@ def test_statistical_suite_writes_all_categories_and_figures(tmp_path) -> None:
     )
 
     assert set(results) == {
-        "distribution",
+        "marginal_scores",
         "variance_scaling",
-        "autocorrelation",
-        "tail",
+        "trajectory_autocorrelation",
+        "trajectory_tail",
         "diebold_mariano",
         "scorecard_ci",
     }
-    distribution = results["distribution"]
-    assert len(distribution) == 2 * 4
-    assert distribution.loc[
-        distribution["horizon"] == 1,
-        ["ks_statistic", "ks_pvalue", "ks_pvalue_bh"],
-    ].notna().all().all()
+    marginal = results["marginal_scores"]
+    assert len(marginal) == 2 * 6
+    assert marginal[["crps", "direction_log_loss"]].notna().all().all()
+    assert not {"ks_statistic", "ks_pvalue"}.intersection(marginal.columns)
     scaling = results["variance_scaling"]
     assert set(scaling["model"]) == {
         "Empirical",
@@ -93,18 +104,18 @@ def test_statistical_suite_writes_all_categories_and_figures(tmp_path) -> None:
         "beta",
     ].iloc[0]
     assert 0.5 < diffusive_beta < 1.5
-    assert set(results["autocorrelation"]["model"]) == {
+    assert set(results["trajectory_autocorrelation"]["model"]) == {
         "Empirical",
         "Diffusive",
         "Persistent",
     }
-    assert results["tail"]["tail_index"].notna().all()
+    assert results["trajectory_tail"]["tail_index"].notna().all()
 
     expected = [
-        tmp_path / "results" / "distribution_tests.csv",
+        tmp_path / "results" / "marginal_score_tests.csv",
         tmp_path / "results" / "variance_scaling_results.csv",
-        tmp_path / "results" / "autocorrelation_tests.csv",
-        tmp_path / "results" / "tail_analysis.csv",
+        tmp_path / "results" / "trajectory_autocorrelation_tests.csv",
+        tmp_path / "results" / "trajectory_tail_analysis.csv",
         tmp_path / "results" / "diebold_mariano_tests.csv",
         tmp_path / "results" / "scorecard_bootstrap_ci.csv",
         tmp_path / "figures" / "variance_scaling.png",
@@ -118,6 +129,7 @@ def test_results_compiler_ranks_every_simulated_model(tmp_path) -> None:
     suite = StatisticalTestSuite(
         empirical,
         paths,
+        rolling_one_step_losses=_aligned_losses(empirical, paths),
         bootstrap_iterations=50,
         max_lag=10,
         random_seed=7,
@@ -135,7 +147,10 @@ def test_results_compiler_ranks_every_simulated_model(tmp_path) -> None:
 
     assert set(comparison["model"]) == {"Diffusive", "Persistent"}
     assert set(scorecard["model"]) == {"Diffusive", "Persistent"}
-    assert "ks_pvalue_rank" not in scorecard.columns
+    assert "mean_rank" not in scorecard.columns
+    assert set(scorecard["selection_rule"]) == {
+        ResultsCompiler.SELECTION_RULE
+    }
     assert comparison.select_dtypes(include=[np.number]).notna().all().all()
     assert scorecard["overall_rank"].min() == 1.0
     assert (tmp_path / "comparison.csv").exists()

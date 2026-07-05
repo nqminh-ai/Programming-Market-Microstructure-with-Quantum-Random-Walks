@@ -1,4 +1,4 @@
-"""Compile Phase 5 statistical outputs into a model scorecard."""
+"""Compile marginal forecast evidence using pre-registered endpoints."""
 
 from __future__ import annotations
 
@@ -10,14 +10,13 @@ import pandas as pd
 
 
 class ResultsCompiler:
-    """Merge statistical test outputs and rank models against empirical data."""
+    """Build a scorecard without averaging unrelated metric ranks."""
 
-    REQUIRED_KEYS = {
-        "distribution",
-        "variance_scaling",
-        "autocorrelation",
-        "tail",
-    }
+    REQUIRED_KEYS = {"marginal_scores", "variance_scaling"}
+    SELECTION_RULE = (
+        "primary=mean_marginal_crps; "
+        "tiebreak=mean_direction_log_loss; diagnostics_not_ranked"
+    )
 
     @staticmethod
     def _load(value: pd.DataFrame | str | Path) -> pd.DataFrame:
@@ -40,118 +39,83 @@ class ResultsCompiler:
         comparison_output: str | Path | None = None,
         scorecard_output: str | Path | None = None,
     ) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """Return a merged comparison table and empirical-distance scorecard."""
+        """Return diagnostic comparison and primary-endpoint scorecard."""
         missing = sorted(self.REQUIRED_KEYS.difference(results))
         if missing:
             raise ValueError(f"missing statistical result groups: {missing}")
-        distribution = self._load(results["distribution"])
-        scaling = self._load(results["variance_scaling"])
-        autocorrelation = self._load(results["autocorrelation"])
-        tail = self._load(results["tail"])
 
-        distribution_h1 = distribution.loc[
-            distribution["horizon"] == 1,
-            [
-                "model",
-                "ks_statistic",
-                "ks_pvalue",
-                "ks_pvalue_bh",
-                "wasserstein_distance",
-            ],
-        ]
-        model_names = distribution_h1["model"].drop_duplicates().tolist()
-        comparison = pd.DataFrame({"model": model_names})
-        comparison = comparison.merge(
-            distribution_h1,
-            on="model",
-            how="left",
-            validate="one_to_one",
+        marginal = self._load(results["marginal_scores"])
+        scaling = self._load(results["variance_scaling"])
+        required_columns = {
+            "model",
+            "horizon",
+            "crps",
+            "mean_absolute_error",
+            "direction_brier_score",
+            "direction_log_loss",
+            "interval_90_covered",
+        }
+        missing_columns = sorted(required_columns.difference(marginal.columns))
+        if missing_columns:
+            raise ValueError(
+                f"marginal scores are missing columns: {missing_columns}"
+            )
+
+        comparison = (
+            marginal.groupby("model", sort=False)
+            .agg(
+                evaluated_horizons=("horizon", "nunique"),
+                mean_marginal_crps=("crps", "mean"),
+                mean_marginal_absolute_error=("mean_absolute_error", "mean"),
+                mean_direction_brier_score=("direction_brier_score", "mean"),
+                mean_direction_log_loss=("direction_log_loss", "mean"),
+                coverage_90=("interval_90_covered", "mean"),
+            )
+            .reset_index()
         )
         comparison = comparison.merge(
             scaling.loc[
                 scaling["model"] != "Empirical",
-                [
-                    "model",
-                    "beta",
-                    "beta_ci_low",
-                    "beta_ci_high",
-                    "pvalue_beta_gt_1",
-                    "pvalue_beta_gt_1_bh",
-                ],
-            ].rename(columns={"beta": "variance_scaling_beta"}),
+                ["model", "beta", "beta_ci_low", "beta_ci_high"],
+            ].rename(columns={"beta": "marginal_variance_scaling_beta"}),
             on="model",
             how="left",
             validate="one_to_one",
         )
-        comparison = comparison.merge(
-            autocorrelation.loc[
-                autocorrelation["model"] != "Empirical",
-                ["model", "acf_mse"],
-            ],
-            on="model",
-            how="left",
-            validate="one_to_one",
-        )
-        comparison = comparison.merge(
-            tail.loc[
-                tail["model"] != "Empirical",
-                [
-                    "model",
-                    "kurtosis",
-                    "tail_index",
-                    "var_99",
-                    "cvar_99",
-                ],
-            ],
-            on="model",
-            how="left",
-            validate="one_to_one",
-        )
+        comparison["coverage_90_absolute_error"] = (
+            comparison["coverage_90"] - 0.90
+        ).abs()
+        comparison["selection_rule"] = self.SELECTION_RULE
+
         numeric = comparison.select_dtypes(include=[np.number])
         if not np.isfinite(numeric.to_numpy()).all():
             raise ValueError("final comparison contains non-finite values")
 
-        empirical_scaling = float(
-            scaling.loc[scaling["model"] == "Empirical", "beta"].iloc[0]
-        )
-        empirical_tail = tail.loc[tail["model"] == "Empirical"].iloc[0]
-        scoring = pd.DataFrame({"model": comparison["model"]})
-        scoring["ks_statistic_rank"] = comparison["ks_statistic"].rank(
-            method="min",
-            ascending=True,
-        )
-        scoring["wasserstein_rank"] = comparison[
-            "wasserstein_distance"
+        scorecard = comparison[
+            [
+                "model",
+                "mean_marginal_crps",
+                "mean_direction_log_loss",
+                "mean_direction_brier_score",
+                "coverage_90",
+            ]
+        ].copy()
+        scorecard["overall_rank"] = scorecard[
+            "mean_marginal_crps"
         ].rank(method="min", ascending=True)
-        scoring["variance_scaling_rank"] = (
-            comparison["variance_scaling_beta"] - empirical_scaling
-        ).abs().rank(method="min", ascending=True)
-        scoring["acf_mse_rank"] = comparison["acf_mse"].rank(
-            method="min",
-            ascending=True,
-        )
-        scoring["kurtosis_rank"] = (
-            comparison["kurtosis"] - float(empirical_tail["kurtosis"])
-        ).abs().rank(method="min", ascending=True)
-        scoring["var_99_rank"] = (
-            comparison["var_99"] - float(empirical_tail["var_99"])
-        ).abs().rank(method="min", ascending=True)
-        scoring["cvar_99_rank"] = (
-            comparison["cvar_99"] - float(empirical_tail["cvar_99"])
-        ).abs().rank(method="min", ascending=True)
-        rank_columns = [
-            column for column in scoring.columns if column.endswith("_rank")
-        ]
-        scoring["mean_rank"] = scoring[rank_columns].mean(axis=1)
-        scoring["overall_rank"] = scoring["mean_rank"].rank(
-            method="min",
-            ascending=True,
-        )
-        scoring = scoring.sort_values(
-            ["overall_rank", "mean_rank", "model"],
+        scorecard["direction_tiebreak_rank"] = scorecard[
+            "mean_direction_log_loss"
+        ].rank(method="min", ascending=True)
+        scorecard["selection_rule"] = self.SELECTION_RULE
+        scorecard = scorecard.sort_values(
+            [
+                "mean_marginal_crps",
+                "mean_direction_log_loss",
+                "model",
+            ],
             kind="stable",
         ).reset_index(drop=True)
 
         self._write(comparison_output, comparison)
-        self._write(scorecard_output, scoring)
-        return comparison, scoring
+        self._write(scorecard_output, scorecard)
+        return comparison, scorecard

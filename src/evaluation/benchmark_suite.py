@@ -8,80 +8,83 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from scipy.stats import kurtosis
 
 from src.models.adaptive_market_qrw import AdaptiveDecoherenceQRW
 from src.models.classical_rw import ClassicalRandomWalk
 from src.models.garch_model import GARCHBaseline
 from src.models.gbm_model import GBMBaseline
-from src.models.qrw_core import QuantumRandomWalk
+from src.models.qrw_core import DensityMatrixQRW, QuantumRandomWalk
 
 
 class BenchmarkSuite:
     """Fit all models on a common past window and score one later path."""
 
-    PROTOCOL_VERSION = "fixed_origin_ex_ante_zero_inflated_v2"
+    PROTOCOL_VERSION = "fixed_origin_marginal_density_matrix_ar1_obi_v4"
     REQUIRED_COLUMNS = AdaptiveDecoherenceQRW.REQUIRED_COLUMNS
     METRICS = (
-        "wasserstein_path_mae",
-        "variance_ratio",
-        "return_kurtosis",
-        "hit_rate_h1",
-        "hit_rate_h5",
-        "hit_rate_h10",
-        "mean_direction_log_likelihood",
+        "mean_marginal_crps",
+        "mean_marginal_absolute_error",
+        "terminal_variance_per_step",
+        "direction_brier_score",
+        "direction_log_loss",
+        "coverage_90",
+        "mean_interval_width_90",
     )
 
     def __init__(
         self,
         market_data: pd.DataFrame,
         *,
+        holdout_data: pd.DataFrame | None = None,
         train_fraction: float = 0.6,
         n_steps: int = 500,
         n_paths: int = 5_000,
         random_seed: int = 2026,
     ) -> None:
-        missing = sorted(self.REQUIRED_COLUMNS.difference(market_data.columns))
-        if missing:
-            raise ValueError(f"market_data is missing columns: {missing}")
-        if not 0.5 <= train_fraction <= 0.8:
+        if holdout_data is None and not 0.5 <= train_fraction <= 0.8:
             raise ValueError("train_fraction must be between 0.5 and 0.8")
         if n_steps < 10:
             raise ValueError("n_steps must be at least 10")
         if n_paths < 100:
             raise ValueError("n_paths must be at least 100")
 
-        frame = market_data.sort_values(
-            "timestamp",
-            kind="stable",
-        ).reset_index(drop=True).copy()
-        numeric_columns = [
-            "price",
-            "tick_direction",
-            "obi",
-            "trade_intensity",
-        ]
-        numeric = frame[numeric_columns].apply(pd.to_numeric, errors="coerce")
-        if not np.isfinite(numeric.to_numpy()).all():
-            raise ValueError("market data must contain finite numeric values")
-        if (numeric["price"] <= 0.0).any():
-            raise ValueError("prices must be positive")
-        frame[numeric_columns] = numeric
+        frame = self._validated_market_frame(market_data, name="market_data")
+        if holdout_data is None:
+            cut = int(len(frame) * train_fraction)
+            train = frame.iloc[:cut].copy().reset_index(drop=True)
+            holdout = frame.iloc[cut:].copy().reset_index(drop=True)
+            split_strategy = "internal_chronological_fraction"
+        else:
+            train = frame
+            holdout = self._validated_market_frame(
+                holdout_data,
+                name="holdout_data",
+            )
+            if train["timestamp"].iloc[-1] > holdout["timestamp"].iloc[0]:
+                raise ValueError(
+                    "explicit holdout_data cannot start before market_data ends"
+                )
+            cut = len(train)
+            split_strategy = "explicit_chronological_holdout"
 
-        cut = int(len(frame) * train_fraction)
-        available_steps = len(frame) - cut - 1
+        available_steps = len(holdout)
         if cut < 100 or available_steps < 10:
             raise ValueError("dataset is too short for the requested split")
-        self.train_fraction = float(train_fraction)
+        self.train_fraction = float(cut / (cut + len(holdout)))
+        self.split_strategy = split_strategy
         self.requested_n_steps = int(n_steps)
         self.n_steps = min(int(n_steps), available_steps)
         self.n_paths = int(n_paths)
         self.random_seed = int(random_seed)
-        self.train = frame.iloc[:cut].copy().reset_index(drop=True)
-        self.holdout = frame.iloc[cut:].copy().reset_index(drop=True)
-        self.test = self.holdout.iloc[
-            : self.n_steps + 1
-        ].copy().reset_index(drop=True)
+        self.train = train
+        self.holdout = holdout
+        # Forecast from the last observed training price.  The holdout supplies
+        # only future targets; none of its price or feature rows initializes the
+        # simulator.
+        self.test = pd.concat(
+            [self.train.iloc[[-1]], self.holdout.iloc[: self.n_steps]],
+            ignore_index=True,
+        )
         self.initial_price = float(self.test["price"].iloc[0])
         self.tick_size = self._infer_tick_size(self.train["price"].to_numpy())
         train_directions = self._price_directions(self.train)
@@ -92,8 +95,51 @@ class BenchmarkSuite:
         )
         self.results: pd.DataFrame | None = None
         self.model_comparison: pd.DataFrame | None = None
-        self.simulated_paths: dict[str, np.ndarray] = {}
+        self.forecast_samples: dict[str, np.ndarray] = {}
+        # Kept as a read-compatible alias while callers migrate terminology.
+        # Every downstream evaluator receives ``sample_semantics`` and must not
+        # interpret QRW rows as jointly sampled trajectories.
+        self.simulated_paths = self.forecast_samples
+        self.sample_semantics: dict[str, str] = {}
+        self.rolling_one_step_losses: dict[str, np.ndarray] = {}
         self.diagnostics: dict[str, Any] = {}
+        self._qrw_forecast_diagnostics: dict[str, Any] = {}
+
+    @classmethod
+    def _validated_market_frame(
+        cls,
+        frame: pd.DataFrame,
+        *,
+        name: str,
+    ) -> pd.DataFrame:
+        missing = sorted(cls.REQUIRED_COLUMNS.difference(frame.columns))
+        if missing:
+            raise ValueError(f"{name} is missing columns: {missing}")
+        if frame.empty:
+            raise ValueError(f"{name} cannot be empty")
+        validated = frame.sort_values(
+            "timestamp",
+            kind="stable",
+        ).reset_index(drop=True).copy()
+        numeric_columns = [
+            "price",
+            "tick_direction",
+            "obi",
+            "trade_intensity",
+        ]
+        numeric = validated[numeric_columns].apply(
+            pd.to_numeric,
+            errors="coerce",
+        )
+        if not np.isfinite(numeric.to_numpy()).all():
+            raise ValueError("market data must contain finite numeric values")
+        if (numeric["price"] <= 0.0).any():
+            raise ValueError("prices must be positive")
+        if (numeric["trade_intensity"] < 0.0).any():
+            raise ValueError("trade_intensity must be non-negative")
+        validated[numeric_columns] = numeric
+        validated["obi"] = validated["obi"].clip(-1.0, 1.0)
+        return validated
 
     @staticmethod
     def _infer_tick_size(price: np.ndarray) -> float:
@@ -133,10 +179,68 @@ class BenchmarkSuite:
     def _fit_qrw(self) -> tuple[AdaptiveDecoherenceQRW, dict[str, Any]]:
         calibration = AdaptiveDecoherenceQRW(
             self.train,
-            {"n_positions": 101},
+            {"n_positions": 2 * self.n_steps + 3},
         )
         parameters = calibration.calibrate_two_stage(None)
         return calibration, parameters
+
+    @staticmethod
+    def _fit_obi_ar1(frame: pd.DataFrame) -> dict[str, float | int]:
+        """Fit a stable AR(1) OBI forecast using training pairs only."""
+        obi = frame["obi"].to_numpy(dtype=np.float64)
+        valid = np.ones(max(len(obi) - 1, 0), dtype=bool)
+        if "segment_id" in frame:
+            segment = frame["segment_id"].to_numpy(copy=False)
+            valid &= segment[:-1] == segment[1:]
+        if "obi_valid" in frame:
+            observed = frame["obi_valid"].astype(bool).to_numpy()
+            valid &= observed[:-1] & observed[1:]
+        previous = obi[:-1][valid]
+        following = obi[1:][valid]
+        if len(previous) < 2 or np.var(previous) <= 1e-15:
+            phi = 0.0
+            intercept = float(np.mean(following)) if len(following) else float(obi[-1])
+        else:
+            centered_previous = previous - previous.mean()
+            phi = float(
+                centered_previous @ (following - following.mean())
+                / (centered_previous @ centered_previous)
+            )
+            phi = float(np.clip(phi, -0.99, 0.99))
+            intercept = float(following.mean() - phi * previous.mean())
+        residual = following - (intercept + phi * previous)
+        return {
+            "intercept": intercept,
+            "phi": phi,
+            "residual_std": float(np.std(residual, ddof=0)) if len(residual) else 0.0,
+            "training_pairs": int(len(previous)),
+        }
+
+    def _forecast_qrw_features(
+        self,
+        model: AdaptiveDecoherenceQRW,
+    ) -> tuple[np.ndarray, dict[str, float | int]]:
+        """Create a causal fixed-origin feature path for the QRW horizon."""
+        ar1 = self._fit_obi_ar1(self.train)
+        features = np.empty((self.n_steps, 5), dtype=np.float64)
+        raw = model._raw_features()
+        features[0] = raw[-1]
+        obi = float(features[0, 0])
+        direction = float(features[0, 1])
+        log_intensity = float(features[0, 4])
+        for index in range(1, self.n_steps):
+            forecast_obi = float(
+                np.clip(ar1["intercept"] + ar1["phi"] * obi, -1.0, 1.0)
+            )
+            features[index] = (
+                forecast_obi,
+                direction,
+                forecast_obi - obi,
+                abs(forecast_obi),
+                log_intensity,
+            )
+            obi = forecast_obi
+        return features, ar1
 
     def _simulate_qrw(
         self,
@@ -144,151 +248,201 @@ class BenchmarkSuite:
         *,
         seed: int,
     ) -> np.ndarray:
-        probability_up = float(model.predict_probability()[-1])
+        """Evolve a density matrix and sample each fixed-origin marginal.
+
+        The samples are forecast-horizon marginals, not repeatedly observed
+        classical trajectories.  Keeping that distinction avoids destroying
+        interference through an implicit position measurement after every step.
+        """
         rng = np.random.default_rng(seed)
-        moving = (
-            rng.random((self.n_paths, self.n_steps))
-            < self.movement_probability
-        )
-        direction = np.where(
-            rng.random((self.n_paths, self.n_steps)) < probability_up,
-            1.0,
-            -1.0,
-        )
-        increments = np.where(moving, self.tick_size * direction, 0.0)
-        paths = np.empty(
+        features, ar1 = self._forecast_qrw_features(model)
+        engine = DensityMatrixQRW(2 * self.n_steps + 3)
+        movement_probability = float(model.movement_probability)
+        marginals = np.empty(
             (self.n_paths, self.n_steps + 1),
             dtype=np.float64,
         )
-        paths[:, 0] = self.initial_price
-        paths[:, 1:] = self.initial_price + np.cumsum(increments, axis=1)
-        return paths
+        marginals[:, 0] = self.initial_price
+        quantum_variance = np.empty(self.n_steps, dtype=np.float64)
+        for index, feature in enumerate(features):
+            previous_rho = engine.rho.copy()
+            event_gamma, coin = model._event_kernel(feature)
+            engine.step_with_decoherence(event_gamma, coin_matrix=coin)
+            if movement_probability < 1.0:
+                engine.rho = (
+                    movement_probability * engine.rho
+                    + (1.0 - movement_probability) * previous_rho
+                )
+                engine.rho = (engine.rho + engine.rho.conj().T) / 2.0
+            trace = engine.trace()
+            if not np.isfinite(trace) or trace <= 0.0:
+                raise RuntimeError("QRW density evolution lost normalization")
+            engine.rho /= trace
+            probability = engine.get_probability()
+            total = float(probability.sum())
+            if not np.isfinite(total) or total <= 0.0:
+                raise RuntimeError("QRW density evolution lost normalization")
+            probability = probability / total
+            cumulative = np.cumsum(probability)
+            cumulative[-1] = 1.0
+            sampled_index = np.searchsorted(
+                cumulative,
+                rng.random(self.n_paths),
+                side="right",
+            )
+            sampled_position = engine.positions[sampled_index]
+            marginals[:, index + 1] = (
+                self.initial_price + self.tick_size * sampled_position
+            )
+            mean_position = float(probability @ engine.positions)
+            quantum_variance[index] = float(
+                probability @ (engine.positions - mean_position) ** 2
+            )
+        positive_variance = quantum_variance > 0.0
+        variance_scaling_exponent = (
+            float(
+                np.polyfit(
+                    np.log(np.arange(1, self.n_steps + 1)[positive_variance]),
+                    np.log(quantum_variance[positive_variance]),
+                    1,
+                )[0]
+            )
+            if np.count_nonzero(positive_variance) >= 2
+            else None
+        )
+        self._qrw_forecast_diagnostics = {
+            "state_evolution": "density_matrix_adaptive_coin_dephasing",
+            "sampling_protocol": "fixed_origin_position_marginals",
+            "future_obi_model": "train_only_ar1_conditional_mean",
+            "obi_ar1": ar1,
+            "movement_channel": "identity_quantum_step_mixture",
+            "movement_probability": movement_probability,
+            "position_variance_by_horizon": quantum_variance.tolist(),
+            "variance_scaling_exponent": variance_scaling_exponent,
+            "terminal_position_variance": float(quantum_variance[-1]),
+            "terminal_variance_per_step": float(
+                quantum_variance[-1] / self.n_steps
+            ),
+        }
+        return marginals
 
-    def _score_paths(
+    @staticmethod
+    def _sample_crps(samples: np.ndarray, observation: float) -> float:
+        """Return the empirical CRPS without a quadratic pairwise matrix."""
+        values = np.sort(np.asarray(samples, dtype=np.float64))
+        count = len(values)
+        if count == 0:
+            raise ValueError("CRPS requires at least one forecast sample")
+        weights = 2.0 * np.arange(1, count + 1) - count - 1.0
+        pairwise_half = float(weights @ values) / (count * count)
+        return float(np.mean(np.abs(values - observation)) - pairwise_half)
+
+    def _score_marginals(
         self,
         model_name: str,
-        paths: np.ndarray,
+        samples: np.ndarray,
     ) -> tuple[list[dict[str, float | str]], float]:
         expected_shape = (self.n_paths, self.n_steps + 1)
-        if paths.shape != expected_shape:
+        if samples.shape != expected_shape:
             raise ValueError(
-                f"{model_name} returned {paths.shape}, expected {expected_shape}"
+                f"{model_name} returned {samples.shape}, expected {expected_shape}"
             )
-        if not np.isfinite(paths).all():
-            raise ValueError(f"{model_name} produced non-finite paths")
+        if not np.isfinite(samples).all():
+            raise ValueError(f"{model_name} produced non-finite samples")
 
         realized = self.test["price"].to_numpy(dtype=np.float64)
-        path_errors = np.mean(
-            np.abs(paths[:, 1:] - realized[None, 1:]),
+        absolute_errors = np.mean(
+            np.abs(samples[:, 1:] - realized[None, 1:]),
             axis=0,
         )
+        crps = np.asarray(
+            [
+                self._sample_crps(samples[:, horizon], realized[horizon])
+                for horizon in range(1, self.n_steps + 1)
+            ],
+            dtype=np.float64,
+        )
         terminal_ticks = (
-            paths[:, -1] - paths[:, 0]
+            samples[:, -1] - samples[:, 0]
         ) / self.tick_size
         terminal_centered_square = (
             terminal_ticks - terminal_ticks.mean()
         ) ** 2
-        variance_ratio = float(
+        terminal_variance_per_step = float(
             np.mean(terminal_centered_square) / self.n_steps
         )
-        variance_ratio_se = float(
+        terminal_variance_se = float(
             np.std(terminal_centered_square, ddof=1)
             / np.sqrt(self.n_paths)
             / self.n_steps
         )
 
-        increments = np.diff(paths, axis=1)
-        relative_returns = increments / np.maximum(paths[:, :-1], 1e-12)
-        flattened_returns = relative_returns.reshape(-1)
-        tail_kurtosis = float(
-            kurtosis(
-                flattened_returns,
-                fisher=False,
-                bias=False,
-            )
+        fixed_origin_change = samples[:, 1:] - samples[:, [0]]
+        probability_up = np.mean(fixed_origin_change > 0.0, axis=0)
+        target_up = realized[1:] > realized[0]
+        brier = (probability_up - target_up.astype(np.float64)) ** 2
+        clipped_probability = np.clip(probability_up, 1e-12, 1.0 - 1e-12)
+        direction_log_loss = -np.where(
+            target_up,
+            np.log(clipped_probability),
+            np.log1p(-clipped_probability),
         )
-        kurtosis_se = float(np.sqrt(24.0 / len(flattened_returns)))
+        lower, upper = np.quantile(samples[:, 1:], [0.05, 0.95], axis=0)
+        covered = (realized[1:] >= lower) & (realized[1:] <= upper)
+        interval_width = (upper - lower) / self.tick_size
+
+        def horizon_standard_error(values: np.ndarray) -> float:
+            return float(np.std(values, ddof=1) / np.sqrt(len(values)))
+
         rows: list[dict[str, float | str]] = [
             {
                 "model": model_name,
-                "metric": "wasserstein_path_mae",
-                "value": float(np.mean(path_errors)),
-                "std": float(np.std(path_errors, ddof=1)),
+                "metric": "mean_marginal_crps",
+                "value": float(np.mean(crps)),
+                "std": horizon_standard_error(crps),
             },
             {
                 "model": model_name,
-                "metric": "variance_ratio",
-                "value": variance_ratio,
-                "std": variance_ratio_se,
+                "metric": "mean_marginal_absolute_error",
+                "value": float(np.mean(absolute_errors)),
+                "std": horizon_standard_error(absolute_errors),
             },
             {
                 "model": model_name,
-                "metric": "return_kurtosis",
-                "value": tail_kurtosis,
-                "std": kurtosis_se,
+                "metric": "terminal_variance_per_step",
+                "value": terminal_variance_per_step,
+                "std": terminal_variance_se,
+            },
+            {
+                "model": model_name,
+                "metric": "direction_brier_score",
+                "value": float(np.mean(brier)),
+                "std": horizon_standard_error(brier),
+            },
+            {
+                "model": model_name,
+                "metric": "direction_log_loss",
+                "value": float(np.mean(direction_log_loss)),
+                "std": horizon_standard_error(direction_log_loss),
+            },
+            {
+                "model": model_name,
+                "metric": "coverage_90",
+                "value": float(np.mean(covered)),
+                "std": horizon_standard_error(covered.astype(np.float64)),
+            },
+            {
+                "model": model_name,
+                "metric": "mean_interval_width_90",
+                "value": float(np.mean(interval_width)),
+                "std": horizon_standard_error(interval_width),
             },
         ]
-
-        for horizon in (1, 5, 10):
-            predicted_change = np.mean(
-                paths[:, horizon:] - paths[:, :-horizon],
-                axis=0,
-            )
-            realized_change = realized[horizon:] - realized[:-horizon]
-            valid = np.abs(realized_change) > 1e-12
-            if np.any(valid):
-                hit = np.sign(predicted_change[valid]) == np.sign(
-                    realized_change[valid]
-                )
-                value = float(np.mean(hit))
-                standard_error = float(
-                    np.sqrt(value * (1.0 - value) / len(hit))
-                )
-            else:
-                value = float("nan")
-                standard_error = float("nan")
-            rows.append(
-                {
-                    "model": model_name,
-                    "metric": f"hit_rate_h{horizon}",
-                    "value": value,
-                    "std": standard_error,
-                }
-            )
-
-        simulated_moving = np.abs(increments) > 1e-12
-        moving_count = simulated_moving.sum(axis=0)
-        model_up_probability = np.divide(
-            (increments > 0.0).sum(axis=0),
-            moving_count,
-            out=np.full(self.n_steps, 0.5, dtype=np.float64),
-            where=moving_count > 0,
+        terminal_log_return = np.log(samples[:, -1] / samples[:, 0])
+        volatility_per_step = float(
+            np.std(terminal_log_return, ddof=0) / np.sqrt(self.n_steps)
         )
-        realized_change = np.diff(realized)
-        valid = np.abs(realized_change) > 1e-12
-        target = realized_change[valid] > 0.0
-        probability = np.clip(
-            model_up_probability[valid],
-            1e-12,
-            1.0 - 1e-12,
-        )
-        log_probability = np.where(
-            target,
-            np.log(probability),
-            np.log1p(-probability),
-        )
-        rows.append(
-            {
-                "model": model_name,
-                "metric": "mean_direction_log_likelihood",
-                "value": float(np.mean(log_probability)),
-                "std": float(
-                    np.std(log_probability, ddof=1)
-                    / np.sqrt(len(log_probability))
-                ),
-            }
-        )
-        return rows, float(np.std(flattened_returns, ddof=0))
+        return rows, volatility_per_step
 
     def _coherent_qrw_diagnostic(self, n_steps: int = 200) -> dict[str, Any]:
         steps = min(int(n_steps), self.n_steps)
@@ -304,6 +458,79 @@ class BenchmarkSuite:
             "passed": bool(qrw_ratio > 1.3 * crw_ratio),
         }
 
+    def _rolling_one_step_absolute_losses(
+        self,
+        *,
+        qrw_parameters: dict[str, Any],
+        crw_models: dict[str, ClassicalRandomWalk],
+        garch: GARCHBaseline,
+        gbm: GBMBaseline,
+    ) -> dict[str, np.ndarray]:
+        """Return causally aligned one-step losses on the common holdout."""
+        origins = self.test["price"].to_numpy(dtype=np.float64)[:-1]
+        targets = self.test["price"].to_numpy(dtype=np.float64)[1:]
+        predictor_frame = pd.concat(
+            [
+                self.train.iloc[-2:],
+                self.holdout.iloc[: max(self.n_steps - 1, 0)],
+            ],
+            ignore_index=True,
+        )
+        qrw_predictor = AdaptiveDecoherenceQRW(
+            predictor_frame,
+            {
+                "n_positions": 101,
+                "gamma_base": qrw_parameters["gamma"],
+                "obi_bias": qrw_parameters["obi_bias"],
+                "alpha_obi": qrw_parameters["alpha_obi"],
+                "alpha_direction": qrw_parameters["alpha_direction"],
+                "alpha_obi_change": qrw_parameters["alpha_obi_change"],
+                "alpha_abs_obi": qrw_parameters["alpha_abs_obi"],
+                "gamma_intensity": qrw_parameters["gamma_intensity"],
+                "feature_mean": qrw_parameters["feature_mean"],
+                "feature_scale": qrw_parameters["feature_scale"],
+                "movement_probability": qrw_parameters[
+                    "movement_probability"
+                ],
+            },
+        )
+        probability_up = qrw_predictor.predict_probability()[1:]
+        qrw_prediction = origins + self.tick_size * self.movement_probability * (
+            2.0 * probability_up - 1.0
+        )
+        losses: dict[str, np.ndarray] = {
+            "QRW Adaptive": np.abs(qrw_prediction - targets)
+        }
+
+        for name, model in crw_models.items():
+            if model.kind == "simple":
+                expected_direction = np.zeros(self.n_steps)
+            elif model.kind == "biased":
+                expected_direction = np.full(
+                    self.n_steps, 2.0 * model.p_up - 1.0
+                )
+            else:
+                expected_direction = np.empty(self.n_steps)
+                training_direction = self._price_directions(self.train)
+                moving = training_direction[training_direction != 0.0]
+                last_direction = float(moving[-1])
+                realized_direction = np.sign(targets - origins)
+                for index in range(self.n_steps):
+                    expected_direction[index] = model.rho * last_direction
+                    if realized_direction[index] != 0.0:
+                        last_direction = float(realized_direction[index])
+            prediction = origins + (
+                self.tick_size * model.p_move * expected_direction
+            )
+            losses[name] = np.abs(prediction - targets)
+
+        garch_mean_return = float(garch.parameters["mu"])
+        losses["GARCH(1,1)"] = np.abs(
+            origins * np.exp(garch_mean_return) - targets
+        )
+        losses["GBM"] = np.abs(origins * np.exp(gbm.mu) - targets)
+        return losses
+
     def run(
         self,
         *,
@@ -315,15 +542,18 @@ class BenchmarkSuite:
         """Fit, simulate, score, and optionally persist every model."""
         train_returns = self._log_returns(self.train)
         train_directions = self._price_directions(self.train)
-        moving_train_directions = train_directions[train_directions != 0.0]
         seeds = self._seed_values(self.random_seed, 6)
         metric_rows: list[dict[str, float | str]] = []
         comparison_rows: list[dict[str, float | int | str]] = []
+        crw_models: dict[str, ClassicalRandomWalk] = {}
 
         qrw, qrw_parameters = self._fit_qrw()
-        qrw_paths = self._simulate_qrw(qrw, seed=seeds[0])
-        self.simulated_paths["QRW Adaptive"] = qrw_paths
-        rows, model_volatility = self._score_paths("QRW Adaptive", qrw_paths)
+        qrw_marginals = self._simulate_qrw(qrw, seed=seeds[0])
+        self.forecast_samples["QRW Adaptive"] = qrw_marginals
+        self.sample_semantics["QRW Adaptive"] = "fixed_origin_marginals"
+        rows, model_volatility = self._score_marginals(
+            "QRW Adaptive", qrw_marginals
+        )
         metric_rows.extend(rows)
         train_change = np.diff(
             self.train["price"].to_numpy(dtype=np.float64)
@@ -366,6 +596,7 @@ class BenchmarkSuite:
             )
         )
         qrw_parameter_count = 6
+        comparison_directions = np.where(train_target, 1.0, -1.0)
         comparison_rows.append(
             self._comparison_row(
                 "QRW Adaptive",
@@ -385,19 +616,21 @@ class BenchmarkSuite:
                 step_size=self.tick_size,
             )
             model.fit(train_directions)
+            crw_models[model.model_name] = model
             paths = model.simulate(
                 self.n_steps,
                 self.n_paths,
                 random_state=seeds[index],
             )
-            self.simulated_paths[model.model_name] = paths
-            rows, model_volatility = self._score_paths(
+            self.forecast_samples[model.model_name] = paths
+            self.sample_semantics[model.model_name] = "path_trajectories"
+            rows, model_volatility = self._score_marginals(
                 model.model_name,
                 paths,
             )
             metric_rows.extend(rows)
             log_probability = model.direction_log_probabilities(
-                moving_train_directions
+                comparison_directions
             )
             parameter_count = {"simple": 0, "biased": 1, "correlated": 2}[
                 kind
@@ -424,8 +657,9 @@ class BenchmarkSuite:
             self.n_paths,
             random_state=seeds[4],
         )
-        self.simulated_paths["GARCH(1,1)"] = garch_paths
-        rows, model_volatility = self._score_paths(
+        self.forecast_samples["GARCH(1,1)"] = garch_paths
+        self.sample_semantics["GARCH(1,1)"] = "path_trajectories"
+        rows, model_volatility = self._score_marginals(
             "GARCH(1,1)",
             garch_paths,
         )
@@ -451,8 +685,9 @@ class BenchmarkSuite:
             self.n_paths,
             random_state=seeds[5],
         )
-        self.simulated_paths["GBM"] = gbm_paths
-        rows, model_volatility = self._score_paths("GBM", gbm_paths)
+        self.forecast_samples["GBM"] = gbm_paths
+        self.sample_semantics["GBM"] = "path_trajectories"
+        rows, model_volatility = self._score_marginals("GBM", gbm_paths)
         metric_rows.extend(rows)
         comparison_rows.append(
             {
@@ -469,17 +704,35 @@ class BenchmarkSuite:
         )
 
         self.results = pd.DataFrame(metric_rows)
+        self.rolling_one_step_losses = self._rolling_one_step_absolute_losses(
+            qrw_parameters=qrw_parameters,
+            crw_models=crw_models,
+            garch=garch,
+            gbm=gbm,
+        )
         self.model_comparison = pd.DataFrame(comparison_rows)
+        self.model_comparison["aic_rank_within_likelihood"] = (
+            self.model_comparison.groupby("likelihood_type", sort=False)["aic"]
+            .rank(method="min", ascending=True)
+        )
+        self.model_comparison["bic_rank_within_likelihood"] = (
+            self.model_comparison.groupby("likelihood_type", sort=False)["bic"]
+            .rank(method="min", ascending=True)
+        )
+        self.model_comparison["information_criterion_scope"] = (
+            "within_likelihood_type_only"
+        )
         simple_ratio = float(
             self.results.loc[
                 (self.results["model"] == "CRW Simple")
-                & (self.results["metric"] == "variance_ratio"),
+                & (self.results["metric"] == "terminal_variance_per_step"),
                 "value",
             ].iloc[0]
         )
         self.diagnostics = {
             "protocol_version": self.PROTOCOL_VERSION,
             "train_fraction": self.train_fraction,
+            "split_strategy": self.split_strategy,
             "requested_n_steps": self.requested_n_steps,
             "train_rows": int(len(self.train)),
             "test_rows": int(len(self.test)),
@@ -497,11 +750,20 @@ class BenchmarkSuite:
             "roadmap_simple_crw_target_0_5_corrected": True,
             "movement_probability": self.movement_probability,
             "forecast_protocol": (
-                "fixed_origin_ex_ante_last_observed_features"
+                "fixed_origin_density_matrix_train_only_ar1_obi"
             ),
             "uses_holdout_features_for_simulation": False,
-            "qrw_forecast_up_probability": float(
+            "evaluation_semantics": "fixed_origin_marginals_only",
+            "sample_semantics": self.sample_semantics,
+            "path_dependent_metrics_include_qrw": False,
+            "dm_forecast_alignment": "rolling_origin_one_step",
+            "dm_loss_observations": self.n_steps,
+            "qrw_forecast_up_probability_h1": float(
                 qrw.predict_probability()[-1]
+            ),
+            "qrw_forecast": self._qrw_forecast_diagnostics,
+            "information_criterion_scope": (
+                "AIC/BIC ranks are valid only within likelihood_type"
             ),
             "garch_convergence_flag": int(
                 garch_parameters["convergence_flag"]

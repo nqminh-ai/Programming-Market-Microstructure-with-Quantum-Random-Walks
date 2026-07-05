@@ -30,28 +30,30 @@ def write_checkpoint(
     diagnostics_output: Path,
     results_dir: Path = Path("results"),
 ) -> dict[str, object]:
-    distribution = statistical_results["distribution"]
+    marginal = statistical_results["marginal_scores"]
     scaling = statistical_results["variance_scaling"]
-    tail = statistical_results["tail"]
-    qrw_distribution = distribution.loc[
-        (distribution["model"] == "QRW Adaptive")
-        & (distribution["horizon"] == 1)
-    ].iloc[0]
+    qrw_marginal = marginal.loc[
+        marginal["model"] == "QRW Adaptive"
+    ]
     qrw_scaling = scaling.loc[
         scaling["model"] == "QRW Adaptive"
     ].iloc[0]
-    qrw_tail = tail.loc[tail["model"] == "QRW Adaptive"].iloc[0]
-    empirical_tail = tail.loc[tail["model"] == "Empirical"].iloc[0]
     expected_files = [
-        results_dir / "distribution_tests.csv",
+        results_dir / "marginal_score_tests.csv",
         results_dir / "variance_scaling_results.csv",
-        results_dir / "autocorrelation_tests.csv",
-        results_dir / "tail_analysis.csv",
+        results_dir / "trajectory_autocorrelation_tests.csv",
+        results_dir / "trajectory_tail_analysis.csv",
         results_dir / "diebold_mariano_tests.csv",
         results_dir / "scorecard_bootstrap_ci.csv",
     ]
     complete_categories = all(path.exists() for path in expected_files)
-    finite_qrw_pvalue = bool(np.isfinite(qrw_distribution["ks_pvalue"]))
+    finite_qrw_scores = bool(
+        np.isfinite(
+            qrw_marginal[["crps", "direction_log_loss"]].to_numpy(
+                dtype=np.float64
+            )
+        ).all()
+    )
     finite_scaling_ci = bool(
         np.isfinite(
             qrw_scaling[["beta_ci_low", "beta_ci_high"]].to_numpy(
@@ -59,24 +61,17 @@ def write_checkpoint(
             )
         ).all()
     )
-    finite_tail_indices = bool(
-        np.isfinite(
-            np.asarray(
-                [qrw_tail["tail_index"], empirical_tail["tail_index"]],
-                dtype=np.float64,
-            )
-        ).all()
-    )
     scorecard_complete = bool(
-        len(scorecard) == len(suite.simulated_paths)
+        len(scorecard) == len(suite.forecast_samples)
         and "overall_rank" in scorecard
         and scorecard["overall_rank"].notna().all()
+        and set(scorecard["selection_rule"])
+        == {ResultsCompiler.SELECTION_RULE}
     )
     checkpoint_passed = bool(
         complete_categories
-        and finite_qrw_pvalue
+        and finite_qrw_scores
         and finite_scaling_ci
-        and finite_tail_indices
         and scorecard_complete
     )
     diagnostics: dict[str, object] = {
@@ -90,22 +85,26 @@ def write_checkpoint(
         "train_rows": len(suite.train),
         "holdout_rows": len(suite.holdout),
         "simulated_steps": suite.n_steps,
+        "marginal_draws_per_model_horizon": suite.n_paths,
         "simulated_paths_per_model": suite.n_paths,
         "movement_probability": suite.movement_probability,
-        "model_count": len(suite.simulated_paths),
-        "distribution_horizons": sorted(
-            distribution["horizon"].unique().astype(int).tolist()
+        "model_count": len(suite.forecast_samples),
+        "marginal_score_horizons": sorted(
+            marginal["horizon"].unique().astype(int).tolist()
         ),
         "complete_test_categories": complete_categories,
-        "qrw_ks_pvalue": float(qrw_distribution["ks_pvalue"]),
-        "qrw_ks_pvalue_bh": float(qrw_distribution["ks_pvalue_bh"]),
+        "qrw_mean_marginal_crps": float(qrw_marginal["crps"].mean()),
+        "qrw_mean_direction_log_loss": float(
+            qrw_marginal["direction_log_loss"].mean()
+        ),
         "qrw_variance_beta": float(qrw_scaling["beta"]),
         "qrw_variance_beta_ci": [
             float(qrw_scaling["beta_ci_low"]),
             float(qrw_scaling["beta_ci_high"]),
         ],
-        "qrw_tail_index": float(qrw_tail["tail_index"]),
-        "empirical_tail_index": float(empirical_tail["tail_index"]),
+        "path_dependent_metrics_include_qrw": False,
+        "dm_forecast_alignment": "rolling_origin_one_step",
+        "scorecard_selection_rule": ResultsCompiler.SELECTION_RULE,
         "scorecard_complete": scorecard_complete,
         "top_ranked_model": str(scorecard.iloc[0]["model"]),
         "checkpoint_passed": checkpoint_passed,
@@ -130,17 +129,16 @@ def write_checkpoint(
         "",
         f"- Chronological train rows: `{len(suite.train)}`",
         f"- Later holdout rows: `{len(suite.holdout)}`",
-        f"- Simulated paths per model: `{suite.n_paths}`",
+        f"- Marginal draws per model/horizon: `{suite.n_paths}`",
         f"- Simulated steps: `{suite.n_steps}`",
         f"- Bootstrap iterations: "
         f"`{int(qrw_scaling['bootstrap_iterations'])}`",
         f"- Random seed: `{suite.random_seed}`",
-        "- Distribution and tail tests use matched empirical/simulated sample",
-        "  sizes. Variance scaling uses the same comparison horizon for both.",
-        "- Scaling intervals use moving-block bootstrap for empirical returns",
-        "  and whole-path resampling for simulations.",
-        "- Benjamini-Hochberg adjusted p-values are included for each test",
-        "  family.",
+        "- QRW is evaluated only through fixed-origin marginal proper scores",
+        "  and marginal variance scaling.",
+        "- QRW draws are excluded from ACF and tail diagnostics because they",
+        "  are not jointly sampled trajectories.",
+        "- Diebold-Mariano uses aligned rolling-origin one-step absolute losses.",
         "",
         "## Acceptance",
         "",
@@ -152,10 +150,10 @@ def write_checkpoint(
             f"{sum(path.exists() for path in expected_files)}/6 CSV files |"
         ),
         (
-            f"| QRW KS p-value computed | "
-            f"{'PASS' if finite_qrw_pvalue else 'FAIL'} | "
-            f"raw={qrw_distribution['ks_pvalue']:.6g}, "
-            f"BH={qrw_distribution['ks_pvalue_bh']:.6g} |"
+            f"| QRW marginal proper scores computed | "
+            f"{'PASS' if finite_qrw_scores else 'FAIL'} | "
+            f"CRPS={qrw_marginal['crps'].mean():.6g}, "
+            f"direction log loss={qrw_marginal['direction_log_loss'].mean():.6g} |"
         ),
         (
             f"| QRW variance beta has 95% CI | "
@@ -165,12 +163,6 @@ def write_checkpoint(
             f"{qrw_scaling['beta_ci_high']:.4f}] |"
         ),
         (
-            f"| QRW and empirical tail indices computed | "
-            f"{'PASS' if finite_tail_indices else 'FAIL'} | "
-            f"{qrw_tail['tail_index']:.4f} vs "
-            f"{empirical_tail['tail_index']:.4f} |"
-        ),
-        (
             f"| Scorecard compiled | "
             f"{'PASS' if scorecard_complete else 'FAIL'} | "
             f"top={scorecard.iloc[0]['model']} |"
@@ -178,13 +170,14 @@ def write_checkpoint(
         "",
         "## Scorecard",
         "",
-        "| Rank | Model | Mean metric rank |",
-        "|---:|---|---:|",
+        "| Rank | Model | Mean marginal CRPS | Direction log loss |",
+        "|---:|---|---:|---:|",
     ]
     for _, row in scorecard.iterrows():
         lines.append(
             f"| {int(row['overall_rank'])} | {row['model']} | "
-            f"{row['mean_rank']:.3f} |"
+            f"{row['mean_marginal_crps']:.6g} | "
+            f"{row['mean_direction_log_loss']:.6g} |"
         )
     lines.extend(
         [
@@ -198,10 +191,10 @@ def write_checkpoint(
             "",
             "## Artifacts",
             "",
-            "- `results/distribution_tests.csv`",
+            "- `results/marginal_score_tests.csv`",
             "- `results/variance_scaling_results.csv`",
-            "- `results/autocorrelation_tests.csv`",
-            "- `results/tail_analysis.csv`",
+            "- `results/trajectory_autocorrelation_tests.csv`",
+            "- `results/trajectory_tail_analysis.csv`",
             "- `results/diebold_mariano_tests.csv`",
             "- `results/scorecard_bootstrap_ci.csv`",
             "- `results/model_aic_bic_comparison.csv`",
@@ -266,7 +259,9 @@ def main() -> None:
     )
     tests = StatisticalTestSuite(
         benchmark.holdout["price"].to_numpy(dtype=np.float64),
-        benchmark.simulated_paths,
+        benchmark.forecast_samples,
+        sample_semantics=benchmark.sample_semantics,
+        rolling_one_step_losses=benchmark.rolling_one_step_losses,
         random_seed=args.random_seed,
         bootstrap_iterations=args.bootstrap_iterations,
         max_lag=args.max_lag,

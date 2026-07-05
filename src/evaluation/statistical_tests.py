@@ -18,14 +18,16 @@ from matplotlib import pyplot as plt
 class StatisticalTestSuite:
     """Run Phase 5 tests on one empirical holdout and common simulations."""
 
-    DISTRIBUTION_HORIZONS = (1, 10, 50, 100)
+    PRIMARY_HORIZONS = (1, 5, 10, 20, 50, 100, 200, 500)
     SCALING_HORIZONS = (1, 5, 10, 20, 50, 100, 200, 500)
 
     def __init__(
         self,
         empirical_prices: np.ndarray,
-        simulated_paths: Mapping[str, np.ndarray],
+        forecast_samples: Mapping[str, np.ndarray],
         *,
+        sample_semantics: Mapping[str, str] | None = None,
+        rolling_one_step_losses: Mapping[str, np.ndarray] | None = None,
         random_seed: int = 2026,
         bootstrap_iterations: int = 1_000,
         max_lag: int = 20,
@@ -35,8 +37,8 @@ class StatisticalTestSuite:
             raise ValueError("empirical_prices must contain at least 30 values")
         if not np.isfinite(prices).all() or np.any(prices <= 0.0):
             raise ValueError("empirical_prices must be finite and positive")
-        if not simulated_paths:
-            raise ValueError("simulated_paths cannot be empty")
+        if not forecast_samples:
+            raise ValueError("forecast_samples cannot be empty")
         if bootstrap_iterations < 50:
             raise ValueError("bootstrap_iterations must be at least 50")
         if max_lag < 1:
@@ -44,7 +46,7 @@ class StatisticalTestSuite:
 
         paths: dict[str, np.ndarray] = {}
         step_counts: set[int] = set()
-        for model, values in simulated_paths.items():
+        for model, values in forecast_samples.items():
             array = np.asarray(values, dtype=np.float64)
             if array.ndim != 2 or array.shape[0] < 20 or array.shape[1] < 3:
                 raise ValueError(
@@ -58,7 +60,20 @@ class StatisticalTestSuite:
             raise ValueError("all simulated models must use the same steps")
 
         self.empirical_prices = prices
-        self.simulated_paths = paths
+        self.forecast_samples = paths
+        self.simulated_paths = self.forecast_samples
+        supplied_semantics = sample_semantics or {
+            model: "path_trajectories" for model in paths
+        }
+        if set(supplied_semantics) != set(paths):
+            raise ValueError("sample_semantics must identify every forecast model")
+        allowed_semantics = {"fixed_origin_marginals", "path_trajectories"}
+        invalid_semantics = set(supplied_semantics.values()) - allowed_semantics
+        if invalid_semantics:
+            raise ValueError(
+                f"unsupported sample semantics: {sorted(invalid_semantics)}"
+            )
+        self.sample_semantics = dict(supplied_semantics)
         self.n_steps = step_counts.pop()
         if len(prices) < self.n_steps + 1:
             raise ValueError(
@@ -68,9 +83,39 @@ class StatisticalTestSuite:
         self.random_seed = int(random_seed)
         self.bootstrap_iterations = int(bootstrap_iterations)
         self.max_lag = min(int(max_lag), self.n_steps - 2)
+        self.rolling_one_step_losses = self._validated_rolling_losses(
+            rolling_one_step_losses
+        )
         self.acf_profiles: dict[str, np.ndarray] = {}
         self.pacf_profiles: dict[str, np.ndarray] = {}
         self.scaling_points: dict[str, tuple[np.ndarray, np.ndarray]] = {}
+
+    def _validated_rolling_losses(
+        self,
+        values: Mapping[str, np.ndarray] | None,
+    ) -> dict[str, np.ndarray] | None:
+        if values is None:
+            return None
+        if set(values) != set(self.forecast_samples):
+            raise ValueError(
+                "rolling_one_step_losses must identify every forecast model"
+            )
+        result: dict[str, np.ndarray] = {}
+        lengths: set[int] = set()
+        for model, loss in values.items():
+            array = np.asarray(loss, dtype=np.float64).reshape(-1)
+            if len(array) < 20 or not np.isfinite(array).all():
+                raise ValueError(
+                    f"{model} rolling one-step losses must contain at least "
+                    "20 finite observations"
+                )
+            if np.any(array < 0.0):
+                raise ValueError("rolling one-step losses cannot be negative")
+            result[str(model)] = array
+            lengths.add(len(array))
+        if len(lengths) != 1:
+            raise ValueError("rolling one-step losses must be time aligned")
+        return result
 
     @staticmethod
     def _log_returns(prices: np.ndarray) -> np.ndarray:
@@ -121,97 +166,94 @@ class StatisticalTestSuite:
             )
         return starts
 
-    def _simulated_horizon_returns(
-        self,
-        paths: np.ndarray,
-        horizon: int,
-        rng: np.random.Generator,
-    ) -> np.ndarray:
-        starts = self._horizon_starts(horizon)
-        path_index = rng.integers(0, paths.shape[0], size=len(starts))
-        return np.log(
-            paths[path_index, starts + horizon]
-            / paths[path_index, starts]
+    @staticmethod
+    def _sample_crps(samples: np.ndarray, observation: float) -> float:
+        values = np.sort(np.asarray(samples, dtype=np.float64))
+        count = len(values)
+        weights = 2.0 * np.arange(1, count + 1) - count - 1.0
+        return float(
+            np.mean(np.abs(values - observation))
+            - (weights @ values) / (count * count)
         )
 
-    def distribution_tests(
+    @staticmethod
+    def _fixed_origin_returns(samples: np.ndarray, horizon: int) -> np.ndarray:
+        return np.log(samples[:, horizon] / samples[:, 0])
+
+    def marginal_score_tests(
         self,
         *,
         output: str | Path | None = None,
-        horizons: Iterable[int] = DISTRIBUTION_HORIZONS,
+        horizons: Iterable[int] = PRIMARY_HORIZONS,
     ) -> pd.DataFrame:
-        """Compare empirical and simulated marginal return distributions."""
+        """Score fixed-origin marginal forecasts with proper scoring rules."""
         rows: list[dict[str, float | int | str]] = []
-        seed_sequence = np.random.SeedSequence(self.random_seed)
-        children = iter(
-            seed_sequence.spawn(len(self.simulated_paths) * 8)
-        )
         valid_horizons = [
             int(value)
             for value in horizons
             if 1 <= int(value) <= self.n_steps
         ]
-        for model, paths in self.simulated_paths.items():
+        for model, samples in self.forecast_samples.items():
             for horizon in valid_horizons:
-                empirical = self._horizon_returns(
-                    self.comparison_prices,
-                    horizon,
-                )
-                rng = np.random.default_rng(next(children))
-                simulated = self._simulated_horizon_returns(
-                    paths,
-                    horizon,
-                    rng,
-                )
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    ad_result = stats.anderson_ksamp(
-                        [empirical, simulated],
+                observation = float(
+                    np.log(
+                        self.comparison_prices[horizon]
+                        / self.comparison_prices[0]
                     )
-                if horizon == 1:
-                    ks_result = stats.ks_2samp(
-                        empirical,
-                        simulated,
-                        alternative="two-sided",
-                        method="auto",
-                    )
-                    ks_statistic = float(ks_result.statistic)
-                    ks_pvalue = float(ks_result.pvalue)
-                else:
-                    ks_statistic = float("nan")
-                    ks_pvalue = float("nan")
+                )
+                simulated = self._fixed_origin_returns(samples, horizon)
+                probability_up = float(np.mean(simulated > 0.0))
+                target_up = float(observation > 0.0)
+                probability = float(
+                    np.clip(probability_up, 1e-12, 1.0 - 1e-12)
+                )
+                lower, upper = np.quantile(simulated, [0.05, 0.95])
                 rows.append(
                     {
                         "model": model,
                         "horizon": horizon,
-                        "sample_size_empirical": len(empirical),
-                        "sample_size_simulated": len(simulated),
-                        "ks_statistic": ks_statistic,
-                        "ks_pvalue": ks_pvalue,
-                        "anderson_statistic": float(ad_result.statistic),
-                        "anderson_pvalue": float(ad_result.pvalue),
-                        "wasserstein_distance": float(
-                            stats.wasserstein_distance(
-                                empirical,
-                                simulated,
-                            )
+                        "sample_size": len(simulated),
+                        "sample_semantics": self.sample_semantics[model],
+                        "observation_log_return": observation,
+                        "crps": self._sample_crps(simulated, observation),
+                        "mean_absolute_error": float(
+                            np.mean(np.abs(simulated - observation))
+                        ),
+                        "probability_up": probability_up,
+                        "direction_target_up": int(target_up),
+                        "direction_brier_score": (
+                            probability_up - target_up
+                        ) ** 2,
+                        "direction_log_loss": float(
+                            -np.log(probability)
+                            if target_up
+                            else -np.log1p(-probability)
+                        ),
+                        "interval_90_low": float(lower),
+                        "interval_90_high": float(upper),
+                        "interval_90_covered": int(
+                            lower <= observation <= upper
                         ),
                     }
                 )
 
         frame = pd.DataFrame(rows)
-        frame["ks_pvalue_bh"] = self._benjamini_hochberg(
-            frame["ks_pvalue"]
-        )
-        frame["anderson_pvalue_bh"] = np.nan
-        for _, indices in frame.groupby("horizon").groups.items():
-            frame.loc[indices, "anderson_pvalue_bh"] = (
-                self._benjamini_hochberg(
-                    frame.loc[indices, "anderson_pvalue"]
-                )
-            )
         self._write_csv(output, frame)
         return frame
+
+    def distribution_tests(
+        self,
+        *,
+        output: str | Path | None = None,
+        horizons: Iterable[int] = PRIMARY_HORIZONS,
+    ) -> pd.DataFrame:
+        """Compatibility wrapper for the marginal-score protocol."""
+        warnings.warn(
+            "distribution_tests now returns fixed-origin marginal scores",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.marginal_score_tests(output=output, horizons=horizons)
 
     @staticmethod
     def _fit_log_variance(
@@ -261,16 +303,15 @@ class StatisticalTestSuite:
         if values.ndim == 1:
             starts = np.arange(0, len(values) - horizon, horizon)
             return np.log(values[starts + horizon] / values[starts])
-        starts = np.arange(0, values.shape[1] - horizon, horizon)
-        return np.log(
-            values[:, starts + horizon] / values[:, starts]
-        ).reshape(-1)
+        return self._fixed_origin_returns(values, horizon)
 
     def _bootstrap_betas(
         self,
         values: np.ndarray,
         horizons: np.ndarray,
         rng: np.random.Generator,
+        *,
+        sample_semantics: str,
     ) -> np.ndarray:
         dataset = np.asarray(values, dtype=np.float64)
         bootstrap_values = np.empty(
@@ -307,24 +348,49 @@ class StatisticalTestSuite:
                         [[0.0], np.cumsum(sampled_returns)]
                     )
                 )
-            else:
+            elif sample_semantics == "path_trajectories":
                 selected_paths = rng.integers(
                     0,
                     dataset.shape[0],
                     size=sampled_path_count,
                 )
                 sampled_values = dataset[selected_paths]
+            else:
+                sampled_values = dataset
 
-            variances = np.asarray(
-                [
-                    np.var(
-                        self._variance_samples(sampled_values, int(horizon)),
-                        ddof=1,
-                    )
-                    for horizon in horizons
-                ],
-                dtype=np.float64,
-            )
+            if dataset.ndim == 2 and sample_semantics == "fixed_origin_marginals":
+                variances = np.asarray(
+                    [
+                        np.var(
+                            self._fixed_origin_returns(
+                                sampled_values[
+                                    rng.integers(
+                                        0,
+                                        sampled_values.shape[0],
+                                        size=sampled_path_count,
+                                    )
+                                ],
+                                int(horizon),
+                            ),
+                            ddof=1,
+                        )
+                        for horizon in horizons
+                    ],
+                    dtype=np.float64,
+                )
+            else:
+                variances = np.asarray(
+                    [
+                        np.var(
+                            self._variance_samples(
+                                sampled_values, int(horizon)
+                            ),
+                            ddof=1,
+                        )
+                        for horizon in horizons
+                    ],
+                    dtype=np.float64,
+                )
             valid = np.isfinite(variances) & (variances > 0.0)
             if np.count_nonzero(valid) < 3:
                 bootstrap_values[iteration] = np.nan
@@ -345,7 +411,7 @@ class StatisticalTestSuite:
         """Estimate log-variance scaling and a bootstrap confidence interval."""
         datasets: dict[str, np.ndarray] = {
             "Empirical": self.comparison_prices,
-            **self.simulated_paths,
+            **self.forecast_samples,
         }
         seed_sequence = np.random.SeedSequence(self.random_seed + 1)
         children = iter(seed_sequence.spawn(len(datasets)))
@@ -384,6 +450,11 @@ class StatisticalTestSuite:
                 values,
                 horizon_array,
                 np.random.default_rng(next(children)),
+                sample_semantics=(
+                    "empirical_time_series"
+                    if model == "Empirical"
+                    else self.sample_semantics[model]
+                ),
             )
             if len(bootstrap) < max(30, self.bootstrap_iterations // 2):
                 raise RuntimeError(f"bootstrap failed for {model}")
@@ -401,7 +472,12 @@ class StatisticalTestSuite:
                     "bootstrap_method": (
                         "moving_block_returns"
                         if values.ndim == 1
-                        else "path_resampling"
+                        else (
+                            "path_resampling"
+                            if self.sample_semantics[model]
+                            == "path_trajectories"
+                            else "independent_marginal_resampling"
+                        )
                     ),
                     "horizons_used": len(horizon_array),
                     "min_horizon": int(horizon_array.min()),
@@ -522,7 +598,9 @@ class StatisticalTestSuite:
             ("Empirical", empirical_acf, len(empirical))
         ]
 
-        for model, paths in self.simulated_paths.items():
+        for model, paths in self.forecast_samples.items():
+            if self.sample_semantics[model] != "path_trajectories":
+                continue
             returns = np.diff(np.log(paths), axis=1)
             profile = self._ensemble_acf(returns, self.max_lag)
             self.acf_profiles[model] = profile
@@ -532,6 +610,7 @@ class StatisticalTestSuite:
         for model, profile, sample_size in datasets:
             row: dict[str, float | int | str] = {
                 "model": model,
+                "evaluation_scope": "trajectory_only",
                 "sample_size": sample_size,
                 "acf_mse": (
                     0.0
@@ -641,25 +720,34 @@ class StatisticalTestSuite:
         rows: list[dict[str, float | int | str]] = [
             {
                 "model": "Empirical",
+                "evaluation_scope": "trajectory_only",
                 **self._tail_metrics(
                     self._log_returns(self.comparison_prices)
                 ),
             }
         ]
+        trajectory_models = [
+            model
+            for model in self.forecast_samples
+            if self.sample_semantics[model] == "path_trajectories"
+        ]
         children = iter(
             np.random.SeedSequence(self.random_seed + 2).spawn(
-                len(self.simulated_paths)
+                len(trajectory_models)
             )
         )
-        for model, paths in self.simulated_paths.items():
-            sample = self._simulated_horizon_returns(
-                paths,
-                1,
-                np.random.default_rng(next(children)),
+        for model in trajectory_models:
+            paths = self.forecast_samples[model]
+            rng = np.random.default_rng(next(children))
+            starts = self._horizon_starts(1)
+            path_index = rng.integers(0, paths.shape[0], size=len(starts))
+            sample = np.log(
+                paths[path_index, starts + 1] / paths[path_index, starts]
             )
             rows.append(
                 {
                     "model": model,
+                    "evaluation_scope": "trajectory_only",
                     **self._tail_metrics(sample),
                 }
             )
@@ -674,33 +762,25 @@ class StatisticalTestSuite:
         self,
         *,
         output: str | Path | None = None,
-        loss_type: str = "absolute",
     ) -> pd.DataFrame:
-        """Run pairwise Diebold-Mariano tests on path prediction errors."""
-        realized = self.comparison_prices[1:]
-        
-        # Calculate mean predicted path for each model
-        predictions = {}
-        for model, paths in self.simulated_paths.items():
-            predictions[model] = np.mean(paths[:, 1:], axis=0)
-            
-        models = list(self.simulated_paths.keys())
-        rows = []
+        """Compare aligned rolling-origin one-step loss sequences."""
+        if self.rolling_one_step_losses is None:
+            raise ValueError(
+                "Diebold-Mariano requires aligned rolling_one_step_losses; "
+                "fixed-origin marginal columns are not a time series"
+            )
+        models = list(self.rolling_one_step_losses)
+        rows: list[dict[str, float | int | str | bool]] = []
         for i, model1 in enumerate(models):
             for j, model2 in enumerate(models):
                 if i >= j:
                     continue
-                e1 = predictions[model1] - realized
-                e2 = predictions[model2] - realized
-                if loss_type == "absolute":
-                    d = np.abs(e1) - np.abs(e2)
-                else:
-                    d = e1**2 - e2**2
-                
+                d = (
+                    self.rolling_one_step_losses[model1]
+                    - self.rolling_one_step_losses[model2]
+                )
                 mean_d = np.mean(d)
                 n = len(d)
-                
-                # HAC variance (Newey-West style, lag = max_lag)
                 gamma0 = np.var(d, ddof=1)
                 variance_d = gamma0
                 for lag in range(1, self.max_lag + 1):
@@ -709,20 +789,23 @@ class StatisticalTestSuite:
                     gamma_lag = np.cov(d[:-lag], d[lag:])[0, 1]
                     weight = 1.0 - lag / (self.max_lag + 1)
                     variance_d += 2 * weight * gamma_lag
-                
                 variance_d = max(variance_d, 1e-12)
                 stat = float(mean_d / np.sqrt(variance_d / n))
                 pvalue = float(2.0 * stats.norm.sf(np.abs(stat)))
-                
-                rows.append({
-                    "model1": model1,
-                    "model2": model2,
-                    "dm_statistic": stat,
-                    "dm_pvalue": pvalue,
-                    "loss_type": loss_type,
-                    "model1_better": stat < 0.0,
-                })
-        
+                rows.append(
+                    {
+                        "model1": model1,
+                        "model2": model2,
+                        "dm_statistic": stat,
+                        "dm_pvalue": pvalue,
+                        "mean_loss_differential": float(mean_d),
+                        "observations": n,
+                        "loss_type": "absolute_price_error",
+                        "forecast_alignment": "rolling_origin_one_step",
+                        "model1_better": stat < 0.0,
+                    }
+                )
+
         frame = pd.DataFrame(rows)
         if not frame.empty:
             frame["dm_pvalue_bh"] = self._benjamini_hochberg(frame["dm_pvalue"])
@@ -734,44 +817,91 @@ class StatisticalTestSuite:
         *,
         output: str | Path | None = None,
     ) -> pd.DataFrame:
-        """Estimate 95% CI for scorecard mean rank using simulated metric resampling."""
-        # This provides a proxy CI by resampling the path-level metrics
-        models = list(self.simulated_paths.keys())
-        if not models:
-            return pd.DataFrame()
-            
-        realized = self.comparison_prices[1:]
-        
-        # We will collect path-wise errors and use them to bootstrap ranks
-        iterations = min(self.bootstrap_iterations, 100)  # Keep it fast
-        
-        results = []
-        rng = np.random.default_rng(self.random_seed)
-        for _ in range(iterations):
-            ranks = {}
-            # Simplified proxy for rank variation: resample the paths
-            idx = rng.choice(
-                len(next(iter(self.simulated_paths.values()))),
-                size=len(next(iter(self.simulated_paths.values()))),
-                replace=True
+        """Bootstrap both pre-registered marginal primary endpoints."""
+        models = list(self.forecast_samples)
+        horizons = np.asarray(
+            [h for h in self.PRIMARY_HORIZONS if h <= self.n_steps],
+            dtype=int,
+        )
+        if len(horizons) < 2:
+            raise ValueError("at least two primary horizons are required")
+        results: list[dict[str, float | str]] = []
+        rng = np.random.default_rng(self.random_seed + 3)
+        for _ in range(self.bootstrap_iterations):
+            selected_horizons = rng.choice(
+                horizons, size=len(horizons), replace=True
             )
-            for m in models:
-                paths = self.simulated_paths[m][idx]
-                e = np.mean(np.abs(paths[:, 1:] - realized[None, :]), axis=0)
-                ranks[m] = np.mean(e)
-            
-            # Rank models based on this simple error metric for the bootstrap
-            sorted_m = sorted(models, key=lambda x: ranks[x])
-            for rank, m in enumerate(sorted_m, 1):
-                results.append({"model": m, "rank": rank})
-                
-        df = pd.DataFrame(results)
-        summary = df.groupby("model")["rank"].agg(
-            rank_mean="mean",
-            rank_ci_low=lambda x: np.percentile(x, 2.5),
-            rank_ci_high=lambda x: np.percentile(x, 97.5)
-        ).reset_index()
-        
+            for model in models:
+                samples = self.forecast_samples[model]
+                crps_values: list[float] = []
+                log_losses: list[float] = []
+                for horizon in selected_horizons:
+                    indices = rng.integers(
+                        0, samples.shape[0], size=samples.shape[0]
+                    )
+                    simulated = self._fixed_origin_returns(
+                        samples[indices], int(horizon)
+                    )
+                    observation = float(
+                        np.log(
+                            self.comparison_prices[horizon]
+                            / self.comparison_prices[0]
+                        )
+                    )
+                    crps_values.append(
+                        self._sample_crps(simulated, observation)
+                    )
+                    probability = float(
+                        np.clip(
+                            np.mean(simulated > 0.0),
+                            1e-12,
+                            1.0 - 1e-12,
+                        )
+                    )
+                    log_losses.append(
+                        float(
+                            -np.log(probability)
+                            if observation > 0.0
+                            else -np.log1p(-probability)
+                        )
+                    )
+                results.append(
+                    {
+                        "model": model,
+                        "mean_crps": float(np.mean(crps_values)),
+                        "mean_direction_log_loss": float(
+                            np.mean(log_losses)
+                        ),
+                    }
+                )
+
+        frame = pd.DataFrame(results)
+        summary_rows: list[dict[str, float | str | int]] = []
+        for model, group in frame.groupby("model", sort=False):
+            summary_rows.append(
+                {
+                    "model": model,
+                    "bootstrap_iterations": len(group),
+                    "mean_crps": float(group["mean_crps"].mean()),
+                    "mean_crps_ci_low": float(
+                        group["mean_crps"].quantile(0.025)
+                    ),
+                    "mean_crps_ci_high": float(
+                        group["mean_crps"].quantile(0.975)
+                    ),
+                    "mean_direction_log_loss": float(
+                        group["mean_direction_log_loss"].mean()
+                    ),
+                    "mean_direction_log_loss_ci_low": float(
+                        group["mean_direction_log_loss"].quantile(0.025)
+                    ),
+                    "mean_direction_log_loss_ci_high": float(
+                        group["mean_direction_log_loss"].quantile(0.975)
+                    ),
+                    "resampling_unit": "horizons_and_marginal_draws",
+                }
+            )
+        summary = pd.DataFrame(summary_rows)
         self._write_csv(output, summary)
         return summary
 
@@ -781,23 +911,23 @@ class StatisticalTestSuite:
         results_dir: str | Path = "results",
         figures_dir: str | Path = "figures",
     ) -> dict[str, pd.DataFrame]:
-        """Run all four Phase 5 test categories and persist their outputs."""
+        """Run marginal tests plus explicitly trajectory-only diagnostics."""
         results_path = Path(results_dir)
         figures_path = Path(figures_dir)
         return {
-            "distribution": self.distribution_tests(
-                output=results_path / "distribution_tests.csv",
+            "marginal_scores": self.marginal_score_tests(
+                output=results_path / "marginal_score_tests.csv",
             ),
             "variance_scaling": self.variance_scaling_tests(
                 output=results_path / "variance_scaling_results.csv",
                 figure_output=figures_path / "variance_scaling.png",
             ),
-            "autocorrelation": self.autocorrelation_tests(
-                output=results_path / "autocorrelation_tests.csv",
+            "trajectory_autocorrelation": self.autocorrelation_tests(
+                output=results_path / "trajectory_autocorrelation_tests.csv",
                 figure_output=figures_path / "acf_comparison.png",
             ),
-            "tail": self.tail_analysis(
-                output=results_path / "tail_analysis.csv",
+            "trajectory_tail": self.tail_analysis(
+                output=results_path / "trajectory_tail_analysis.csv",
             ),
             "diebold_mariano": self.diebold_mariano_tests(
                 output=results_path / "diebold_mariano_tests.csv",

@@ -181,11 +181,16 @@ def _variance_by_horizon(
     horizons: np.ndarray,
     *,
     paths: bool,
+    fixed_origin: bool = False,
 ) -> np.ndarray:
     variances = []
     for horizon in horizons:
         if paths:
-            changes = values[:, horizon:] - values[:, :-horizon]
+            changes = (
+                values[:, horizon] - values[:, 0]
+                if fixed_origin
+                else values[:, horizon:] - values[:, :-horizon]
+            )
         else:
             changes = values[horizon:] - values[:-horizon]
         variances.append(
@@ -200,6 +205,7 @@ def plot_variance_scaling(
     empirical_prices: Sequence[float],
     simulated_paths: Mapping[str, np.ndarray],
     *,
+    sample_semantics: Mapping[str, str] | None = None,
     output_path: str | Path = "figures/variance_scaling.png",
 ) -> Path:
     """Plot log-log variance growth with fitted scaling exponents."""
@@ -212,17 +218,30 @@ def plot_variance_scaling(
     horizons = np.unique(
         np.geomspace(1, maximum, num=min(14, maximum)).astype(int)
     )
-    series: list[tuple[str, np.ndarray, bool]] = [
-        ("Empirical", empirical, False)
+    semantics = sample_semantics or {
+        name: "path_trajectories" for name in simulated_paths
+    }
+    series: list[tuple[str, np.ndarray, bool, bool]] = [
+        ("Empirical", empirical, False, False)
     ]
     series.extend(
-        (name, np.asarray(paths, dtype=np.float64), True)
+        (
+            name,
+            np.asarray(paths, dtype=np.float64),
+            True,
+            semantics[name] == "fixed_origin_marginals",
+        )
         for name, paths in simulated_paths.items()
     )
 
     fig, axis = plt.subplots(figsize=FIGSIZE)
-    for index, (name, values, is_paths) in enumerate(series):
-        variance = _variance_by_horizon(values, horizons, paths=is_paths)
+    for index, (name, values, is_paths, fixed_origin) in enumerate(series):
+        variance = _variance_by_horizon(
+            values,
+            horizons,
+            paths=is_paths,
+            fixed_origin=fixed_origin,
+        )
         valid = np.isfinite(variance) & (variance > 0.0)
         beta, intercept = np.polyfit(
             np.log(horizons[valid]),
@@ -285,13 +304,13 @@ def plot_return_distribution_comparison(
     empirical_prices: Sequence[float],
     simulated_paths: Mapping[str, np.ndarray],
     *,
+    sample_semantics: Mapping[str, str] | None = None,
     output_path: str | Path = "figures/return_distributions.png",
     random_seed: int = 2026,
 ) -> Path:
     """Compare standardized one-step return densities."""
     _style()
     selected = (
-        "QRW Adaptive",
         "CRW Simple",
         "GARCH(1,1)",
         "GBM",
@@ -305,6 +324,9 @@ def plot_return_distribution_comparison(
             ),
         )
     ]
+    semantics = sample_semantics or {
+        name: "path_trajectories" for name in simulated_paths
+    }
     samples.extend(
         (
             name,
@@ -315,6 +337,7 @@ def plot_return_distribution_comparison(
         )
         for name in selected
         if name in simulated_paths
+        and semantics[name] == "path_trajectories"
     )
     grid = np.linspace(-5.0, 5.0, 600)
     fig, axis = plt.subplots(figsize=FIGSIZE)
@@ -333,7 +356,7 @@ def plot_return_distribution_comparison(
         )
     axis.set_yscale("log")
     axis.set_ylim(1e-4, None)
-    axis.set_title("Standardized one-step return distributions")
+    axis.set_title("Trajectory-only standardized one-step returns")
     axis.set_xlabel("Return z-score")
     axis.set_ylabel("Kernel density, log scale")
     axis.legend()
@@ -369,6 +392,7 @@ def plot_acf_comparison(
     empirical_prices: Sequence[float],
     simulated_paths: Mapping[str, np.ndarray],
     *,
+    sample_semantics: Mapping[str, str] | None = None,
     output_path: str | Path = "figures/acf_comparison.png",
     max_lag: int = 20,
 ) -> Path:
@@ -377,16 +401,22 @@ def plot_acf_comparison(
     empirical_returns = np.diff(
         np.log(np.maximum(np.asarray(empirical_prices, dtype=float), 1e-12))
     )
+    semantics = sample_semantics or {
+        name: "path_trajectories" for name in simulated_paths
+    }
     names = [
         name
         for name in (
             "Empirical",
-            "QRW Adaptive",
             "CRW Simple",
             "GARCH(1,1)",
             "GBM",
         )
-        if name == "Empirical" or name in simulated_paths
+        if name == "Empirical"
+        or (
+            name in simulated_paths
+            and semantics[name] == "path_trajectories"
+        )
     ]
     fig, axes = plt.subplots(3, 2, figsize=FIGSIZE, sharex=True, sharey=True)
     lag_values = np.arange(1, max_lag + 1)
@@ -406,7 +436,7 @@ def plot_acf_comparison(
         axis.set_title(name, fontsize=10)
     for axis in axes.flat[len(names) :]:
         axis.axis("off")
-    fig.suptitle("One-step return autocorrelation")
+    fig.suptitle("Trajectory-only one-step return autocorrelation")
     fig.supxlabel("Lag")
     fig.supylabel("ACF")
     fig.tight_layout()
@@ -417,16 +447,20 @@ def plot_sample_paths(
     empirical_prices: Sequence[float],
     simulated_paths: Mapping[str, np.ndarray],
     *,
+    sample_semantics: Mapping[str, str] | None = None,
     output_path: str | Path = "figures/sample_paths.png",
     n_paths: int = 10,
 ) -> Path:
-    """Overlay empirical prices with QRW and simple CRW sample paths."""
+    """Plot QRW marginal bands without joining draws across horizons."""
     _style()
     required = {"QRW Adaptive", "CRW Simple"}
     missing = required.difference(simulated_paths)
     if missing:
         raise ValueError(f"sample paths are missing models: {sorted(missing)}")
     empirical = np.asarray(empirical_prices, dtype=np.float64)
+    semantics = sample_semantics or {
+        name: "path_trajectories" for name in simulated_paths
+    }
     fig, axis = plt.subplots(figsize=FIGSIZE)
     steps = np.arange(len(empirical))
     for name, color in (
@@ -434,15 +468,29 @@ def plot_sample_paths(
         ("CRW Simple", COLORS[1]),
     ):
         paths = np.asarray(simulated_paths[name], dtype=np.float64)
-        for index in range(min(n_paths, len(paths))):
-            axis.plot(
-                steps,
-                paths[index, : len(empirical)],
-                color=color,
-                alpha=0.24,
-                linewidth=0.9,
-                label=name if index == 0 else None,
+        if semantics[name] == "fixed_origin_marginals":
+            lower, median, upper = np.quantile(
+                paths[:, : len(empirical)], [0.05, 0.5, 0.95], axis=0
             )
+            axis.fill_between(
+                steps,
+                lower,
+                upper,
+                color=color,
+                alpha=0.18,
+                label=f"{name} 90% marginal interval",
+            )
+            axis.plot(steps, median, color=color, linewidth=1.8)
+        else:
+            for index in range(min(n_paths, len(paths))):
+                axis.plot(
+                    steps,
+                    paths[index, : len(empirical)],
+                    color=color,
+                    alpha=0.24,
+                    linewidth=0.9,
+                    label=name if index == 0 else None,
+                )
     axis.plot(
         steps,
         empirical,
@@ -451,7 +499,7 @@ def plot_sample_paths(
         label="Empirical",
         zorder=5,
     )
-    axis.set_title("Empirical path and simulated QRW/CRW paths")
+    axis.set_title("Empirical path, QRW marginal band, and CRW paths")
     axis.set_xlabel("Event step")
     axis.set_ylabel("BTCUSDT price")
     axis.legend()

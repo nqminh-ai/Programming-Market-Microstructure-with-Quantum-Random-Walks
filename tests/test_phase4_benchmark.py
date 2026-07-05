@@ -85,6 +85,22 @@ def test_benchmark_suite_writes_complete_reproducible_outputs(tmp_path) -> None:
     assert stored["roadmap_simple_crw_target_0_5_corrected"] is True
     assert stored["protocol_version"] == BenchmarkSuite.PROTOCOL_VERSION
     assert stored["uses_holdout_features_for_simulation"] is False
+    assert stored["qrw_forecast"]["state_evolution"].startswith("density_matrix")
+    assert len(stored["qrw_forecast"]["position_variance_by_horizon"]) == 50
+    assert stored["evaluation_semantics"] == "fixed_origin_marginals_only"
+    assert stored["sample_semantics"]["QRW Adaptive"] == (
+        "fixed_origin_marginals"
+    )
+    assert stored["path_dependent_metrics_include_qrw"] is False
+    assert set(suite.model_comparison["information_criterion_scope"]) == {
+        "within_likelihood_type_only"
+    }
+    assert (
+        suite.model_comparison.groupby("likelihood_type")[
+            "aic_rank_within_likelihood"
+        ].min()
+        == 1.0
+    ).all()
 
 
 def test_qrw_forecast_does_not_use_holdout_covariates() -> None:
@@ -113,13 +129,58 @@ def test_qrw_forecast_reproduces_zero_move_probability() -> None:
     )
     model, parameters = suite._fit_qrw()
     paths = suite._simulate_qrw(model, seed=2026)
-    moving_fraction = np.mean(np.abs(np.diff(paths, axis=1)) > 1e-12)
+    first_horizon_move_fraction = np.mean(
+        np.abs(paths[:, 1] - paths[:, 0]) > 1e-12
+    )
 
     assert suite.movement_probability == pytest.approx(0.5, abs=0.01)
-    assert parameters["movement_probability"] == pytest.approx(
-        suite.movement_probability
+    assert parameters["movement_probability"] == pytest.approx(0.5, abs=0.01)
+    assert first_horizon_move_fraction == pytest.approx(
+        parameters["movement_probability"],
+        abs=0.04,
     )
-    assert moving_fraction == pytest.approx(
-        suite.movement_probability,
-        abs=0.01,
+
+
+def test_benchmark_accepts_explicit_non_overlapping_holdout() -> None:
+    train = _benchmark_market(200)
+    holdout = _benchmark_market(80)
+    holdout["timestamp"] += len(train)
+    suite = BenchmarkSuite(
+        train,
+        holdout_data=holdout,
+        n_steps=20,
+        n_paths=100,
+    )
+
+    assert suite.split_strategy == "explicit_chronological_holdout"
+    assert len(suite.train) == 200
+    assert len(suite.test) == 21
+    assert suite.initial_price == pytest.approx(train["price"].iloc[-1])
+    assert suite.train["timestamp"].max() < suite.holdout["timestamp"].min()
+
+
+def test_qrw_score_is_invariant_to_cross_horizon_row_pairing() -> None:
+    suite = BenchmarkSuite(
+        _benchmark_market(),
+        n_steps=30,
+        n_paths=200,
+        random_seed=11,
+    )
+    model, _ = suite._fit_qrw()
+    marginals = suite._simulate_qrw(model, seed=12)
+    independently_permuted = marginals.copy()
+    rng = np.random.default_rng(13)
+    for horizon in range(1, independently_permuted.shape[1]):
+        rng.shuffle(independently_permuted[:, horizon])
+
+    original, _ = suite._score_marginals("QRW", marginals)
+    permuted, _ = suite._score_marginals("QRW", independently_permuted)
+    assert [row["metric"] for row in original] == [
+        row["metric"] for row in permuted
+    ]
+    assert [row["value"] for row in original] == pytest.approx(
+        [row["value"] for row in permuted]
+    )
+    assert [row["std"] for row in original] == pytest.approx(
+        [row["std"] for row in permuted]
     )

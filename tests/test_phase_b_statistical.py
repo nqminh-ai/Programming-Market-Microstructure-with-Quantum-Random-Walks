@@ -13,9 +13,15 @@ def mock_statistical_suite() -> StatisticalTestSuite:
         "ModelA": rng.normal(100, 1.2, size=(20, 101)),
         "ModelB": rng.normal(100, 0.8, size=(20, 101)),
     }
+    realized = empirical[1:]
+    losses = {
+        model: np.abs(paths[:, 1:].mean(axis=0) - realized)
+        for model, paths in simulated_paths.items()
+    }
     return StatisticalTestSuite(
         empirical,
         simulated_paths,
+        rolling_one_step_losses=losses,
         random_seed=42,
         bootstrap_iterations=50,
         max_lag=5,
@@ -38,10 +44,38 @@ def test_bootstrap_scorecard_ci(mock_statistical_suite: StatisticalTestSuite) ->
     assert isinstance(ci, pd.DataFrame)
     assert len(ci) == 2
     assert "model" in ci.columns
-    assert "rank_mean" in ci.columns
-    assert "rank_ci_low" in ci.columns
-    assert "rank_ci_high" in ci.columns
+    assert "mean_crps_ci_low" in ci.columns
+    assert "mean_crps_ci_high" in ci.columns
+    assert "mean_direction_log_loss_ci_low" in ci.columns
+    assert "mean_direction_log_loss_ci_high" in ci.columns
 
 def test_results_compiler_aic_bic_mock() -> None:
-    # Just verify ResultsCompiler runs without crashing when given mock inputs
-    pass
+    comparison = pd.DataFrame(
+        {
+            "model": ["Bernoulli", "Gaussian"],
+            "likelihood_type": ["directional_bernoulli", "continuous_gaussian"],
+            "aic": [10.0, 2.0],
+            "bic": [11.0, 3.0],
+        }
+    )
+    grouped = comparison.groupby("likelihood_type")["aic"].rank()
+    assert grouped.tolist() == [1.0, 1.0]
+
+
+def test_marginal_samples_are_excluded_from_path_statistics() -> None:
+    rng = np.random.default_rng(9)
+    empirical = 100.0 + np.cumsum(rng.choice([-0.01, 0.01], 101))
+    marginal = rng.normal(100.0, 0.1, size=(30, 101))
+    marginal[:, 0] = empirical[0]
+    suite = StatisticalTestSuite(
+        empirical,
+        {"QRW": marginal},
+        sample_semantics={"QRW": "fixed_origin_marginals"},
+        bootstrap_iterations=50,
+        max_lag=5,
+    )
+
+    assert set(suite.autocorrelation_tests()["model"]) == {"Empirical"}
+    assert set(suite.tail_analysis()["model"]) == {"Empirical"}
+    with pytest.raises(ValueError, match="rolling_one_step_losses"):
+        suite.diebold_mariano_tests()
