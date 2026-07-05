@@ -4,6 +4,7 @@ import pytest
 
 from src.evaluation.statistical_tests import StatisticalTestSuite
 from src.evaluation.results_compiler import ResultsCompiler
+from src.evaluation.benchmark_suite import BenchmarkSuite
 
 @pytest.fixture
 def mock_statistical_suite() -> StatisticalTestSuite:
@@ -58,8 +59,24 @@ def test_results_compiler_aic_bic_mock() -> None:
             "bic": [11.0, 3.0],
         }
     )
-    grouped = comparison.groupby("likelihood_type")["aic"].rank()
-    assert grouped.tolist() == [1.0, 1.0]
+    ranked = BenchmarkSuite.rank_information_criteria(comparison)
+    assert ranked["aic_rank_within_likelihood"].tolist() == [1.0, 1.0]
+    assert set(ranked["information_criterion_scope"]) == {
+        "within_likelihood_type_only"
+    }
+
+
+def test_empty_aic_bic_table_is_handled_without_cross_family_ranking() -> None:
+    empty = pd.DataFrame(columns=["likelihood_type", "aic", "bic"])
+
+    ranked = BenchmarkSuite.rank_information_criteria(empty)
+
+    assert ranked.empty
+    assert {
+        "aic_rank_within_likelihood",
+        "bic_rank_within_likelihood",
+        "information_criterion_scope",
+    } <= set(ranked.columns)
 
 
 def test_marginal_samples_are_excluded_from_path_statistics() -> None:

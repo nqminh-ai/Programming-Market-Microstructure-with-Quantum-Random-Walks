@@ -710,17 +710,8 @@ class BenchmarkSuite:
             garch=garch,
             gbm=gbm,
         )
-        self.model_comparison = pd.DataFrame(comparison_rows)
-        self.model_comparison["aic_rank_within_likelihood"] = (
-            self.model_comparison.groupby("likelihood_type", sort=False)["aic"]
-            .rank(method="min", ascending=True)
-        )
-        self.model_comparison["bic_rank_within_likelihood"] = (
-            self.model_comparison.groupby("likelihood_type", sort=False)["bic"]
-            .rank(method="min", ascending=True)
-        )
-        self.model_comparison["information_criterion_scope"] = (
-            "within_likelihood_type_only"
+        self.model_comparison = self.rank_information_criteria(
+            pd.DataFrame(comparison_rows)
         )
         simple_ratio = float(
             self.results.loc[
@@ -793,6 +784,29 @@ class BenchmarkSuite:
                 encoding="utf-8",
             )
         return self.results.copy()
+
+    @staticmethod
+    def rank_information_criteria(frame: pd.DataFrame) -> pd.DataFrame:
+        """Rank AIC/BIC only within matching likelihood families."""
+        required = {"likelihood_type", "aic", "bic"}
+        missing = sorted(required.difference(frame.columns))
+        if missing:
+            raise ValueError(
+                f"information-criterion table is missing columns: {missing}"
+            )
+        ranked = frame.copy()
+        ranked["aic_rank_within_likelihood"] = (
+            ranked.groupby("likelihood_type", sort=False)["aic"]
+            .rank(method="min", ascending=True)
+        )
+        ranked["bic_rank_within_likelihood"] = (
+            ranked.groupby("likelihood_type", sort=False)["bic"]
+            .rank(method="min", ascending=True)
+        )
+        ranked["information_criterion_scope"] = (
+            "within_likelihood_type_only"
+        )
+        return ranked
 
     @staticmethod
     def _comparison_row(
