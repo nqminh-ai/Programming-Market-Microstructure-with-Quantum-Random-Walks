@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from src.evaluation.benchmark_suite import BenchmarkSuite
 from src.models.adaptive_market_qrw import AdaptiveDecoherenceQRW
 
 
@@ -82,6 +83,23 @@ def resolve_feature_path(explicit: Path | None) -> Path:
     )
 
 
+def chronological_train_holdout_split(
+    frame: pd.DataFrame,
+    *,
+    train_fraction: float,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Return non-overlapping chronological train and holdout frames."""
+    if not 0.5 <= train_fraction <= 0.9:
+        raise ValueError("train_fraction must be between 0.5 and 0.9")
+    ordered = frame.sort_values("timestamp", kind="stable").reset_index(drop=True)
+    cut = int(len(ordered) * train_fraction)
+    train = ordered.iloc[:cut].copy().reset_index(drop=True)
+    holdout = ordered.iloc[cut:].copy().reset_index(drop=True)
+    if len(train) < 100 or len(holdout) < 11:
+        raise ValueError("data is too short for a train/holdout benchmark")
+    return train, holdout
+
+
 def benchmark_paths(
     *,
     market_data: pd.DataFrame,
@@ -89,8 +107,8 @@ def benchmark_paths(
     n_steps: int,
     n_paths: int,
     random_seed: int,
-) -> dict[str, float | int | bool]:
-    """Benchmark measured adaptive-decoherence QRW trajectories."""
+) -> dict[str, float | int | bool | str]:
+    """Benchmark a non-quantum Bernoulli compatibility sampler."""
     if market_data.empty:
         raise ValueError("market_data cannot be empty")
     indices = np.arange(n_steps) % len(market_data)
@@ -128,6 +146,8 @@ def benchmark_paths(
     all_increments = np.column_stack([paths[:, 0], increments])
 
     return {
+        "sampler_semantics": "classical_bernoulli_directional_surrogate",
+        "official_quantum_evaluation": False,
         "n_steps": n_steps,
         "n_paths": n_paths,
         "elapsed_seconds": elapsed,
@@ -149,7 +169,8 @@ def write_benchmark_report(
     parameters: dict[str, object],
     market_normalization_error: float,
     market_elapsed_seconds: float,
-    benchmark: dict[str, float | int | bool],
+    benchmark: dict[str, float | int | bool | str],
+    holdout_diagnostics: dict[str, object],
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
@@ -157,6 +178,15 @@ def write_benchmark_report(
         f"Python: {platform.python_version()}",
         f"NumPy: {np.__version__}",
         f"Feature source: {feature_path}",
+        "Speed sampler: classical Bernoulli directional surrogate",
+        "Eligible as official QRW evidence: False",
+        "Evaluation split: explicit chronological train/holdout",
+        f"Holdout train rows: {holdout_diagnostics['train_rows']}",
+        f"Holdout test rows: {holdout_diagnostics['test_rows']}",
+        (
+            "Holdout uses future covariates for simulation: "
+            f"{holdout_diagnostics['uses_holdout_features_for_simulation']}"
+        ),
         f"Calibration rows: {parameters['calibration_rows']}",
         f"rho_1: {parameters['rho_1']:.12g}",
         f"gamma: {parameters['gamma']:.12g}",
@@ -204,9 +234,9 @@ def write_benchmark_report(
         f"Final sampled variance: {benchmark['sample_variance_final']:.6f}",
         "",
         (
-            "Method: AdaptiveDecoherenceQRW with causal microstructure signal, "
-            "trade-intensity-modulated basis dephasing, adaptive coin-shift, "
-            "and local projective position measurement."
+            "Method note: this speed benchmark samples a classical Bernoulli "
+            "surrogate. Official QRW evidence comes only from density-matrix "
+            "fixed-origin marginals in BenchmarkSuite."
         ),
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -221,8 +251,13 @@ def parse_args() -> argparse.Namespace:
         help="Defaults to the newest feature file with varying OBI.",
     )
     parser.add_argument("--max-calibration-rows", type=int, default=250_000)
+    parser.add_argument("--train-fraction", type=float, default=0.8)
     parser.add_argument("--calibrated-output", type=Path, default=Path("results/calibrated_params.json"))
     parser.add_argument("--benchmark-output", type=Path, default=Path("reports/performance_benchmark.txt"))
+    parser.add_argument("--holdout-results-output", type=Path, default=Path("results/phase3_holdout_benchmark.csv"))
+    parser.add_argument("--holdout-comparison-output", type=Path, default=Path("results/phase3_holdout_model_comparison.csv"))
+    parser.add_argument("--holdout-garch-output", type=Path, default=Path("results/phase3_holdout_garch.json"))
+    parser.add_argument("--holdout-diagnostics-output", type=Path, default=Path("reports/phase3_holdout_diagnostics.json"))
     parser.add_argument("--market-steps", type=int, default=50)
     parser.add_argument("--benchmark-steps", type=int, default=1_000)
     parser.add_argument("--benchmark-paths", type=int, default=1_000)
@@ -234,13 +269,17 @@ def main() -> None:
     args = parse_args()
     if args.max_calibration_rows < 2:
         raise ValueError("max-calibration-rows must be at least 2")
-    if args.market_steps < 1:
-        raise ValueError("market-steps must be positive")
+    if args.market_steps < 10:
+        raise ValueError("market-steps must be at least 10")
 
     feature_path = resolve_feature_path(args.feature_path)
     data = load_calibration_rows(feature_path, args.max_calibration_rows)
-    model = AdaptiveDecoherenceQRW(
+    train_data, test_data = chronological_train_holdout_split(
         data,
+        train_fraction=args.train_fraction,
+    )
+    model = AdaptiveDecoherenceQRW(
+        train_data,
         {
             "n_positions": 2 * args.market_steps + 1,
             "gamma_base": 0.0,
@@ -254,11 +293,25 @@ def main() -> None:
     market_normalization_error = float(np.max(np.abs(totals - 1.0)))
 
     benchmark = benchmark_paths(
-        market_data=data,
+        market_data=train_data,
         parameters=parameters,
         n_steps=args.benchmark_steps,
         n_paths=args.benchmark_paths,
         random_seed=args.random_seed,
+    )
+    holdout_steps = min(args.market_steps, len(test_data) - 1)
+    holdout_suite = BenchmarkSuite(
+        train_data,
+        holdout_data=test_data,
+        n_steps=holdout_steps,
+        n_paths=args.benchmark_paths,
+        random_seed=args.random_seed,
+    )
+    holdout_suite.run(
+        benchmark_output=args.holdout_results_output,
+        comparison_output=args.holdout_comparison_output,
+        garch_output=args.holdout_garch_output,
+        diagnostics_output=args.holdout_diagnostics_output,
     )
     write_benchmark_report(
         args.benchmark_output,
@@ -267,10 +320,12 @@ def main() -> None:
         market_normalization_error=market_normalization_error,
         market_elapsed_seconds=market_elapsed_seconds,
         benchmark=benchmark,
+        holdout_diagnostics=holdout_suite.diagnostics,
     )
 
     print(f"Calibration: {args.calibrated_output}")
     print(f"Benchmark: {args.benchmark_output}")
+    print(f"Holdout benchmark: {args.holdout_results_output}")
     print(f"Elapsed: {benchmark['elapsed_seconds']:.6f}s")
     print(f"Target passed: {benchmark['target_passed']}")
 

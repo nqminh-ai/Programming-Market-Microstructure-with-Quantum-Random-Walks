@@ -292,11 +292,13 @@ class AdaptiveDecoherenceQRW:
         )
         all_features, all_target = self._moving_events()
         price_change = np.diff(
-            self.tick_data["price"].to_numpy(dtype=np.float64)
+            self.tick_data["price"].to_numpy(dtype=np.float64)[:warmup_rows]
         )
         valid_change = np.ones(len(price_change), dtype=bool)
         if "segment_id" in self.tick_data:
-            segment = self.tick_data["segment_id"].to_numpy(copy=False)
+            segment = self.tick_data["segment_id"].to_numpy(copy=False)[
+                :warmup_rows
+            ]
             valid_change &= segment[:-1] == segment[1:]
         self.movement_probability = float(
             np.mean(np.abs(price_change[valid_change]) > 1e-12)
@@ -370,6 +372,8 @@ class AdaptiveDecoherenceQRW:
             "alpha_abs_obi": float(self.coefficients[3]),
             "gamma_intensity": self.gamma_intensity,
             "movement_probability": self.movement_probability,
+            "movement_probability_calibration_rows": warmup_rows,
+            "movement_probability_uses_post_warmup": False,
             "feature_names": list(self.FEATURE_NAMES),
             "feature_mean": self.feature_mean.tolist(),
             "feature_scale": self.feature_scale.tolist(),
@@ -466,6 +470,11 @@ class AdaptiveDecoherenceQRW:
         *,
         random_state: int | np.random.Generator | None = None,
     ) -> np.ndarray:
+        """Sample a classical Bernoulli surrogate, not the QRW density state.
+
+        This compatibility method is excluded from official QRW inference.
+        Use ``BenchmarkSuite._simulate_qrw`` for density-matrix marginals.
+        """
         if n_paths < 1:
             raise ValueError("n_paths must be positive")
         steps = (

@@ -6,7 +6,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scripts.phase3_pipeline import benchmark_paths
+from scripts.phase3_pipeline import (
+    benchmark_paths,
+    chronological_train_holdout_split,
+)
 
 
 def test_phase3_benchmark_accepts_calibrated_zero_moves() -> None:
@@ -44,3 +47,25 @@ def test_phase3_benchmark_accepts_calibrated_zero_moves() -> None:
     assert result["paths_are_local"] is True
     assert result["max_absolute_increment"] == 0
     assert result["simulated_move_fraction"] == pytest.approx(0.0)
+    assert result["sampler_semantics"] == (
+        "classical_bernoulli_directional_surrogate"
+    )
+    assert result["official_quantum_evaluation"] is False
+
+
+def test_phase3_split_is_strictly_chronological() -> None:
+    frame = pd.DataFrame(
+        {
+            "timestamp": np.arange(150, dtype=np.int64)[::-1],
+            "price": 100.0,
+        }
+    )
+
+    train, holdout = chronological_train_holdout_split(
+        frame,
+        train_fraction=0.8,
+    )
+
+    assert len(train) == 120
+    assert len(holdout) == 30
+    assert train["timestamp"].max() < holdout["timestamp"].min()

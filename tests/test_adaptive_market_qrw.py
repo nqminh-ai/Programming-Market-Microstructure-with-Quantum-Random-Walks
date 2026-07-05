@@ -82,6 +82,24 @@ def test_adaptive_calibration_persists_finite_parameters(tmp_path) -> None:
     ).all()
 
 
+def test_movement_probability_uses_warmup_only() -> None:
+    frame = _market_data()
+    warmup_rows = int(len(frame) * 0.4)
+    increments = np.ones(len(frame) - 1, dtype=np.float64)
+    increments[warmup_rows - 1 :] = np.resize(
+        np.array([0.0, 1.0]),
+        len(increments) - warmup_rows + 1,
+    )
+    frame["price"] = 100.0 + np.concatenate([[0.0], np.cumsum(increments)])
+    model = AdaptiveDecoherenceQRW(frame, {"n_positions": 41})
+
+    parameters = model.calibrate_two_stage(None)
+
+    assert parameters["movement_probability"] == pytest.approx(1.0)
+    assert parameters["movement_probability_calibration_rows"] == warmup_rows
+    assert parameters["movement_probability_uses_post_warmup"] is False
+
+
 def test_adaptive_simulation_is_normalized_and_local() -> None:
     model = AdaptiveDecoherenceQRW(
         _market_data(),
