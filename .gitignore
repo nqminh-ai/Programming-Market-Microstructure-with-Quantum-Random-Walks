@@ -5,6 +5,8 @@ __pycache__/
 
 # Testing
 .pytest_cache/
+.test-cache/
+.test-tmp/
 .test-tmp-*/
 reports/.pytest-tmp*/
 .coverage
