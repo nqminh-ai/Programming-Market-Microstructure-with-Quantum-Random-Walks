@@ -36,6 +36,9 @@ def test_heavy_tail_qrw_calibration(mock_tick_data: pd.DataFrame) -> None:
     assert "tail_index" in params
     assert "jump_scale" in params
     assert 1.0 <= params["tail_index"] <= 10.0
+    assert params["model_type"] == "classical_pareto_directional_surrogate"
+    assert params["quantum_state_evolution"] is False
+    assert params["eligible_for_qrw_claims"] is False
 
 def test_heavy_tail_qrw_simulation(mock_tick_data: pd.DataFrame) -> None:
     model = HeavyTailAdaptiveQRW(mock_tick_data, {"n_positions": 101})
@@ -55,3 +58,28 @@ def test_heavy_tail_qrw_simulation(mock_tick_data: pd.DataFrame) -> None:
     # The paths should have some jumps larger than jump_scale
     increments = np.abs(np.diff(paths, axis=1))
     assert np.any(increments > 0.0)
+
+
+def test_pareto_tail_index_recovery() -> None:
+    rng = np.random.default_rng(2026)
+    expected_alpha = 2.5
+    minimum_jump = 0.01
+    jumps = minimum_jump * (1.0 + rng.pareto(expected_alpha, 5_000))
+    price = 100.0 + np.concatenate([[0.0], np.cumsum(jumps)])
+    rows = len(price)
+    frame = pd.DataFrame(
+        {
+            "timestamp": np.arange(rows),
+            "price": price,
+            "tick_direction": np.ones(rows),
+            "obi": np.zeros(rows),
+            "trade_intensity": np.ones(rows),
+            "segment_id": np.zeros(rows, dtype=np.int64),
+        }
+    )
+    model = HeavyTailAdaptiveQRW(frame, {"n_positions": 101})
+
+    model._fit_jump_distribution()
+
+    assert model.tail_index == pytest.approx(expected_alpha, rel=0.12)
+    assert model.jump_scale == pytest.approx(minimum_jump, rel=0.15)

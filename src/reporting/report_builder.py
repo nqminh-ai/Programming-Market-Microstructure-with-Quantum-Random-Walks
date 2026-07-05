@@ -61,8 +61,8 @@ def _format_probability(value: float) -> str:
     return f"{value:.3e}" if value < 0.001 else f"{value:.4f}"
 
 
-def build_final_report_markdown(context: ReportContext) -> str:
-    """Return the full research-paper-style report in Markdown."""
+def _build_final_report_markdown_legacy(context: ReportContext) -> str:
+    """Retain the prior layout for comparison; it is not release output."""
     references = "\n".join(
         f"{index}. {reference}"
         for index, reference in enumerate(REFERENCES, start=1)
@@ -261,6 +261,87 @@ continuous-time quantum walks with marked point-process baselines.
 ## References
 
 {references}
+"""
+
+
+def build_final_report_markdown(context: ReportContext) -> str:
+    """Trả về báo cáo tiếng Việt, giữ nguyên kết luận khoa học âm."""
+    return f"""# Báo cáo cuối: Quantum Random Walk cho vi cấu trúc thị trường
+
+## Tóm tắt
+
+Nghiên cứu đánh giá một quantum random walk (QRW) density-matrix với coin
+thích nghi và decoherence. Tập đánh giá có {context.train_rows:,} dòng train,
+{context.holdout_rows:,} dòng holdout, {context.n_steps:,} horizon và
+{context.n_paths:,} draw biên cho mỗi model/horizon. Endpoint chính là mean
+marginal CRPS; directional log loss chỉ dùng làm tie-break.
+
+{context.top_model} có CRPS thấp nhất ({context.top_mean_marginal_crps:.6g}).
+QRW xếp hạng {context.qrw_rank}, CRPS {context.qrw_mean_marginal_crps:.6g} và
+directional log loss {context.qrw_mean_direction_log_loss:.6g}. Kết quả này
+không thiết lập bằng chứng về ưu thế dự báo của QRW.
+
+## 1. Ngữ nghĩa đánh giá
+
+QRW chỉ tạo phân phối biên fixed-origin tại từng horizon. Các draw độc lập giữa
+các horizon không tạo thành trajectory. Vì vậy QRW không được đưa vào thống kê
+return difference, ACF, tail index hoặc path-based Diebold–Mariano.
+
+Diebold–Mariano chỉ dùng loss rolling-origin một bước, căn chỉnh trên cùng
+timestamp. ACF và tail là chẩn đoán `trajectory_only` cho baseline có path
+thật.
+
+## 2. Dữ liệu và giao thức
+
+Artifact feature: `{context.feature_path}`.
+
+| Thành phần | Giá trị |
+|---|---:|
+| Train | {context.train_rows:,} dòng |
+| Holdout | {context.holdout_rows:,} dòng |
+| Horizon | {context.n_steps:,} |
+| Draw biên/model/horizon | {context.n_paths:,} |
+| Seed | {context.random_seed} |
+
+OBI trong dữ liệu hiện tại là proxy trade-flow imbalance, không phải L2 LOB.
+Calibration và mô hình AR(1) cho OBI tương lai chỉ dùng train.
+
+## 3. Kết quả định lượng
+
+| Đại lượng | Giá trị quan sát |
+|---|---:|
+| Model đứng đầu | {context.top_model} |
+| CRPS đứng đầu | {context.top_mean_marginal_crps:.6g} |
+| QRW overall rank | {context.qrw_rank} |
+| QRW mean marginal CRPS | {context.qrw_mean_marginal_crps:.6g} |
+| QRW direction log loss | {context.qrw_mean_direction_log_loss:.6g} |
+| Empirical variance beta | {context.empirical_beta:.4f} |
+| QRW variance beta | {context.qrw_beta:.4f} |
+| QRW beta 95% CI | [{context.qrw_beta_ci_low:.4f}; {context.qrw_beta_ci_high:.4f}] |
+| Thống kê path-dependent của QRW | không áp dụng |
+
+![Tiến hóa xác suất](../figures/prob_evolution.gif)
+
+![Variance scaling](../figures/variance_scaling.png)
+
+![Dải marginal QRW và path baseline](../figures/sample_paths.png)
+
+![Scorecard](../figures/scorecard.png)
+
+## 4. Giới hạn
+
+1. Dữ liệu hoạt động chỉ gồm một cửa sổ rất ngắn.
+2. OBI là proxy luồng giao dịch, không phải order book L2 đồng bộ.
+3. Kết quả cross-asset cũ chưa đánh giá đầy đủ mọi ngày có sẵn.
+4. Walk-forward hiện không ủng hộ lợi thế QRW.
+5. Chưa có holdout multi-day untouched để đưa ra kết luận confirmatory.
+
+## 5. Kết luận
+
+Pipeline có thể kiểm toán ngữ nghĩa marginal, nhưng kết quả khoa học hiện tại
+vẫn âm: chưa có bằng chứng QRW vượt baseline cổ điển. Kết luận chỉ được xem xét
+lại sau khi protocol và provenance được đóng băng, đồng thời có ít nhất 20 ngày
+UTC mới cho mỗi tài sản với L2 LOB đồng bộ.
 """
 
 

@@ -1,216 +1,118 @@
-# Quantum Random Walks for Market Microstructure
+# Báo cáo cuối: Quantum Random Walk cho vi cấu trúc thị trường
 
-## Abstract
+## Trạng thái khoa học
 
-This project evaluates whether a discrete-time quantum random walk (QRW) can
-serve as a useful engineering model for short-horizon market microstructure.
-The implementation maps order-book imbalance, tick direction, imbalance
-changes, and trade intensity into a unitary adaptive coin and an
-intensity-dependent dephasing channel. It compares the resulting QRW against
-simple, biased, and correlated classical random walks, GARCH(1,1), and
-geometric Brownian motion under one chronological train/holdout protocol.
-The active dataset contains 1,908
-causally processed BTCUSDT observations from June 12, 2026. Phase 5 uses
-1,144 training rows, 764 later holdout
-rows, 5,000 simulated paths per model, and a fixed random seed of
-2026. The scorecard ranks CRW Correlated first with mean
-metric rank 1.857; QRW Adaptive ranks
-3 with mean rank 2.857. The QRW
-one-step distribution is rejected against the empirical sample
-(Benjamini-Hochberg adjusted KS p-value
-0.0058), while its variance exponent
-is 1.0023 with 95% interval
-[0.9853, 1.0192]. The empirical
-tail index is 1.2886, far from the QRW estimate of
-1.656e+06.
+**Kết luận hiện tại: chưa có bằng chứng cho thấy QRW vượt trội hơn các baseline
+cổ điển.** Kết quả này phải được giữ nguyên kể cả khi một lần chia holdout đơn
+lẻ cho kết quả thuận lợi hơn.
 
-## Related Work
+Báo cáo Phase 4/5 cũ dùng protocol v2 đã bị vô hiệu hóa. Mã nguồn hiện dùng
+`fixed_origin_marginal_density_matrix_ar1_obi_v4`; vì vậy mọi bảng điểm, biểu
+đồ và PDF cũ chưa được tái tạo bằng protocol v4 đều không được dùng làm bằng
+chứng.
 
-The application of Quantum Random Walks to financial modeling builds upon decades of research in market microstructure and econophysics. Classical LOB models [1, 2] capture statistical properties such as long memory and volatility clustering, but often rely on continuous geometric Brownian motion or standard Poisson jumps which underestimate extreme tail events. Quantum finance literature [3, 4] has proposed QRWs for their quadratic variance scaling speedup. However, few models couple real-time LOB features to the unitary coin operator and dephasing channels [5]. Furthermore, by integrating heavy-tailed jump dynamics [6], our framework bridges quantum probability with empirical high-frequency stylized facts, such as the Pareto tail behavior described by the Adaptive Markets Hypothesis [7].
+## 1. Mục tiêu
 
-## 1. Introduction
+Dự án kiểm tra liệu một quantum random walk rời rạc, có coin thích nghi và
+decoherence, có mô tả hữu ích phân phối giá theo horizon hay không. Đây là mô
+hình toán học lấy cảm hứng từ quantum walk, không phải tuyên bố thị trường vận
+hành theo cơ học lượng tử.
 
-Market microstructure is driven by discrete event arrivals, persistent order
-flow, changing liquidity, and heavy-tailed price changes. Classical random
-walks provide a transparent baseline but cannot express interference or a
-controlled transition from coherent to diffusive dynamics. QRWs supply those
-mechanisms through a coin state, conditional shift, and decoherence channel.
+Baseline gồm CRW đơn giản, CRW lệch, CRW tương quan, GARCH(1,1) và GBM. Tất cả
+phải dùng cùng mốc train/holdout và cùng dữ liệu có sẵn tại thời điểm dự báo.
 
-The research question is deliberately modest: can a causally calibrated QRW
-reproduce selected empirical distributional, scaling, dependence, and tail
-properties better than standard baselines? The project treats this as an
-engineering and falsification exercise, not as evidence that markets are
-quantum mechanical.
+## 2. Ngữ nghĩa phép đo đã sửa
 
-## 2. Theoretical Framework
+QRW tiến hóa density matrix qua từng bước và chỉ được đo như **phân phối biên
+fixed-origin** tại mỗi horizon. Các mẫu ở hai horizon khác nhau không tạo thành
+một trajectory chung.
 
-A one-dimensional coined QRW evolves on
-`H_coin tensor H_position`. One step applies a unitary coin `C_t`, followed by
-a conditional shift `S`, so `|psi_(t+1)> = S(C_t tensor I)|psi_t>`. The
-position probability is obtained by summing squared coin amplitudes. For a
-symmetric coherent Hadamard walk, variance grows ballistically, approximately
-as `t^2`; a symmetric classical walk grows diffusively as `t`.
+Do đó:
 
-The mixed-state implementation evolves `rho` and applies basis dephasing after
-each unitary step. Off-diagonal entries are multiplied by `exp(-gamma_t)`,
-preserving trace and populations. As coherence is reduced, the walk approaches
-classical diffusion.
+- không lấy `diff` giữa hai cột marginal QRW;
+- không tính ACF hoặc tail index từ marginal QRW;
+- không vẽ từng hàng marginal như một sample path;
+- không chạy Diebold–Mariano trên chuỗi loss fixed-origin;
+- chỉ dùng CRPS biên làm endpoint chính và directional log loss làm tiêu chí
+  phụ khi hòa;
+- Diebold–Mariano chỉ dùng loss rolling-origin một bước, được căn chỉnh theo
+  cùng timestamp.
 
-## 3. Market Mapping
+Các thống kê ACF và tail vẫn có thể được xuất cho baseline có trajectory thật,
+nhưng phải ghi rõ `trajectory_only` và không được đưa QRW vào so sánh đó.
 
-The adaptive coin uses a bounded nonlinear signal from current order-book
-imbalance, tick direction, imbalance change, and absolute imbalance. Market
-activity modifies the event-level dephasing rate. The operator remains unitary;
-directional information is phase encoded, so the magnitude-squared coin matrix
-alone is intentionally symmetric.
+## 3. Dữ liệu thực tế
 
-This mapping is causal at each event. Calibration is chronological, structural
-selection excludes its validation segment from refitting, and the later bias
-update does not reuse structural warmup observations.
+Artifact BTCUSDT đang hoạt động chỉ có **1.908 tick**, bao phủ khoảng **118,5
+giây** trong ngày 12-06-2026. Quy mô này không đủ để xác nhận tính ổn định theo
+ngày, theo chế độ thị trường hoặc theo tài sản.
 
-## 4. Data and Methodology
+Biến `obi` hiện tại là **proxy trade-flow imbalance** suy ra từ giao dịch, không
+phải order-book imbalance từ L2 limit order book đồng bộ. Vì vậy báo cáo không
+được gọi dữ liệu hiện tại là LOB thật.
 
-Active feature artifact: `data\features\features_BTCUSDT_2026-06-12.parquet`.
+Dữ liệu BTCUSDT, ETHUSDT và BNBUSDT có nhiều file theo ngày, nhưng đánh giá
+cross-asset trước đây chỉ chọn ngày cuối. Nó không chứng minh được độ bền trên
+31 ngày.
 
-| Protocol item | Value |
-|---|---:|
-| Chronological training rows | 1,144 |
-| Later holdout rows | 764 |
-| Simulation steps | 500 |
-| Paths per model | 5,000 |
-| Random seed | 2026 |
+## 4. Kiểm soát rò rỉ dữ liệu
 
-The active June 12 dataset is the only window used for the final benchmark.
-Historical June 1-7 processed and feature artifacts were rebuilt with the
-causal pipeline, but remain development-only rather than confirmatory data.
-Distribution and tail tests use matched empirical and simulated sample sizes.
-Variance scaling uses the same comparison horizon for empirical and simulated
-paths. Test-family p-values receive Benjamini-Hochberg correction.
+- Calibration và xác suất di chuyển chỉ dùng warmup/train.
+- Holdout được tách theo thời gian và không chồng lấp với train.
+- OBI tương lai trong mô phỏng fixed-origin được dự báo bằng AR(1) fit trên
+  train; feature holdout tương lai không được đưa vào simulator.
+- Live collector tính imbalance từ lịch sử trước khi append giao dịch hiện tại,
+  loại bỏ self-prediction leakage.
 
-## 5. Model Implementations
+## 5. Kết quả kiểm toán dự báo
 
-The benchmark includes QRW Adaptive, CRW Simple, CRW Biased, CRW Correlated,
-GARCH(1,1), and GBM. All models receive the same chronological split and
-simulation horizon. Directional likelihoods are compared only within the
-Bernoulli family; continuous Gaussian likelihood AIC/BIC values are not ranked
-against directional likelihoods.
+Walk-forward là bằng chứng chính. Trên ba fold đã kiểm toán, QRW không thắng
+baseline affine ở fold nào. Chênh lệch Brier pooled theo hướng
+`QRW - baseline` là khoảng **+0,049889**, với khoảng tin cậy 95% khoảng
+**[+0,020831; +0,078994]**. Giá trị dương nghĩa là QRW kém hơn.
 
-## 6. Results
+Một holdout đơn lẻ từng cho kết quả ngược lại chỉ là chẩn đoán phụ và không
+được phép lật ngược kết luận walk-forward. Vì thế verdict hợp lệ là:
 
-### 6.1 Probability Evolution
+> QRW kém hơn baseline affine trong walk-forward pooled; chưa có bằng chứng về
+> lợi thế dự báo QRW.
 
-![QRW and CRW probability evolution](../figures/prob_evolution.gif)
+## 6. AIC/BIC và scorecard
 
-The coherent QRW spreads ballistically with interference peaks, whereas the
-symmetric CRW remains concentrated around a diffusive binomial envelope.
+AIC/BIC chỉ được xếp hạng trong cùng họ likelihood:
 
-### 6.2 Variance Scaling
+- Bernoulli định hướng: QRW/CRW;
+- Gaussian liên tục: GARCH/GBM.
 
-![Variance scaling](../figures/variance_scaling.png)
+Không so sánh trực tiếp AIC/BIC giữa hai nhóm này. Scorecard không còn lấy
+trung bình hạng của các metric không đồng nhất. Endpoint đăng ký trước là mean
+marginal CRPS; directional log loss chỉ dùng làm tie-break. Variance scaling,
+coverage và interval width là chẩn đoán, không phải bằng chứng độc lập về ưu
+thế.
 
-The empirical fitted exponent is 1.3845. QRW Adaptive
-has beta 1.0023 with 95% interval
-[0.9853, 1.0192].
+## 7. Mô hình heavy-tail
 
-### 6.3 Return Distributions
+Module heavy-tail hiện tại là bộ sinh bước nhảy Bernoulli/Pareto cổ điển. Nó
+không triển khai một heavy-tailed unitary shift và không chứng minh cải thiện
+tail index của QRW. Các tuyên bố về khoảng tail index `1,1–2,5`, bootstrap CI
+cải thiện hoặc DM bền vững đã bị rút lại vì chưa được hỗ trợ bởi protocol hợp
+lệ.
 
-![Return distributions](../figures/return_distributions.png)
+## 8. Hạn chế chưa giải quyết
 
-The plot standardizes each model separately to compare shape rather than scale.
-The QRW and classical tick models do not reproduce the empirical heavy tail.
+1. Chưa có ít nhất 20 ngày UTC mới, untouched, cho mỗi tài sản.
+2. Chưa có L2 LOB đồng bộ với trade feed.
+3. Artifact Phase 3–6 chính thức chưa được tái tạo hoàn chỉnh dưới protocol v4.
+4. Dữ liệu cross-asset chưa được đánh giá theo toàn bộ ngày có sẵn.
+5. Chưa thể đưa ra kết luận confirmatory hoặc production-readiness.
 
-### 6.4 Autocorrelation
+## 9. Kết luận
 
-![ACF comparison](../figures/acf_comparison.png)
+Dự án đã sửa ngữ nghĩa đo QRW và quy tắc thống kê theo hướng có thể kiểm toán,
+nhưng bằng chứng thực nghiệm hiện tại vẫn là **kết quả âm**. QRW chưa vượt qua
+baseline cổ điển trong walk-forward, dữ liệu hoạt động quá ngắn, và OBI chưa
+phải L2 order-book imbalance.
 
-QRW has return-ACF mean squared error 0.009905, the best
-scorecard value in this category, but no single metric supports a superiority
-claim.
-
-### 6.5 Sample Paths
-
-![Sample paths](../figures/sample_paths.png)
-
-Sample paths expose the scale mismatch and directional behavior that aggregate
-rankings can hide.
-
-### 6.6 Adaptive Coin
-
-![Adaptive coin heatmap](../figures/coin_operator_heatmap.png)
-
-The magnitude-squared entries remain balanced while the complex phase changes
-with the market signal. This distinction is required to interpret the
-adaptive operator correctly.
-
-### 6.7 Scorecard
-
-![Benchmark scorecard](../figures/scorecard.png)
-
-| Quantity | Observed value |
-|---|---:|
-| Top-ranked model | CRW Correlated |
-| Top mean metric rank | 1.857 |
-| QRW overall rank | 3 |
-| QRW mean metric rank | 2.857 |
-| QRW KS p-value | 0.0058 |
-| QRW KS p-value, BH adjusted | 0.0058 |
-| QRW variance beta | 1.0023 |
-| QRW beta 95% interval | [0.9853, 1.0192] |
-| Empirical tail index | 1.2886 |
-| QRW tail index | 1.656e+06 |
-
-## 7. Discussion
-
-The QRW is competitive on variance scaling and autocorrelation distance, but
-CRW Simple has the best aggregate rank. More importantly, the empirical return
-distribution is strongly rejected for every model at the one-step horizon.
-QRW tail behavior is especially unrealistic because its zero-inflated,
-fixed-tick local moves still produce an extremely thin effective tail. GARCH
-better represents heavy tails but performs poorly under other scorecard
-components.
-
-The Phase 3 predictive audit is mixed after the causal rebuild: QRW beats the
-fair affine baseline on the final holdout but loses in pooled walk-forward
-evaluation. That instability and the Phase 5 scorecard answer different
-questions, but neither supports a current general superiority claim.
-
-## 8. Limitations
-
-1. The benchmark uses one short June 12, 2026 event window.
-2. Structural QRW calibration has a low observations-per-parameter ratio.
-3. Rebuilt June 1-7 data remain development-only after prior inspection.
-4. Real synchronized limit-order-book coverage is limited.
-5. The scorecard averages ranks and therefore hides metric scale and dependence.
-6. Fixed tick moves cannot reproduce empirical jump size or heavy tails.
-7. The optional dashboard is exploratory and does not alter inference.
-
-## 9. Conclusion and Future Work
-
-The project completes a reproducible QRW market-microstructure prototype,
-classical benchmarks, statistical tests, visualization suite, and reporting
-pipeline. The defensible conclusion is an engineering pass with no validated
-QRW predictive or distributional superiority.
-
-Future work should: freeze a confirmatory protocol before new labels are
-observed; collect at least 20 fresh UTC days with synchronized LOB data; add a
-learned but regularized coin benchmarked against equally flexible classical
-links; study two-dimensional QRWs for multi-asset state spaces; and compare
-continuous-time quantum walks with marked point-process baselines.
-
-## References
-
-1. Aharonov, Y., Davidovich, L., & Zagury, N. (1993). Quantum random walks. *Phys. Rev. A*. DOI: 10.1103/PhysRevA.48.1687
-2. Ambainis et al. (2001). One-dimensional quantum walks. *STOC*. DOI: 10.1145/380752.380757
-3. Konno (2002). Quantum random walks in one dimension. *QIP*. DOI: 10.1007/s11128-002-0019-8
-4. Kempe (2003). Quantum random walks: an introductory overview. *Contemporary Physics*. DOI: 10.1080/00107500308734
-5. Kendon (2007). Decoherence in quantum walks. *Math. Struct. in Comp. Sci.* DOI: 10.1017/S096012950600588X
-6. Cont, R., & de Larrard, A. (2013). Price dynamics in a Markovian limit order market. *SIAM J. Finan. Math.* DOI: 10.1137/110856605
-7. Cont, Kukanov, and Stoikov (2014). The price impact of order book events. *J. Financial Econometrics*. DOI: 10.1093/jjfinec/nbt003
-8. Engle (1982). Autoregressive conditional heteroscedasticity. *Econometrica*. DOI: 10.2307/1912773
-9. Bollerslev (1986). Generalized autoregressive conditional heteroskedasticity. *J. Econometrics*. DOI: 10.1016/0304-4076(86)90063-1
-10. Black, F., & Scholes, M. (1973). The pricing of options and corporate liabilities. *JPE*. DOI: 10.1086/260062
-11. Mandelbrot (1963). The variation of certain speculative prices. *J. Business*. DOI: 10.1086/294632
-12. Hill (1975). A simple general approach to inference about the tail. *Ann. Statist.* DOI: 10.1214/aos/1176343247
-13. Ljung and Box (1978). On a measure of lack of fit in time series models. *Biometrika*. DOI: 10.1093/biomet/65.2.297
-14. Benjamini and Hochberg (1995). Controlling the false discovery rate. *JRSS-B*. DOI: 10.1111/j.2517-6161.1995.tb02031.x
-15. Bouchaud, J. P., Mézard, M., & Potters, M. (2002). Statistical properties of stock order books. *Quantitative Finance*. DOI: 10.1088/1469-7688/2/4/301
+Kết luận chỉ được cập nhật sau khi protocol được đóng băng, provenance khớp
+commit/data hash, và một đánh giá mới trên dữ liệu multi-day untouched được
+thực hiện đúng pre-registration.

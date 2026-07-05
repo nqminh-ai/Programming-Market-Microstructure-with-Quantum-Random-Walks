@@ -116,4 +116,4 @@ def test_report_does_not_claim_path_statistics_for_qrw() -> None:
     assert "QRW KS p-value" not in report
     assert "QRW tail index" not in report
     assert "QRW has return-ACF" not in report
-    assert "independent\nhorizon draws" in report
+    assert "draw độc lập giữa\ncác horizon" in report

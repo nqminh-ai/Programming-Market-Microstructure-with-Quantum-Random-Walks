@@ -1,4 +1,4 @@
-"""QRW model with heavy-tailed jumps for market microstructure."""
+"""Classical directional surrogate with Pareto-distributed jump sizes."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from scipy.optimize import minimize
 from src.models.adaptive_market_qrw import AdaptiveDecoherenceQRW
 
 class HeavyTailAdaptiveQRW(AdaptiveDecoherenceQRW):
-    """Adaptive QRW extended with Pareto-distributed heavy-tailed jumps."""
+    """Compatibility surrogate; this is not a unitary heavy-tail QRW."""
 
     def __init__(self, tick_data: pd.DataFrame, config: dict[str, Any]) -> None:
         super().__init__(tick_data, config)
@@ -71,7 +71,9 @@ class HeavyTailAdaptiveQRW(AdaptiveDecoherenceQRW):
         
         out["tail_index"] = self.tail_index
         out["jump_scale"] = self.jump_scale
-        out["model_type"] = "heavy_tail_adaptive_qrw"
+        out["model_type"] = "classical_pareto_directional_surrogate"
+        out["quantum_state_evolution"] = False
+        out["eligible_for_qrw_claims"] = False
         
         self.calibrated_parameters = out.copy()
         
@@ -94,6 +96,7 @@ class HeavyTailAdaptiveQRW(AdaptiveDecoherenceQRW):
         *,
         random_state: int | np.random.Generator | None = None,
     ) -> np.ndarray:
+        """Sample classical Bernoulli/Pareto paths outside QRW inference."""
         if n_paths < 1:
             raise ValueError("n_paths must be positive")
         steps = (

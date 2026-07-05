@@ -440,7 +440,7 @@ def main() -> None:
         for marker in (
             "| QRW mean marginal CRPS |",
             "| QRW direction log loss |",
-            "does not establish QRW predictive",
+            "không thiết lập bằng chứng về ưu thế dự báo của QRW",
         )
     )
     valid_figure_count = sum(
