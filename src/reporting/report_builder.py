@@ -48,6 +48,76 @@ class ReportContext:
     qrw_directional_log_loss: float
     directional_test_events: int
 
+    def __post_init__(self) -> None:
+        """Reject NaN/inf/negative-count values before they reach a report.
+
+        A malformed upstream artifact could otherwise produce a "complete"
+        report or PDF built from nonsensical numbers without any error.
+        """
+        non_negative_counts = {
+            "train_rows": self.train_rows,
+            "holdout_rows": self.holdout_rows,
+            "n_steps": self.n_steps,
+            "n_paths": self.n_paths,
+            "directional_test_events": self.directional_test_events,
+            "walk_forward_folds": self.walk_forward_folds,
+        }
+        for name, value in non_negative_counts.items():
+            if value < 0:
+                raise ValueError(f"{name} must be non-negative, got {value}")
+
+        for name in ("qrw_rank", "qrw_directional_rank"):
+            value = getattr(self, name)
+            if value < 1:
+                raise ValueError(f"{name} must be at least 1, got {value}")
+
+        if not 0 <= self.walk_forward_folds_qrw_better <= self.walk_forward_folds:
+            raise ValueError(
+                "walk_forward_folds_qrw_better must be between 0 and "
+                f"walk_forward_folds ({self.walk_forward_folds}), got "
+                f"{self.walk_forward_folds_qrw_better}"
+            )
+
+        finite_fields = (
+            "top_mean_marginal_crps",
+            "qrw_mean_marginal_crps",
+            "qrw_mean_direction_log_loss",
+            "empirical_beta",
+            "qrw_beta",
+            "qrw_beta_ci_low",
+            "qrw_beta_ci_high",
+            "walk_forward_brier_difference",
+            "walk_forward_ci_low",
+            "walk_forward_ci_high",
+            "qrw_directional_log_loss",
+        )
+        for name in finite_fields:
+            value = getattr(self, name)
+            if not np.isfinite(value):
+                raise ValueError(f"{name} must be finite, got {value}")
+
+        non_negative_fields = (
+            "top_mean_marginal_crps",
+            "qrw_mean_marginal_crps",
+            "qrw_mean_direction_log_loss",
+            "qrw_directional_log_loss",
+        )
+        for name in non_negative_fields:
+            value = getattr(self, name)
+            if value < 0:
+                raise ValueError(f"{name} must be non-negative, got {value}")
+
+        if self.qrw_beta_ci_low > self.qrw_beta_ci_high:
+            raise ValueError(
+                "qrw_beta_ci_low must be <= qrw_beta_ci_high: "
+                f"{self.qrw_beta_ci_low} > {self.qrw_beta_ci_high}"
+            )
+        if self.walk_forward_ci_low > self.walk_forward_ci_high:
+            raise ValueError(
+                "walk_forward_ci_low must be <= walk_forward_ci_high: "
+                f"{self.walk_forward_ci_low} > {self.walk_forward_ci_high}"
+            )
+
 
 REFERENCES = (
     "Aharonov, Davidovich, and Zagury (1993). Quantum random walks.",

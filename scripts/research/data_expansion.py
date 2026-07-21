@@ -196,7 +196,6 @@ def featurize_day(
 def build_multiday_store(
     feature_paths: list[Path],
     output_path: Path,
-    holdout_start: str = "2026-06-12",
 ) -> None:
     """Instead of concatenating into memory, we just validate the daily files.
     The benchmark will load individual days as needed to prevent OOM on 100M+ rows.

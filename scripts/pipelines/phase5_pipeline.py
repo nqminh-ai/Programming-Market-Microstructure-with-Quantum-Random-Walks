@@ -207,15 +207,27 @@ def write_checkpoint(
             f"{row['mean_marginal_crps']:.6g} | "
             f"{row['mean_direction_log_loss']:.6g} |"
         )
+    window_start = pd.to_datetime(
+        int(suite.test["timestamp"].min()), unit="ns", utc=True
+    )
+    window_end = pd.to_datetime(
+        int(suite.test["timestamp"].max()), unit="ns", utc=True
+    )
+    window_description = (
+        window_start.strftime("%B %d, %Y")
+        if window_start.date() == window_end.date()
+        else f"{window_start.strftime('%B %d, %Y')} to {window_end.strftime('%B %d, %Y')}"
+    )
     lines.extend(
         [
             "",
             "## Interpretation Guardrail",
             "",
             "This checkpoint validates implementation completeness on one",
-            "June 12, 2026 window. It is exploratory and does not establish",
-            "QRW superiority. A confirmatory claim still requires the frozen",
-            "protocol and fresh multi-day holdout described in the audit.",
+            f"{window_description} window. It is exploratory and does not",
+            "establish QRW superiority. A confirmatory claim still requires",
+            "the frozen protocol and fresh multi-day holdout described in",
+            "the audit.",
             "",
             "## Artifacts",
             "",

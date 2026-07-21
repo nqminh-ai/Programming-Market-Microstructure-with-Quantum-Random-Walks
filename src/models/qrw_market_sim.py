@@ -8,6 +8,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 from scipy.optimize import minimize
 
 from .coin_operators import (
@@ -336,7 +337,9 @@ class MarketQRW:
         # Subsample for speed (quantum objective has Python loops)
         quantum_max_events = int(self.config.get("quantum_calibration_max_events", 5000))
         if len(train_y) > quantum_max_events:
-            rng = np.random.default_rng(42)
+            rng = np.random.default_rng(
+                self.config.get("quantum_calibration_seed", 42)
+            )
             # Take a contiguous block to preserve temporal structure
             start_idx = rng.integers(0, len(train_y) - quantum_max_events)
             q_train_x = train_x[start_idx:start_idx + quantum_max_events]
@@ -369,7 +372,11 @@ class MarketQRW:
             options={"maxiter": 50, "ftol": 1e-6},
         )
 
-        print(f"Quantum optimization success: {quantum_result.success}, fun: {quantum_result.fun}")
+        logger.debug(
+            "Quantum optimization success: {}, fun: {}",
+            quantum_result.success,
+            quantum_result.fun,
+        )
         # Evaluate quantum model on validation
         if quantum_result.success and np.isfinite(quantum_result.fun):
             q_bias = float(quantum_result.x[0])
@@ -377,8 +384,11 @@ class MarketQRW:
             q_alpha_dir = float(quantum_result.x[2])
             q_gamma = float(quantum_result.x[3])
             q_alpha_phase = float(quantum_result.x[4])
-            
-            print(f"Quantum parameters: bias={q_bias}, alpha={q_alpha}, alpha_dir={q_alpha_dir}, gamma={q_gamma}, phase={q_alpha_phase}")
+
+            logger.debug(
+                "Quantum parameters: bias={}, alpha={}, alpha_dir={}, gamma={}, phase={}",
+                q_bias, q_alpha, q_alpha_dir, q_gamma, q_alpha_phase,
+            )
 
             quantum_val_prob = self._quantum_windowed_probabilities(
                 validation_x[:, 0],
@@ -391,7 +401,11 @@ class MarketQRW:
                 window=self.quantum_window,
             )
             quantum_val_brier = float(np.mean((quantum_val_prob - validation_y) ** 2))
-            print(f"Quantum Val Brier: {quantum_val_brier}, Classical Val Brier: {selected['validation_brier']}")
+            logger.debug(
+                "Quantum Val Brier: {}, Classical Val Brier: {}",
+                quantum_val_brier,
+                selected["validation_brier"],
+            )
 
             # Use quantum parameters if they improve over classical
             if quantum_val_brier < selected["validation_brier"]:
