@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from loguru import logger
 
 
 class GBMBaseline:
@@ -32,7 +33,11 @@ class GBMBaseline:
         if not np.isfinite(dt) or dt <= 0.0:
             raise ValueError("dt must be finite and positive")
         values = np.asarray(log_returns, dtype=np.float64).reshape(-1)
-        values = values[np.isfinite(values)]
+        finite_mask = np.isfinite(values)
+        dropped = int((~finite_mask).sum())
+        if dropped:
+            logger.warning("GBM fit: dropping {} non-finite return(s)", dropped)
+        values = values[finite_mask]
         if len(values) < 2:
             raise ValueError("GBM fit requires at least two finite returns")
         mean = float(np.mean(values))

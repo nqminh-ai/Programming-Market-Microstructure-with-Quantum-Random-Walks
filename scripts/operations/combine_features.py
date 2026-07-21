@@ -1,3 +1,10 @@
+"""Stream-combine per-day feature parquet files into one multi-day store.
+
+Usage
+-----
+    python scripts/operations/combine_features.py [--symbol BTCUSDT] [--days 30]
+"""
+
 import argparse
 from pathlib import Path
 import sys

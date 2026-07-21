@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from loguru import logger
 
 
 @dataclass
@@ -39,7 +40,11 @@ class ClassicalRandomWalk:
     def fit(self, directions: np.ndarray) -> dict[str, float | int | str]:
         """Calibrate direction frequency and persistence from nonzero moves."""
         values = np.asarray(directions, dtype=np.float64).reshape(-1)
-        values = np.sign(values[np.isfinite(values)])
+        finite_mask = np.isfinite(values)
+        dropped = int((~finite_mask).sum())
+        if dropped:
+            logger.warning("ClassicalRandomWalk fit: dropping {} non-finite direction(s)", dropped)
+        values = np.sign(values[finite_mask])
         moving = values[values != 0.0]
         if len(moving) == 0:
             raise ValueError("directions must contain at least one nonzero move")

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from loguru import logger
 from scipy.optimize import minimize
 
 
@@ -102,7 +103,11 @@ class GARCHBaseline:
     ) -> dict[str, Any]:
         """Fit scaled log returns by Gaussian maximum likelihood."""
         values = np.asarray(returns, dtype=np.float64).reshape(-1)
-        values = values[np.isfinite(values)] * self.return_scale
+        finite_mask = np.isfinite(values)
+        dropped = int((~finite_mask).sum())
+        if dropped:
+            logger.warning("GARCH fit: dropping {} non-finite return(s)", dropped)
+        values = values[finite_mask] * self.return_scale
         if len(values) < 20:
             raise ValueError("GARCH fit requires at least 20 finite returns")
         variance = float(np.var(values))

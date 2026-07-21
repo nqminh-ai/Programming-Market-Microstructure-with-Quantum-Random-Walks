@@ -254,6 +254,7 @@ def render_sidebar() -> dict:
         "show_real": show_real,
         "theta_buy": theta_buy,
         "theta_sell": theta_sell,
+        "modules_status": modules,
     }
 
 
@@ -264,14 +265,9 @@ def render_sidebar() -> dict:
 def render_header(config: dict) -> None:
     import streamlit as st
 
-    results_dir = ROOT / "results" / "track_a"
-    modules_status = {
-        "A1 VOL": (results_dir / "vol_metrics.json").exists(),
-        "A2 RISK": (results_dir / "risk_paths.parquet").exists(),
-        "A3 SIG": (results_dir / "signal_log.parquet").exists(),
-        "A4 OPT": (results_dir / "optimizer_params.json").exists(),
-        "A5 ANM": (results_dir / "anomaly_log.parquet").exists(),
-    }
+    # Computed once by render_sidebar() and threaded through config so the
+    # module-readiness check isn't duplicated (and can't drift) here.
+    modules_status = config["modules_status"]
 
     pills_html = ""
     for name, ready in modules_status.items():
@@ -301,7 +297,10 @@ def render_header(config: dict) -> None:
             f"SSI {live_status}</span>"
         )
 
-    now = datetime.now().strftime("%H:%M:%S")
+    # `now` is the page-render wall-clock time, not the analysis date's
+    # timestamp -- label both explicitly so the pair doesn't read as one
+    # live "as-of" moment when most tabs actually serve static demo data.
+    rendered_at = datetime.now().strftime("%H:%M:%S")
     st.markdown(
         f"""
         <div style="display:flex; justify-content:space-between; align-items:center;
@@ -313,7 +312,7 @@ def render_header(config: dict) -> None:
                 {pills_html}
             </div>
             <div style="font-family:'JetBrains Mono'; color:#4A6080; font-size:0.7rem;">
-                {config['date']} · {now}
+                Analysis date {config['date']} · rendered {rendered_at}
             </div>
         </div>
         """,
@@ -872,7 +871,9 @@ def tab_signal(config: dict) -> None:
         kpi_card(c2, "Profit Factor", f"{metrics['profit_factor']:.2f}", color=COLORS["accent_cyan"])
         kpi_card(c3, "Net P&L", f"{metrics['net_pnl']*100:+.3f}%", color=COLORS["accent_yellow"])
         st.caption(
-            f"Live threshold preview: θ_buy={theta_buy:.2f}, θ_sell={theta_sell:.2f} · "
+            # "Interactive" (recomputed as sliders move), not "live" -- avoid
+            # implying a real-time feed when DEMO_MODE serves static data.
+            f"Interactive threshold preview: θ_buy={theta_buy:.2f}, θ_sell={theta_sell:.2f} · "
             f"{metrics['n_trades']} trades · max drawdown {metrics['max_drawdown']*100:.3f}%"
         )
 

@@ -9,6 +9,7 @@ from typing import Iterable, Mapping
 import matplotlib
 import numpy as np
 import pandas as pd
+from loguru import logger
 from scipy import stats
 
 matplotlib.use("Agg")
@@ -33,6 +34,11 @@ class StatisticalTestSuite:
         "primary=mean_crps; tiebreak=mean_direction_log_loss; "
         "remaining_metrics=diagnostic_only"
     )
+    # Numerical floor/ceiling to keep probabilities and variances away from
+    # 0 (avoids log(0)/division-by-zero without biasing scores in practice).
+    _PROBABILITY_EPSILON = 1e-12
+    # 90% central interval used for both coverage checks and reported CIs.
+    _INTERVAL_90_QUANTILES = (0.05, 0.95)
 
     def __init__(
         self,
@@ -249,9 +255,13 @@ class StatisticalTestSuite:
                 probability_up = float(np.mean(simulated > 0.0))
                 target_up = float(observation > 0.0)
                 probability = float(
-                    np.clip(probability_up, 1e-12, 1.0 - 1e-12)
+                    np.clip(
+                        probability_up,
+                        self._PROBABILITY_EPSILON,
+                        1.0 - self._PROBABILITY_EPSILON,
+                    )
                 )
-                lower, upper = np.quantile(simulated, [0.05, 0.95])
+                lower, upper = np.quantile(simulated, self._INTERVAL_90_QUANTILES)
                 rows.append(
                     {
                         "model": model,
@@ -610,6 +620,9 @@ class StatisticalTestSuite:
                 coefficients = np.linalg.solve(matrix, acf[1 : lag + 1])
                 pacf[lag] = float(coefficients[-1])
             except np.linalg.LinAlgError:
+                logger.warning(
+                    "PACF: Yule-Walker system singular at lag {}, setting NaN", lag
+                )
                 pacf[lag] = float("nan")
         return pacf
 
@@ -845,7 +858,7 @@ class StatisticalTestSuite:
                     )
                     weight = 1.0 - lag / (self.max_lag + 1)
                     variance_d += 2 * weight * gamma_lag
-                variance_d = max(variance_d, 1e-12)
+                variance_d = max(variance_d, self._PROBABILITY_EPSILON)
                 stat = float(mean_d / np.sqrt(variance_d / n))
                 pvalue = float(2.0 * stats.norm.sf(np.abs(stat)))
                 rows.append(
@@ -923,8 +936,8 @@ class StatisticalTestSuite:
                     probability = float(
                         np.clip(
                             probability_up,
-                            1e-12,
-                            1.0 - 1e-12,
+                            self._PROBABILITY_EPSILON,
+                            1.0 - self._PROBABILITY_EPSILON,
                         )
                     )
                     brier_scores.append((probability_up - target_up) ** 2)
@@ -935,7 +948,7 @@ class StatisticalTestSuite:
                             else -np.log1p(-probability)
                         )
                     )
-                    lower, upper = np.quantile(simulated, [0.05, 0.95])
+                    lower, upper = np.quantile(simulated, self._INTERVAL_90_QUANTILES)
                     coverage.append(float(lower <= observation <= upper))
                     interval_widths.append(float(upper - lower))
 
