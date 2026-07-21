@@ -17,7 +17,7 @@ import yaml
 from scipy.stats import t as student_t
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -142,7 +142,10 @@ def raw_tick_files(config: dict[str, Any], explicit: list[str] | None) -> list[P
         paths = [Path(value) for value in explicit]
         return [path if path.is_absolute() else ROOT / path for path in paths]
     symbol = normalize_symbol(config["symbol"])
-    return sorted(resolve_config_path(config, "raw").glob(f"tick_{symbol}_*.csv.gz"))
+    raw_dir = resolve_config_path(config, "raw")
+    csv_files = list(raw_dir.glob(f"tick_{symbol}_*.csv.gz"))
+    parquet_files = list(raw_dir.glob(f"tick_{symbol}_*.parquet"))
+    return sorted(csv_files + parquet_files)
 
 
 def processed_tick_files(
