@@ -650,7 +650,11 @@ class StatisticalTestSuite:
             profile = self._ensemble_acf(returns, self.max_lag)
             self.acf_profiles[model] = profile
             self.pacf_profiles[model] = self._pacf_from_acf(profile)
-            datasets.append((model, profile, self.n_steps))
+            # _ensemble_acf pools products/energy across all n_paths
+            # trajectories, so the Ljung-Box sample size must reflect that
+            # pooled observation count, not just the per-path step count.
+            effective_sample_size = int(paths.shape[0] * self.n_steps)
+            datasets.append((model, profile, effective_sample_size))
 
         for model, profile, sample_size in datasets:
             row: dict[str, float | int | str] = {

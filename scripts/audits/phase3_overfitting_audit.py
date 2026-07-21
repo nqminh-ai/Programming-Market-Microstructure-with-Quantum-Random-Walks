@@ -600,7 +600,20 @@ def main() -> None:
     )
     _, train_target = moving_events(train)
     train_up_fraction = float(train_target.mean())
-    rng = np.random.default_rng(args.random_seed)
+    # Independent child generators per bootstrap/permutation test, instead of
+    # one shared rng consumed sequentially -- otherwise each test's replicate
+    # draws depend on how many draws every earlier test happened to consume,
+    # so e.g. changing --walk-forward-folds would silently perturb the
+    # circular-shift test's output too.
+    (
+        walk_forward_rng,
+        test_bootstrap_rng,
+        test_market_bootstrap_rng,
+        circular_shift_rng,
+    ) = (
+        np.random.default_rng(child)
+        for child in np.random.SeedSequence(args.random_seed).spawn(4)
+    )
     scores = {
         "train": evaluate_split(
             model,
@@ -634,7 +647,7 @@ def main() -> None:
         folds=args.walk_forward_folds,
         tick_size=float(parameters["tick_size"]),
         bootstrap_samples=args.bootstrap_samples,
-        rng=rng,
+        rng=walk_forward_rng,
     )
     test_neutral_improvement = (
         scores["test"]["neutral"]["brier"] - scores["test"]["model"]["brier"]
@@ -652,7 +665,7 @@ def main() -> None:
             1.0,
         ),
         samples=args.bootstrap_samples,
-        rng=rng,
+        rng=test_bootstrap_rng,
     )
     test_market_bootstrap = paired_bootstrap_brier(
         test_model,
@@ -665,7 +678,7 @@ def main() -> None:
             1.0,
         ),
         samples=args.bootstrap_samples,
-        rng=rng,
+        rng=test_market_bootstrap_rng,
     )
     bootstrap_lower, bootstrap_upper = (
         test_market_bootstrap["confidence_interval_95"]
@@ -748,7 +761,7 @@ def main() -> None:
             train,
             tick_size=float(parameters["tick_size"]),
             permutations=args.permutations,
-            rng=rng,
+            rng=circular_shift_rng,
         ),
         "test_brier_bootstrap": test_bootstrap,
         "test_market_brier_bootstrap": test_market_bootstrap,

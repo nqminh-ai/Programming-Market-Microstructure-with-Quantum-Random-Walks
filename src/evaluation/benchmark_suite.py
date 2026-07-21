@@ -498,6 +498,10 @@ class BenchmarkSuite:
                 "alpha_direction": qrw_parameters.get("alpha_direction", 0.0),
                 "coin_type": "obi_adaptive",
                 "quantum_window": qrw_parameters.get("quantum_window", 5),
+                # Explicit, train-only tick_size: predictor_frame includes
+                # holdout rows, and MarketQRW would otherwise be able to
+                # infer tick_size from whatever frame it's given.
+                "tick_size": self.tick_size,
             },
         )
         # Carry over the quantum-refinement outcome from the original fit:
