@@ -847,7 +847,13 @@ class StatisticalTestSuite:
                 variance_d = gamma0
                 centered = d - mean_d
                 for lag in range(1, self.max_lag + 1):
-                    if lag >= len(d):
+                    # Stop one lag before len(d) - 1, not at it: the
+                    # denominator below is len(d) - lag - 1, which hits
+                    # exactly 0 (silent inf/nan, not an exception) when
+                    # lag == len(d) - 1. That previously depended on an
+                    # unenforced coupling between self.max_lag and the
+                    # rolling-loss array length happening to avoid it.
+                    if lag >= len(d) - 1:
                         break
                     # Autocovariance must center both arms on the shared
                     # sample mean_d, not np.cov's own per-argument means,

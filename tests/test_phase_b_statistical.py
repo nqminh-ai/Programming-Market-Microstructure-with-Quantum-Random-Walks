@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -88,6 +90,50 @@ def test_diebold_mariano_statistic_matches_hand_computed_hac_reference() -> None
 
     assert row["dm_statistic"] == pytest.approx(expected_stat, rel=1e-10)
     assert row["dm_pvalue"] == pytest.approx(expected_pvalue, rel=1e-10)
+
+
+def test_diebold_mariano_hac_variance_no_division_by_zero_at_max_lag_boundary() -> None:
+    """Regression test: the HAC variance loop's denominator
+    (len(d) - lag - 1) hits exactly 0 when lag reaches len(d) - 1. The old
+    loop guard (`lag >= len(d)`) let the loop reach that lag whenever
+    self.max_lag happened to equal len(d) - 1 -- previously true only by an
+    unenforced coincidence between self.max_lag (derived from n_steps) and
+    the independently-sized rolling_one_step_losses array. That silently
+    divided by zero (RuntimeWarning, not an exception) and propagated a
+    +/-inf term into variance_d. This constructs rolling losses whose
+    length exactly triggers that boundary and asserts computing the DM
+    test raises no floating-point warning at all -- checked by promoting
+    RuntimeWarning to an error, since a wrong-but-finite statistic
+    downstream (e.g. via the variance floor) wouldn't otherwise be
+    distinguishable from a correct one on this small a sample.
+    """
+    rng = np.random.default_rng(7)
+    n = 20  # minimum length _validated_rolling_losses allows
+    n_steps = n + 1  # self.max_lag caps to n_steps - 2 == n - 1 == len(d) - 1
+    lossA = np.abs(rng.normal(0.02, 0.01, n))
+    lossB = np.abs(rng.normal(0.018, 0.01, n))
+    empirical = rng.normal(100, 1, size=30)
+    suite = StatisticalTestSuite(
+        empirical,
+        {
+            "A": rng.normal(100, 1, size=(20, n_steps + 1)),
+            "B": rng.normal(100, 1, size=(20, n_steps + 1)),
+        },
+        rolling_one_step_losses={"A": lossA, "B": lossB},
+        rolling_one_step_timestamps=np.arange(n),
+        random_seed=42,
+        bootstrap_iterations=50,
+        max_lag=50,  # deliberately larger than n_steps - 2; gets capped
+    )
+    assert suite.max_lag == n - 1  # confirms the boundary is actually hit
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        dm = suite.diebold_mariano_tests()
+
+    row = dm.iloc[0]
+    assert np.isfinite(row["dm_statistic"])
+    assert np.isfinite(row["dm_pvalue"])
 
 
 def test_ljung_box_matches_statsmodels_reference() -> None:
