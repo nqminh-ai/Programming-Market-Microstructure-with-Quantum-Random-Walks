@@ -372,14 +372,22 @@ def plot_return_distribution_comparison(
 
 
 def _acf(values: np.ndarray, max_lag: int) -> np.ndarray:
+    """Autocorrelation via the Wiener-Khinchin theorem (FFT), O(n log n)
+    instead of a per-lag Python loop. Zero-padding to >= 2n avoids circular
+    wraparound contaminating any lag <= max_lag."""
     centered = values - np.mean(values)
     denominator = float(centered @ centered)
     if denominator <= 1e-20:
         return np.zeros(max_lag + 1, dtype=np.float64)
-    result = np.ones(max_lag + 1, dtype=np.float64)
-    for lag in range(1, max_lag + 1):
-        result[lag] = float(centered[:-lag] @ centered[lag:] / denominator)
-    return result
+    n = len(centered)
+    padded_size = 1
+    while padded_size < 2 * n:
+        padded_size *= 2
+    padded = np.zeros(padded_size, dtype=np.float64)
+    padded[:n] = centered
+    spectrum = np.fft.rfft(padded)
+    autocovariance = np.fft.irfft(spectrum * np.conj(spectrum), n=padded_size)
+    return autocovariance[: max_lag + 1] / denominator
 
 
 def _mean_path_acf(paths: np.ndarray, max_lag: int) -> np.ndarray:

@@ -183,18 +183,47 @@ class QRWStrategyOptimizer:
             raise ValueError("best_params are required before OOS evaluation")
         probabilities = self.signal_engine.build_probability_frame(test_df, qrw_model)
         probabilities["regime"] = self._regimes(test_df, probabilities)
-        output_parts: list[pd.DataFrame] = []
-        for index, row in probabilities.iterrows():
-            params = parameters.get(str(row["regime"]), parameters.get("ALL"))
+
+        regimes = probabilities["regime"].to_numpy()
+        theta_buy = np.empty(len(probabilities), dtype=np.float64)
+        theta_sell = np.empty(len(probabilities), dtype=np.float64)
+        for regime in pd.unique(regimes):
+            params = parameters.get(str(regime), parameters.get("ALL"))
             if not params:
-                raise ValueError(f"no parameters available for regime {row['regime']}")
-            engine = QRWSignalEngine(params["theta_buy"], params["theta_sell"])
-            one = engine.backtest_from_probabilities(probabilities.loc[[index]])
-            one["regime"] = row["regime"]
-            one["theta_buy"] = params["theta_buy"]
-            one["theta_sell"] = params["theta_sell"]
-            output_parts.append(one)
-        backtest = pd.concat(output_parts, ignore_index=True)
+                raise ValueError(f"no parameters available for regime {regime}")
+            mask = regimes == regime
+            theta_buy[mask] = params["theta_buy"]
+            theta_sell[mask] = params["theta_sell"]
+
+        # Vectorized re-implementation of QRWSignalEngine.backtest_from_probabilities
+        # with a per-row theta_buy/theta_sell (regime parameters can differ
+        # row to row). The prior per-row loop scored each row via its own
+        # single-row DataFrame, which made trade_size an isolated
+        # abs(position) rather than a true diff against the previous row --
+        # preserved here exactly (this is a speed rewrite, not a behavior
+        # change), along with QRWSignalEngine's default transaction_cost,
+        # which the per-row loop always used since only theta_buy/theta_sell
+        # were ever passed to its constructor.
+        default_transaction_cost = QRWSignalEngine().transaction_cost
+        p_up = probabilities["p_up"].to_numpy(dtype=float)
+        p_down = probabilities["p_down"].to_numpy(dtype=float)
+        ret_1step = probabilities["ret_1step"].to_numpy(dtype=float)
+
+        buy = p_up > theta_buy
+        sell = (~buy) & (p_down > theta_sell)
+        positions = np.where(buy, 1.0, np.where(sell, -1.0, 0.0))
+        trade_size = np.abs(positions)
+
+        backtest = probabilities.copy()
+        backtest["theta_buy"] = theta_buy
+        backtest["theta_sell"] = theta_sell
+        backtest["signal"] = np.where(buy, "BUY", np.where(sell, "SELL", "HOLD"))
+        backtest["confidence"] = np.clip(np.maximum(p_up, p_down) - 0.5, 0.0, 0.5)
+        backtest["pnl"] = positions * ret_1step - trade_size * default_transaction_cost
+        backtest["correct"] = np.where(
+            positions == 0, "HOLD", np.where(positions * ret_1step > 0, "WIN", "LOSS")
+        )
+        backtest["momentum"] = p_up - p_down
         metrics = QRWSignalEngine.compute_signal_metrics(backtest)
         equity = backtest["pnl"].cumsum()
         drawdown = equity - equity.cummax().clip(lower=0.0)

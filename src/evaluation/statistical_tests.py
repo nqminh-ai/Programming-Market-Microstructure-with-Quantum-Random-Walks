@@ -899,6 +899,18 @@ class StatisticalTestSuite:
             raise ValueError("at least two primary horizons are required")
         results: list[dict[str, float | int | str]] = []
         rng = np.random.default_rng(self.random_seed + 3)
+        # `observation` depends only on horizon (fixed comparison prices),
+        # not on the bootstrap iteration or model -- hoisting it out of the
+        # iteration/model/horizon triple loop avoids recomputing the same
+        # log-ratio tens of thousands of times without touching the RNG
+        # draw sequence (and therefore without changing any bootstrap
+        # result).
+        observation_by_horizon = {
+            int(horizon): float(
+                np.log(self.comparison_prices[horizon] / self.comparison_prices[0])
+            )
+            for horizon in horizons
+        }
         for iteration in range(self.bootstrap_iterations):
             selected_horizons = rng.choice(
                 horizons, size=len(horizons), replace=True
@@ -919,12 +931,7 @@ class StatisticalTestSuite:
                     simulated = self._fixed_origin_returns(
                         samples[indices], int(horizon)
                     )
-                    observation = float(
-                        np.log(
-                            self.comparison_prices[horizon]
-                            / self.comparison_prices[0]
-                        )
-                    )
+                    observation = observation_by_horizon[int(horizon)]
                     crps_values.append(
                         self._sample_crps(simulated, observation)
                     )

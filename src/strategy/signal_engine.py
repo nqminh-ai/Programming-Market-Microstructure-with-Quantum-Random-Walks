@@ -22,6 +22,11 @@ class QRWSignalEngine:
     _FLAT_PROBABILITY_SLOPE = 0.20
     _FLAT_PROBABILITY_MIN = 0.05
     _FLAT_PROBABILITY_MAX = 0.28
+    # _causal_directional_probability only ever reads the trailing 31 rows
+    # (30-return price diff + a 30-row OBI tail); bounding the slice passed
+    # to it to this many rows avoids materializing an ever-growing prefix
+    # on every iteration of build_probability_frame's walk-forward loop.
+    _CAUSAL_LOOKBACK_ROWS = 31
 
     def __init__(self, theta_buy: float = 0.60, theta_sell: float = 0.60, transaction_cost: float = 0.0005) -> None:
         for name, value in (("theta_buy", theta_buy), ("theta_sell", theta_sell)):
@@ -116,8 +121,15 @@ class QRWSignalEngine:
         provider = getattr(qrw_model, "probability_from_history", None)
         records: list[dict] = []
         for index in range(int(warmup), len(tick_df) - 1):
-            history = tick_df.iloc[:index + 1]
-            state = provider(history.copy()) if callable(provider) else self._causal_directional_probability(history)
+            if callable(provider):
+                # The external hook may be path-dependent, so it still gets
+                # the full causal prefix.
+                state = provider(tick_df.iloc[:index + 1].copy())
+            else:
+                window_start = max(0, index + 1 - self._CAUSAL_LOOKBACK_ROWS)
+                state = self._causal_directional_probability(
+                    tick_df.iloc[window_start:index + 1]
+                )
             probability = self._probability(state)
             center = len(probability) // 2
             p_down = float(probability[:center].sum())
