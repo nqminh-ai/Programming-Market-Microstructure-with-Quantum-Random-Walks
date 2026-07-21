@@ -1,4 +1,4 @@
-"""Phase 7B: Cross-asset robustness check (ETH/USDT and BNB/USDT).
+"""Phase 7B: multi-day robustness check for BTC, ETH, and BNB.
 
 Runs the full Phase 2 + Phase 5 pipeline for ETH/USDT and BNB/USDT and
 produces a combined cross-asset scorecard for robustness validation.
@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -28,6 +29,21 @@ from src.data.feature_engineer import FeatureEngineer
 from src.data.tick_downloader import TickDownloader
 from src.data.tick_processor import TickProcessor
 from src.evaluation.benchmark_suite import BenchmarkSuite
+from src.evaluation.directional_baselines import (
+    directional_events,
+    fit_directional_baselines,
+    score_directional_baselines,
+)
+from src.evaluation.multiday import (
+    day_cluster_bootstrap,
+    day_cluster_sensitivity,
+    paired_day_comparisons,
+)
+from src.evaluation.provenance import (
+    canonical_repo_path,
+    git_commit,
+    sha256_file,
+)
 from src.evaluation.results_compiler import ResultsCompiler
 from src.evaluation.statistical_tests import StatisticalTestSuite
 
@@ -54,6 +70,59 @@ def resolve_path(config: dict, key: str) -> Path:
     p = ROOT / value
     p.mkdir(parents=True, exist_ok=True)
     return p
+
+
+def combine_training_days(frames: list[pd.DataFrame]) -> pd.DataFrame:
+    """Combine earlier UTC days without allowing features across boundaries."""
+    combined: list[pd.DataFrame] = []
+    for day_index, frame in enumerate(frames):
+        value = frame.copy()
+        if "segment_id" in value:
+            value["segment_id"] = [
+                f"day{day_index}:{segment}" for segment in value["segment_id"]
+            ]
+        else:
+            value["segment_id"] = f"day{day_index}:0"
+        combined.append(value)
+    return (
+        pd.concat(combined, ignore_index=True)
+        .sort_values("timestamp", kind="stable")
+        .reset_index(drop=True)
+    )
+
+
+DayEntry = tuple[str, Path, pd.DataFrame]
+
+
+@dataclass(frozen=True)
+class ExpandingDayFold:
+    """One causal UTC-day fold with a validation day before the test day."""
+
+    training: tuple[DayEntry, ...]
+    validation: DayEntry
+    test: DayEntry
+
+
+def expanding_day_folds(
+    days: list[DayEntry], *, minimum_training_days: int = 3
+) -> list[ExpandingDayFold]:
+    """Build all expanding folds without reusing validation/test days in train."""
+    if minimum_training_days < 1:
+        raise ValueError("minimum_training_days must be positive")
+
+    ordered = sorted(days, key=lambda entry: entry[0])
+    labels = [entry[0] for entry in ordered]
+    if len(labels) != len(set(labels)):
+        raise ValueError("UTC-day labels must be unique")
+
+    return [
+        ExpandingDayFold(
+            training=tuple(ordered[: test_index - 1]),
+            validation=ordered[test_index - 1],
+            test=ordered[test_index],
+        )
+        for test_index in range(minimum_training_days + 1, len(ordered))
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -155,86 +224,266 @@ def run_asset_pipeline(
         return {"asset": symbol, "status": "no_data"}
 
     # ------------------------------------------------------------------
-    # Step 4: Pick holdout day (last available day)
+    # Step 4: Evaluate every available day; never select one favorable day
     # ------------------------------------------------------------------
     store_path = features_dir / f"multiday_{sym}.parquet"
     build_multiday_store(feature_paths, store_path)
-    
-    # Sort files chronologically and pick the last one
-    last_feature_file = sorted(feature_paths)[-1]
-    # Extract date
-    parts = last_feature_file.stem.split("_")
-    benchmark_day = next((p for p in parts if "-" in p and len(p) == 10), "unknown")
-    benchmark_frame = pd.read_parquet(last_feature_file)
-    
-    if len(benchmark_frame) < 200:
-        print(f"  [WARN] Benchmark day {benchmark_day} has < 200 rows ({len(benchmark_frame)})")
-        return {"asset": symbol, "status": "insufficient_data"}
-
-    print(f"\n--- Benchmark: {symbol} on day {benchmark_day} ({len(benchmark_frame):,} rows) ---")
-
-    # ------------------------------------------------------------------
-    # Step 5: Run benchmark + statistical tests
-    # ------------------------------------------------------------------
-    results_dir = ROOT / "results" / sym.lower()
-    results_dir.mkdir(parents=True, exist_ok=True)
-    figures_dir = ROOT / "figures" / sym.lower()
-    figures_dir.mkdir(parents=True, exist_ok=True)
-
-    try:
-        suite = BenchmarkSuite(
-            benchmark_frame,
-            n_steps=n_steps,
-            n_paths=n_paths,
-            random_seed=random_seed,
+    daily_results: list[dict] = []
+    failures: list[dict[str, str]] = []
+    eligible_days: list[tuple[str, Path, pd.DataFrame]] = []
+    for feature_file in sorted(feature_paths):
+        parts = feature_file.stem.split("_")
+        benchmark_day = next(
+            (part for part in parts if "-" in part and len(part) == 10),
+            "unknown",
         )
-        suite.run()
+        frame = pd.read_parquet(feature_file)
+        if len(frame) < 200:
+            failures.append(
+                {
+                    "day": benchmark_day,
+                    "reason": f"insufficient_rows:{len(frame)}",
+                }
+            )
+            continue
+        eligible_days.append((benchmark_day, feature_file, frame))
 
-        tests = StatisticalTestSuite(
-            suite.holdout["price"].to_numpy(dtype=np.float64),
-            suite.forecast_samples,
-            sample_semantics=suite.sample_semantics,
-            rolling_one_step_losses=suite.rolling_one_step_losses,
-            random_seed=random_seed,
-            bootstrap_iterations=500,
-        )
-        stat_results = tests.run_all(
-            results_dir=results_dir,
-            figures_dir=figures_dir,
+    minimum_training_days = 3
+    folds = expanding_day_folds(
+        eligible_days, minimum_training_days=minimum_training_days
+    )
+    for fold_index, fold in enumerate(folds):
+        training_days = fold.training
+        validation_day, validation_file, validation_frame = fold.validation
+        benchmark_day, feature_file, benchmark_frame = fold.test
+        training_frame = combine_training_days(
+            [entry[2] for entry in training_days]
         )
 
-        _, scorecard = ResultsCompiler().compile(
-            stat_results,
-            comparison_output=results_dir / "final_comparison_table.csv",
-            scorecard_output=results_dir / "scorecard.csv",
+        print(
+            f"\n--- Benchmark: {symbol}; train={len(training_days)} days, "
+            f"validation={validation_day}, test={benchmark_day} ---"
         )
-        qrw_rank = int(scorecard.loc[scorecard["model"] == "QRW Adaptive", "overall_rank"].iloc[0])
-        top_model = str(scorecard.iloc[0]["model"])
+        results_dir = ROOT / "results" / "cross_asset" / sym.lower() / benchmark_day
+        figures_dir = ROOT / "figures" / "cross_asset" / sym.lower() / benchmark_day
+        results_dir.mkdir(parents=True, exist_ok=True)
+        figures_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            day_seed = random_seed + fold_index
+            train_events = directional_events(training_frame)
+            validation_events = directional_events(validation_frame)
+            test_events = directional_events(benchmark_frame)
+            directional_models = fit_directional_baselines(
+                train_events, validation_events
+            )
+            directional_summary, directional_predictions, directional_diagnostics = (
+                score_directional_baselines(
+                    directional_models,
+                    test_events,
+                    train_events=len(train_events),
+                    validation_events=len(validation_events),
+                )
+            )
+            directional_summary.to_csv(
+                results_dir / "strong_directional_baselines.csv", index=False
+            )
+            directional_predictions.to_csv(
+                results_dir / "strong_directional_predictions.csv", index=False
+            )
+            directional_diagnostics.update(
+                {
+                    "protocol_version": BenchmarkSuite.PROTOCOL_VERSION,
+                    "code_commit": git_commit(ROOT),
+                    "feature_path": canonical_repo_path(feature_file, ROOT),
+                    "feature_sha256": sha256_file(feature_file),
+                    "split_unit": "UTC_day",
+                    "training_days": [entry[0] for entry in training_days],
+                    "validation_day": validation_day,
+                    "test_day": benchmark_day,
+                    "input_feature_sha256": {
+                        canonical_repo_path(path, ROOT): sha256_file(path)
+                        for _, path, _ in (
+                            *training_days,
+                            (validation_day, validation_file, validation_frame),
+                            (benchmark_day, feature_file, benchmark_frame),
+                        )
+                    },
+                }
+            )
+            (results_dir / "strong_directional_diagnostics.json").write_text(
+                json.dumps(directional_diagnostics, indent=2),
+                encoding="utf-8",
+            )
+            suite = BenchmarkSuite(
+                training_frame,
+                holdout_data=benchmark_frame,
+                n_steps=n_steps,
+                n_paths=n_paths,
+                random_seed=day_seed,
+            )
+            suite.run()
 
-        print(f"  Top model: {top_model}")
-        print(f"  QRW rank: {qrw_rank}")
+            tests = StatisticalTestSuite(
+                suite.test["price"].to_numpy(dtype=np.float64),
+                suite.forecast_samples,
+                sample_semantics=suite.sample_semantics,
+                rolling_one_step_losses=suite.rolling_one_step_losses,
+                rolling_one_step_timestamps=suite.rolling_one_step_timestamps,
+                random_seed=day_seed,
+                bootstrap_iterations=500,
+            )
+            stat_results = tests.run_all(
+                results_dir=results_dir,
+                figures_dir=figures_dir,
+            )
+            _, scorecard = ResultsCompiler().compile(
+                stat_results,
+                comparison_output=results_dir / "final_comparison_table.csv",
+                scorecard_output=results_dir / "scorecard.csv",
+            )
+            daily_results.append(
+                {
+                    "day": benchmark_day,
+                    "training_days": [entry[0] for entry in training_days],
+                    "validation_day": validation_day,
+                    "train_rows": len(suite.train),
+                    "holdout_rows": len(suite.holdout),
+                    "scorecard": scorecard.to_dict(orient="records"),
+                    "directional_baselines": directional_summary.to_dict(
+                        orient="records"
+                    ),
+                    "directional_diagnostics": directional_diagnostics,
+                }
+            )
+        except Exception as exc:  # noqa: BLE001
+            failures.append({"day": benchmark_day, "reason": str(exc)})
 
+    if not daily_results:
         return {
             "asset": symbol,
-            "status": "ok",
-            "benchmark_day": benchmark_day,
-            "train_rows": len(suite.train),
-            "holdout_rows": len(suite.holdout),
-            "qrw_overall_rank": qrw_rank,
-            "qrw_mean_marginal_crps": float(
-                scorecard.loc[
-                    scorecard["model"] == "QRW Adaptive",
-                    "mean_marginal_crps",
-                ].iloc[0]
-            ),
-            "top_model": top_model,
-            "scorecard": scorecard.to_dict(orient="records"),
+            "status": "benchmark_error",
+            "evaluated_days": 0,
+            "failures": failures,
         }
 
-    except Exception as exc:  # noqa: BLE001
-        print(f"  [ERR] Benchmark failed for {symbol}: {exc}")
-        return {"asset": symbol, "status": "benchmark_error", "error": str(exc)}
+    if len(daily_results) < 2:
+        return {
+            "asset": symbol,
+            "status": "insufficient_multiday_data",
+            "feature_days_available": len(feature_paths),
+            "evaluated_days": len(daily_results),
+            "failed_days": failures,
+            "daily_results": daily_results,
+        }
 
+    model_rows = [
+        {"day": result["day"], **entry}
+        for result in daily_results
+        for entry in result["scorecard"]
+    ]
+    daily_metric_frame = pd.DataFrame(model_rows)
+    daily_metric_frame.to_csv(
+        ROOT / "results" / "cross_asset" / sym.lower() / "daily_scorecards.csv",
+        index=False,
+    )
+    bootstrap = day_cluster_bootstrap(
+        daily_metric_frame,
+        value_columns=("mean_marginal_crps", "mean_direction_log_loss"),
+        iterations=2_000,
+        random_seed=random_seed,
+    )
+    sensitivity = day_cluster_sensitivity(
+        daily_metric_frame,
+        value_columns=("mean_marginal_crps", "mean_direction_log_loss"),
+        seeds=(random_seed, random_seed + 1, random_seed + 2),
+        block_sizes=(1, 2, 5),
+        iterations=500,
+    )
+    asset_result_dir = ROOT / "results" / "cross_asset" / sym.lower()
+    bootstrap.to_csv(asset_result_dir / "day_cluster_bootstrap.csv", index=False)
+    sensitivity.to_csv(
+        asset_result_dir / "day_cluster_sensitivity.csv", index=False
+    )
+    directional_daily = pd.DataFrame(
+        [
+            {"day": result["day"], **entry}
+            for result in daily_results
+            for entry in result["directional_baselines"]
+        ]
+    )
+    directional_daily.to_csv(
+        asset_result_dir / "directional_daily_scores.csv", index=False
+    )
+    directional_bootstrap = day_cluster_bootstrap(
+        directional_daily,
+        value_columns=("brier", "log_loss", "accuracy"),
+        iterations=2_000,
+        random_seed=random_seed,
+    )
+    directional_sensitivity = day_cluster_sensitivity(
+        directional_daily,
+        value_columns=("brier", "log_loss"),
+        seeds=(random_seed, random_seed + 1, random_seed + 2),
+        block_sizes=(1, 2, 5),
+        iterations=500,
+    )
+    directional_comparisons = paired_day_comparisons(
+        directional_daily,
+        metric_directions={
+            "brier": "lower",
+            "log_loss": "lower",
+            "accuracy": "higher",
+        },
+        iterations=2_000,
+        random_seed=random_seed,
+    )
+    directional_bootstrap.to_csv(
+        asset_result_dir / "directional_day_cluster_bootstrap.csv", index=False
+    )
+    directional_sensitivity.to_csv(
+        asset_result_dir / "directional_day_cluster_sensitivity.csv", index=False
+    )
+    directional_comparisons.to_csv(
+        asset_result_dir / "directional_pairwise_tests.csv", index=False
+    )
+    rank_diagnostics = (
+        daily_metric_frame
+        .groupby("model", sort=False)
+        .agg(
+            mean_daily_rank=("overall_rank", "mean"),
+        )
+        .reset_index()
+    )
+    aggregate = (
+        bootstrap.merge(rank_diagnostics, on="model", validate="one_to_one")
+        .sort_values(
+            ["mean_marginal_crps", "mean_direction_log_loss", "model"],
+            kind="stable",
+        )
+    )
+    aggregate["overall_rank"] = aggregate["mean_marginal_crps"].rank(
+        method="min", ascending=True
+    )
+    qrw = aggregate.loc[aggregate["model"] == "QRW Adaptive"].iloc[0]
+    return {
+        "asset": symbol,
+        "status": "ok",
+        "feature_days_available": len(feature_paths),
+        "evaluated_days": len(daily_results),
+        "failed_days": failures,
+        "qrw_overall_rank": int(qrw["overall_rank"]),
+        "qrw_mean_marginal_crps": float(qrw["mean_marginal_crps"]),
+        "top_model": str(aggregate.iloc[0]["model"]),
+        "scorecard": aggregate.to_dict(orient="records"),
+        "daily_results": daily_results,
+        "day_cluster_sensitivity": sensitivity.to_dict(orient="records"),
+        "directional_day_cluster_bootstrap": directional_bootstrap.to_dict(
+            orient="records"
+        ),
+        "directional_pairwise_tests": directional_comparisons.to_dict(
+            orient="records"
+        ),
+    }
 
 # ---------------------------------------------------------------------------
 # Cross-asset scorecard builder
@@ -253,6 +502,7 @@ def build_cross_asset_scorecard(summaries: list[dict], output_path: Path) -> pd.
                 "model": entry["model"],
                 "mean_marginal_crps": entry["mean_marginal_crps"],
                 "overall_rank": entry["overall_rank"],
+                "evaluated_days": entry["evaluated_days"],
             })
     if not rows:
         print("[WARN] No valid scorecard rows to aggregate")
@@ -266,6 +516,7 @@ def build_cross_asset_scorecard(summaries: list[dict], output_path: Path) -> pd.
             avg_mean_marginal_crps=("mean_marginal_crps", "mean"),
             avg_overall_rank=("overall_rank", "mean"),
             n_assets=("asset", "count"),
+            total_evaluated_days=("evaluated_days", "sum"),
         )
         .reset_index()
         .sort_values("avg_overall_rank")
@@ -286,7 +537,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--n-paths", type=int, default=2_000)
     parser.add_argument("--n-steps", type=int, default=500)
     parser.add_argument("--random-seed", type=int, default=2026)
-    parser.add_argument("--skip-existing", action="store_true", default=True)
+    parser.add_argument(
+        "--skip-existing",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Skip stages whose output already exists "
+        "(use --no-skip-existing to force a rebuild)",
+    )
     return parser.parse_args()
 
 
@@ -295,6 +552,7 @@ def main() -> None:
     args = parse_args()
 
     configs = {
+        "BTC/USDT": ROOT / "config" / "data_config.yaml",
         "ETH/USDT": ROOT / "config" / "data_config_eth.yaml",
         "BNB/USDT": ROOT / "config" / "data_config_bnb.yaml",
     }
@@ -335,6 +593,11 @@ def main() -> None:
         status = s.get("status", "unknown")
         qrw_rank = s.get("qrw_overall_rank", "N/A")
         print(f"  {s['asset']}: status={status}, QRW rank={qrw_rank}")
+
+    failed = [s["asset"] for s in summaries if s.get("status") != "ok"]
+    if not summaries or failed:
+        print(f"\n[FAIL] Asset(s) did not complete successfully: {failed or 'no assets ran'}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

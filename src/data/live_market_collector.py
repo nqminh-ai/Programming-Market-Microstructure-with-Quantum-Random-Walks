@@ -74,6 +74,7 @@ class LiveMarketCollector:
         trade_count = 0
         snapshot_count = 0
         reconnect_count = 0
+        dropped_before_first_snapshot = 0
 
         write_header = not tick_output.exists() or tick_output.stat().st_size == 0
         with gzip.open(tick_output, "at", encoding="utf-8", newline="") as tick_file:
@@ -132,6 +133,10 @@ class LiveMarketCollector:
                             first_trade_ns = first_trade_ns or trade_timestamp
                             last_trade_ns = trade_timestamp
                             trade_count += 1
+                        elif stream.endswith("@trade"):
+                            # No LOB snapshot yet to pair this trade with an
+                            # OBI feature -- dropped, not silently discarded.
+                            dropped_before_first_snapshot += 1
                     except (
                         OSError,
                         TimeoutError,
@@ -169,6 +174,7 @@ class LiveMarketCollector:
             "trades": trade_count,
             "lob_snapshots": snapshot_count,
             "reconnects": reconnect_count,
+            "dropped_before_first_snapshot": dropped_before_first_snapshot,
             "first_trade_ns": first_trade_ns,
             "last_trade_ns": last_trade_ns,
             "first_lob_ns": first_lob_ns,
@@ -181,6 +187,11 @@ class LiveMarketCollector:
             trade_count,
             snapshot_count,
         )
+        if dropped_before_first_snapshot:
+            logger.warning(
+                "Dropped {:,} trade(s) received before the first LOB snapshot",
+                dropped_before_first_snapshot,
+            )
         return summary
 
     @staticmethod

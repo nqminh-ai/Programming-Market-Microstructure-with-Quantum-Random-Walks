@@ -20,6 +20,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+from loguru import logger
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -382,14 +383,14 @@ def tab_volatility(config: dict) -> None:
         if DEMO_MODE and vol_parquet.exists():
             try:
                 df = pd.read_parquet(vol_parquet)
-            except Exception:
-                pass
+            except Exception as error:
+                logger.warning("Found {} but failed to read it: {}", vol_parquet, error)
         if DEMO_MODE and metrics_json.exists():
             try:
                 with open(metrics_json) as f:
                     met = json.load(f)
-            except Exception:
-                pass
+            except Exception as error:
+                logger.warning("Found {} but failed to read it: {}", metrics_json, error)
         return df, met
 
     latest_live: dict[str, Any] | None = None
@@ -615,11 +616,24 @@ def tab_risk(config: dict) -> None:
         n_paths=1000,
         seed=int(st.session_state.get("risk_seed", 2026)),
     )
-    artifact = ROOT / "results" / "track_a" / "risk_paths.parquet"
-    backtest_artifact = ROOT / "results" / "track_a" / "risk_backtest.parquet"
-    if DEMO_MODE and artifact.exists():
+
+    @st.cache_data(ttl=60)
+    def _load_risk_paths(scenario_key: str) -> pd.DataFrame | None:
+        artifact = ROOT / "results" / "track_a" / "risk_paths.parquet"
+        if not (DEMO_MODE and artifact.exists()):
+            return None
         stored = pd.read_parquet(artifact)
-        selected = stored[stored["scenario"] == scenario]
+        return stored[stored["scenario"] == scenario_key]
+
+    @st.cache_data(ttl=60)
+    def _load_risk_backtest() -> pd.DataFrame | None:
+        backtest_artifact = ROOT / "results" / "track_a" / "risk_backtest.parquet"
+        if not (DEMO_MODE and backtest_artifact.exists()):
+            return None
+        return pd.read_parquet(backtest_artifact)
+
+    selected = _load_risk_paths(scenario)
+    if selected is not None:
         paths = selected.pivot(
             index="path_id", columns="step", values="cumulative_return"
         ).to_numpy()
@@ -638,9 +652,8 @@ def tab_risk(config: dict) -> None:
     gaussian_95 = float(final.mean() + norm.ppf(0.05) * final.std(ddof=1))
     gaussian_99 = float(final.mean() + norm.ppf(0.01) * final.std(ddof=1))
 
-    if DEMO_MODE and backtest_artifact.exists():
-        backtest = pd.read_parquet(backtest_artifact)
-    else:
+    backtest = _load_risk_backtest()
+    if backtest is None:
         synthetic_data_banner("python scripts/track_a/build_demo.py --date 2026-06-12")
         rng = np.random.default_rng(2026)
         synthetic_returns = rng.normal(0.0, 0.001, 600)
@@ -740,8 +753,23 @@ def tab_signal(config: dict) -> None:
     theta_buy = float(config["theta_buy"])
     theta_sell = float(config["theta_sell"])
     engine = QRWSignalEngine(theta_buy, theta_sell)
-    artifact = ROOT / "results" / "track_a" / "signal_log.parquet"
     metrics_frame: pd.DataFrame | None = None
+
+    @st.cache_data(ttl=60)
+    def _load_signal_artifact() -> pd.DataFrame | None:
+        artifact = ROOT / "results" / "track_a" / "signal_log.parquet"
+        if DEMO_MODE and artifact.exists():
+            return pd.read_parquet(artifact)
+        return None
+
+    @st.cache_data(ttl=60)
+    def _load_signal_market(date: str) -> pd.DataFrame | None:
+        candidates = sorted(
+            asset_data_dir("BTCUSDT", "processed").glob(f"*{date}*.parquet")
+        ) or sorted(asset_data_dir("BTCUSDT", "processed").glob("*.parquet"))
+        if not candidates:
+            return None
+        return pd.read_parquet(candidates[0]).head(500).copy().reset_index(drop=True)
     if config.get("live_mode"):
         market = config.get("live_frame", pd.DataFrame()).copy().reset_index(drop=True)
         if len(market) < 30:
@@ -773,16 +801,11 @@ def tab_signal(config: dict) -> None:
             ignore_index=True,
             sort=False,
         )
-    elif DEMO_MODE and artifact.exists():
-        probability_frame = pd.read_parquet(artifact)
+    elif DEMO_MODE and (probability_frame := _load_signal_artifact()) is not None:
         signal_frame = engine.backtest_from_probabilities(probability_frame)
     else:
-        candidates = sorted(
-            asset_data_dir("BTCUSDT", "processed").glob(f"*{config['date']}*.parquet")
-        ) or sorted(asset_data_dir("BTCUSDT", "processed").glob("*.parquet"))
-        if candidates:
-            market = pd.read_parquet(candidates[0]).head(500).copy().reset_index(drop=True)
-        else:
+        market = _load_signal_market(config["date"])
+        if market is None:
             synthetic_data_banner("python scripts/track_a/build_demo.py --date 2026-06-12")
             rng = np.random.default_rng(2026)
             returns = rng.normal(0.0, 0.0005, 500)
@@ -904,20 +927,14 @@ def tab_optimizer(config: dict) -> None:
     from src.strategy.optimizer import QRWStrategyOptimizer
 
     section_header("STRATEGY OPTIMIZER — MODULE A4")
-    controls = st.columns([3, 2, 2, 2])
+    controls = st.columns([2, 2, 1])
     with controls[0]:
-        st.date_input(
-            "Train period",
-            value=(datetime(2026, 5, 13).date(), datetime(2026, 6, 8).date()),
-            key="opt_train",
-        )
-    with controls[1]:
         objective = st.selectbox(
             "Objective", ["sharpe", "hit_rate", "profit_factor"], key="opt_obj"
         )
-    with controls[2]:
+    with controls[1]:
         st.toggle("Regime-aware", True, key="regime_aware")
-    with controls[3]:
+    with controls[2]:
         run_optimization = st.button(
             "Run Optimization", type="primary", key="run_opt"
         )
@@ -962,20 +979,31 @@ def tab_optimizer(config: dict) -> None:
         }
         progress.empty()
 
-    params_path = ROOT / "results" / "track_a" / "optimizer_params.json"
-    surface_path = ROOT / "results" / "track_a" / "optimizer_surface.parquet"
-    oos_path = ROOT / "results" / "track_a" / "optimizer_oos.parquet"
-    metrics_path = ROOT / "results" / "track_a" / "optimizer_metrics.json"
+    @st.cache_data(ttl=60)
+    def _load_optimizer_artifacts():
+        params_path = ROOT / "results" / "track_a" / "optimizer_params.json"
+        surface_path = ROOT / "results" / "track_a" / "optimizer_surface.parquet"
+        oos_path = ROOT / "results" / "track_a" / "optimizer_oos.parquet"
+        metrics_path = ROOT / "results" / "track_a" / "optimizer_metrics.json"
+        if not (
+            DEMO_MODE
+            and all(path.exists() for path in (params_path, surface_path, oos_path, metrics_path))
+        ):
+            return None
+        return (
+            json.loads(params_path.read_text(encoding="utf-8")),
+            pd.read_parquet(surface_path),
+            pd.read_parquet(oos_path),
+            json.loads(metrics_path.read_text(encoding="utf-8")),
+        )
+
     if "opt_results" in st.session_state:
         results = st.session_state["opt_results"]
         surface = st.session_state["opt_surface"]
         oos = st.session_state["opt_oos"]
         oos_metrics = st.session_state["opt_metrics"]
-    elif DEMO_MODE and all(path.exists() for path in (params_path, surface_path, oos_path, metrics_path)):
-        results = json.loads(params_path.read_text(encoding="utf-8"))
-        surface = pd.read_parquet(surface_path)
-        oos = pd.read_parquet(oos_path)
-        oos_metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    elif (artifacts := _load_optimizer_artifacts()) is not None:
+        results, surface, oos, oos_metrics = artifacts
     else:
         synthetic_data_banner("python scripts/track_a/build_demo.py --date 2026-06-12")
         theta = np.array(QRWStrategyOptimizer.DEFAULT_GRID)
@@ -1067,18 +1095,30 @@ def tab_anomaly(config: dict) -> None:
     from src.models.anomaly_detector import QRWAnomalyDetector
 
     section_header("ANOMALY DETECTOR — MODULE A5")
-    log_path = ROOT / "results" / "track_a" / "anomaly_log.parquet"
-    distribution_path = ROOT / "results" / "track_a" / "anomaly_distributions.parquet"
-    if DEMO_MODE and log_path.exists() and distribution_path.exists():
-        anomaly_log = pd.read_parquet(log_path)
-        distributions = pd.read_parquet(distribution_path)
+
+    @st.cache_data(ttl=60)
+    def _load_anomaly_artifacts():
+        log_path = ROOT / "results" / "track_a" / "anomaly_log.parquet"
+        distribution_path = ROOT / "results" / "track_a" / "anomaly_distributions.parquet"
+        if not (DEMO_MODE and log_path.exists() and distribution_path.exists()):
+            return None
+        return pd.read_parquet(log_path), pd.read_parquet(distribution_path)
+
+    @st.cache_data(ttl=60)
+    def _load_anomaly_market() -> pd.DataFrame | None:
+        candidates = sorted(asset_data_dir("BTCUSDT", "processed").glob("*.parquet"))
+        if not candidates:
+            return None
+        return pd.read_parquet(candidates[-1]).head(500).copy().reset_index(drop=True)
+
+    artifacts = _load_anomaly_artifacts()
+    if artifacts is not None:
+        anomaly_log, distributions = artifacts
         baseline = distributions["baseline"].to_numpy(dtype=float)
         current = distributions["current"].to_numpy(dtype=float)
     else:
-        candidates = sorted(asset_data_dir("BTCUSDT", "processed").glob("*.parquet"))
-        if candidates:
-            market = pd.read_parquet(candidates[-1]).head(500).copy().reset_index(drop=True)
-        else:
+        market = _load_anomaly_market()
+        if market is None:
             synthetic_data_banner("python scripts/track_a/build_demo.py --date 2026-06-12")
             rng = np.random.default_rng(2026)
             market = pd.DataFrame({
