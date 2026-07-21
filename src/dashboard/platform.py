@@ -50,6 +50,17 @@ def _configure_page() -> None:
 # Shared helpers
 # ---------------------------------------------------------------------------
 
+def format_percent(value: float, decimals: int = 1) -> str:
+    """Format a fraction as a percentage, falling back to scientific
+    notation when the value would otherwise round to "0.0%" and silently
+    look identical to an actual zero (e.g. a GARCH forecast of 0.00024%)."""
+    percent = value * 100
+    formatted = f"{percent:.{decimals}f}%"
+    if percent != 0.0 and float(formatted[:-1]) == 0.0:
+        return f"{percent:.2e}%"
+    return formatted
+
+
 def kpi_card(
     col,
     label: str,
@@ -78,6 +89,42 @@ def kpi_card(
             <div class="kpi-value" style="color:{color}">{value}</div>
             {delta_html}
         </div>""",
+        unsafe_allow_html=True,
+    )
+
+
+def insight_panel(observations: list[str], recommendation: str, *, tone: str = "neutral") -> None:
+    """Render a plain-language interpretation of the tab's own numbers plus
+    one concrete recommendation.
+
+    Every observation must be derived from the values already computed in
+    that tab (not a static blurb), so this reads as "what these numbers
+    mean" rather than a generic disclaimer. `tone` picks the accent color:
+    good/caution/bad/neutral.
+    """
+    import streamlit as st
+
+    color = {
+        "good": COLORS["accent_green"],
+        "caution": COLORS["accent_yellow"],
+        "bad": COLORS["accent_red"],
+        "neutral": COLORS["accent_cyan"],
+    }[tone]
+    observations_html = "".join(
+        f'<div style="margin-top:0.3rem;">• {line}</div>' for line in observations
+    )
+    st.markdown(
+        f"""
+        <div class="kpi-card" style="border-left:3px solid {color}; margin-top:0.75rem;">
+            <div class="kpi-label">📌 Insight &amp; Khuyến nghị</div>
+            <div style="margin-top:0.4rem; color:#C7D3E0; font-size:0.85rem; line-height:1.5;">
+                {observations_html}
+            </div>
+            <div style="margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid #1C2A3D; color:{color}; font-weight:600; font-size:0.85rem;">
+                → {recommendation}
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
@@ -465,16 +512,16 @@ def tab_volatility(config: dict) -> None:
     regime_color = {"LOW": "#00E676", "MID": "#FFB300", "HIGH": "#FF4444"}[regime]
 
     c1, c2, c3, c4 = st.columns(4)
-    kpi_card(c1, "QRW Vol Forecast", f"{current_qrw*100:.1f}%", current_qrw - current_real, "#00D4FF", "vs realized")
+    kpi_card(c1, "QRW Vol Forecast", format_percent(current_qrw), current_qrw - current_real, "#00D4FF", "vs realized")
     kpi_card(
         c2,
         "GARCH Forecast",
-        f"{current_garch*100:.1f}%" if current_garch is not None else "N/A",
+        format_percent(current_garch) if current_garch is not None else "N/A",
         current_garch - current_real if current_garch is not None else None,
         "#B388FF",
         "vs realized",
     )
-    kpi_card(c3, "Realized Vol", f"{current_real*100:.1f}%", color="#E8F0FA")
+    kpi_card(c3, "Realized Vol", format_percent(current_real), color="#E8F0FA")
     kpi_card(c4, "Vol Regime", regime, color=regime_color)
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -576,6 +623,40 @@ def tab_volatility(config: dict) -> None:
             xaxis_title="Annualized Vol (%)",
         )
         st.plotly_chart(fig2, width="stretch")
+
+    if metric_rows:
+        qrw_wins = sum(1 for row in metric_rows if row["Winner"] == "QRW")
+        total_windows = len(metric_rows)
+        gap_pct = abs(current_qrw - current_real) * 100
+        regime_note = {
+            "LOW": "biến động thấp, điều kiện thị trường tương đối ổn định",
+            "MID": "biến động trung bình, nên theo dõi sát các mốc chuyển regime",
+            "HIGH": "biến động cao — kích thước vị thế/đòn bẩy nên được giảm tương ứng",
+        }[regime]
+        observations = [
+            f"QRW thắng GARCH về sai số dự báo (MAE) ở {qrw_wins}/{total_windows} khung thời gian được so sánh.",
+            f"Regime hiện tại: <b>{regime}</b> — {regime_note}.",
+            f"Chênh lệch dự báo QRW so với realized: {gap_pct:.2f} điểm phần trăm.",
+        ]
+        if qrw_wins > total_windows / 2:
+            recommendation = (
+                "QRW đang dự báo sát thực tế hơn GARCH ở đa số khung thời gian — "
+                "có thể ưu tiên tín hiệu QRW cho khung ngắn, vẫn nên đối chiếu GARCH làm tham chiếu."
+            )
+            tone = "good"
+        elif qrw_wins == total_windows / 2:
+            recommendation = (
+                "QRW và GARCH đang ngang ngửa nhau — chưa đủ cơ sở để ưu tiên một mô hình, "
+                "nên dùng cả hai làm tín hiệu chéo kiểm tra lẫn nhau."
+            )
+            tone = "caution"
+        else:
+            recommendation = (
+                "GARCH vẫn chính xác hơn QRW ở đa số khung thời gian trên dữ liệu này — "
+                "dùng QRW như tín hiệu bổ sung, chưa nên thay thế GARCH làm dự báo chính."
+            )
+            tone = "caution"
+        insight_panel(observations, recommendation, tone=tone)
 
     # Row 4: Methodology
     with st.expander("Mathematical Methodology"):
@@ -747,6 +828,37 @@ def tab_risk(config: dict) -> None:
         xaxis_title="Observation", yaxis_title="Violation rate (%)",
     )
     st.plotly_chart(backtest_figure, width="stretch")
+
+    # In basis points, not percentage points: VaR gaps here are routinely
+    # under 0.01pp, which would otherwise silently round to "0.00".
+    tail_gap_bps = (gaussian_95 - var_95) * 10_000
+    violation_gap = (violation_rate - 0.05) * 100
+    observations = [
+        (
+            f"QRW VaR 95% ({var_95*100:.2f}%) {'dày hơn' if var_95 < gaussian_95 else 'mỏng hơn'} "
+            f"Gaussian ({gaussian_95*100:.2f}%) {abs(tail_gap_bps):.1f} bps."
+        ),
+        f"Tỷ lệ vi phạm VaR thực tế: {violation_rate*100:.2f}% (mục tiêu 5%).",
+    ]
+    if violation_gap > 1.0:
+        recommendation = (
+            "Tỷ lệ vi phạm cao hơn mục tiêu 5% — mô hình đang ĐÁNH GIÁ THẤP rủi ro thực tế. "
+            "Cần tăng biên an toàn (nới VaR) hoặc kiểm tra lại calibration trước khi dùng để quản trị rủi ro thật."
+        )
+        tone = "bad"
+    elif violation_gap < -2.0:
+        recommendation = (
+            "Tỷ lệ vi phạm thấp hơn nhiều so với mục tiêu 5% — mô hình đang thận trọng hơn mức cần thiết, "
+            "có thể đang khoá vốn dự phòng nhiều hơn cần. Có thể nới nhẹ ngưỡng VaR để dùng vốn hiệu quả hơn."
+        )
+        tone = "caution"
+    else:
+        recommendation = (
+            "Tỷ lệ vi phạm gần với mục tiêu 5% — mô hình VaR đang hiệu chỉnh tốt trên dữ liệu này. "
+            "Tiếp tục backtest định kỳ để phát hiện sớm nếu calibration trôi theo thời gian."
+        )
+        tone = "good"
+    insight_panel(observations, recommendation, tone=tone)
 
 
 # ---------------------------------------------------------------------------
@@ -927,6 +1039,44 @@ def tab_signal(config: dict) -> None:
     styled = log.style.map(lambda value: outcome_colors.get(value, ""), subset=["correct"])
     st.dataframe(styled, hide_index=True, width="stretch")
 
+    n_trades = int(metrics["n_trades"])
+    hit_rate = float(metrics["hit_rate"])
+    profit_factor = float(metrics["profit_factor"])
+    net_pnl = float(metrics["net_pnl"])
+    observations = [
+        f"Hit rate: {hit_rate*100:.1f}%, Profit factor: {profit_factor:.2f}, trên {n_trades} lệnh (không tính HOLD).",
+        f"Net P&L trên toàn bộ giai đoạn: {net_pnl*100:+.3f}%.",
+    ]
+    if n_trades < 30:
+        observations.append(
+            f"Chỉ có {n_trades} lệnh — mẫu nhỏ, các tỷ lệ trên có thể không ổn định."
+        )
+    if n_trades < 30:
+        recommendation = (
+            "Số lệnh quá ít để kết luận đáng tin cậy — cần chạy trên khoảng thời gian dài hơn "
+            "hoặc nhiều tài sản hơn trước khi đánh giá chất lượng tín hiệu."
+        )
+        tone = "caution"
+    elif hit_rate < 0.5 and profit_factor < 1.0:
+        recommendation = (
+            "Hit rate dưới 50% và profit factor dưới 1 — chiến lược đang thua nhiều hơn thắng trên dữ liệu này. "
+            "CHƯA nên triển khai vốn thật; cần cải thiện mô hình hoặc điều chỉnh ngưỡng θ_buy/θ_sell trước."
+        )
+        tone = "bad"
+    elif profit_factor >= 1.5 and hit_rate >= 0.5:
+        recommendation = (
+            "Cả hit rate và profit factor đều tích cực trên dữ liệu này — có thể tiếp tục kiểm định "
+            "trên dữ liệu ngoài mẫu (out-of-sample) trước khi cân nhắc vốn thật."
+        )
+        tone = "good"
+    else:
+        recommendation = (
+            "Kết quả trái chiều giữa hit rate và profit factor — nên xem xét thêm max drawdown và "
+            "kiểm định trên nhiều giai đoạn/regime khác trước khi ra quyết định."
+        )
+        tone = "caution"
+    insight_panel(observations, recommendation, tone=tone)
+
 
 # ---------------------------------------------------------------------------
 # Tab A4 — Optimizer
@@ -1031,6 +1181,7 @@ def tab_optimizer(config: dict) -> None:
             "hit_rate": float((pnl > 0).mean()),
             "max_drawdown": float((equity - equity.cummax()).min()),
             "profit_factor": float(pnl[pnl > 0].sum() / -pnl[pnl < 0].sum()),
+            "n_trades": int(len(pnl)),
         }
 
     heat_col, table_col = st.columns([55, 45])
@@ -1086,11 +1237,53 @@ def tab_optimizer(config: dict) -> None:
         legend=dict(orientation="h", y=-0.2),
     )
     st.plotly_chart(curve, width="stretch")
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4, c5 = st.columns(5)
     kpi_card(c1, "OOS Sharpe", f"{float(oos_metrics.get('sharpe', 0)):.2f}", color=COLORS["accent_cyan"])
     kpi_card(c2, "Hit Rate", f"{float(oos_metrics.get('hit_rate', 0))*100:.1f}%", color=COLORS["accent_green"])
     kpi_card(c3, "Max Drawdown", f"{float(oos_metrics.get('max_drawdown', 0))*100:.2f}%", color=COLORS["accent_red"])
     kpi_card(c4, "Profit Factor", f"{float(oos_metrics.get('profit_factor', 0)):.2f}", color=COLORS["accent_yellow"])
+    # Profit Factor/Sharpe can look impressive while resting on very few
+    # trades -- show the count alongside them so a viewer can judge
+    # reliability, instead of only seeing the headline ratios (this tab
+    # previously omitted n_trades even though tab_signal already shows it).
+    kpi_card(c5, "OOS Trades", f"{int(oos_metrics.get('n_trades', 0))}", color=COLORS["text_primary"])
+
+    sharpe = float(oos_metrics.get("sharpe", 0.0))
+    profit_factor = float(oos_metrics.get("profit_factor", 0.0))
+    n_trades = int(oos_metrics.get("n_trades", 0))
+    n_observations = len(oos)
+    observations = [
+        f"Sharpe {sharpe:.2f}, Profit Factor {profit_factor:.2f}, trên {n_trades} lệnh / {n_observations} quan sát out-of-sample.",
+    ]
+    if profit_factor > 10.0:
+        observations.append(
+            "Profit Factor rất cao thường bị chi phối bởi một vài lệnh lãi lớn hiếm gặp, "
+            "không phản ánh độ ổn định trung bình của chiến lược."
+        )
+        recommendation = (
+            "Profit Factor cực đoan như thế này cần được xác nhận trên nhiều giai đoạn/tài sản khác "
+            "trước khi tin tưởng tham số θ_buy/θ_sell tối ưu này cho vốn thật."
+        )
+        tone = "caution"
+    elif n_trades < 30:
+        recommendation = (
+            f"Chỉ {n_trades} lệnh trong kỳ out-of-sample — mẫu nhỏ, cần backtest dài hơn "
+            "trước khi tin tưởng các chỉ số này."
+        )
+        tone = "caution"
+    elif sharpe > 0 and profit_factor >= 1.0:
+        recommendation = (
+            "Các chỉ số out-of-sample đồng thuận tích cực — có thể tiếp tục theo dõi live-paper-trading "
+            "trước khi phân bổ vốn thật."
+        )
+        tone = "good"
+    else:
+        recommendation = (
+            "Chỉ số out-of-sample chưa đủ tích cực — nên thử objective khác (hit_rate/profit_factor) "
+            "hoặc mở rộng lưới θ_buy/θ_sell trước khi triển khai."
+        )
+        tone = "bad"
+    insight_panel(observations, recommendation, tone=tone)
 
 
 # ---------------------------------------------------------------------------
@@ -1246,6 +1439,45 @@ def tab_anomaly(config: dict) -> None:
         ))
         calendar_figure.update_layout(**PLOTLY_TEMPLATE, height=280, title="Anomaly calendar", xaxis_title="Hour", yaxis_title="Day")
         st.plotly_chart(calendar_figure, width="stretch")
+
+    recent_alert_count = int(len(anomaly_log[anomaly_log["alert"]].tail(50)))
+    observations = [
+        f"Điểm bất thường hiện tại: {score:.2f}σ, loại: {label}.",
+        f"Số lần vượt ngưỡng 3σ trong 50 quan sát gần nhất: {recent_alert_count}.",
+    ]
+    type_advice = {
+        "quote_stuffing": (
+            "Nghi ngờ quote stuffing/spoofing — nên tăng giám sát order book và cân nhắc trì hoãn "
+            "khớp lệnh cho tới khi mẫu hình ổn định trở lại."
+        ),
+        "directional_pressure": (
+            "Áp lực một chiều mạnh — cân nhắc điều chỉnh vị thế theo hướng đó nhưng thận trọng "
+            "với rủi ro đảo chiều đột ngột."
+        ),
+        "market_indecision": (
+            "Thị trường đang giằng co, thiếu hướng rõ ràng — nên giảm kích thước lệnh và mở rộng "
+            "biên độ dừng lỗ trong giai đoạn này."
+        ),
+        "suspicious": (
+            "Có dấu hiệu bất thường nhưng chưa rõ loại — theo dõi thêm trước khi hành động."
+        ),
+    }
+    if score >= 3.0:
+        recommendation = type_advice.get(
+            anomaly_type,
+            "Bất thường mạnh (>3σ) — nên tạm dừng giao dịch tự động và kiểm tra thủ công trước khi tiếp tục.",
+        )
+        tone = "bad"
+    elif score >= 1.5:
+        recommendation = type_advice.get(
+            anomaly_type,
+            "Có dấu hiệu bất thường nhẹ — theo dõi sát, chưa cần can thiệp ngay.",
+        )
+        tone = "caution"
+    else:
+        recommendation = "Thị trường đang trong trạng thái bình thường — không cần hành động thêm."
+        tone = "good"
+    insight_panel(observations, recommendation, tone=tone)
 
 
 # ---------------------------------------------------------------------------
