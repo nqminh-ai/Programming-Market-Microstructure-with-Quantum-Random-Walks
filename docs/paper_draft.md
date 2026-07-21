@@ -15,8 +15,19 @@ scores và marginal variance scaling. ACF và tail diagnostics chỉ áp dụng 
 model có trajectory thật; Diebold–Mariano dùng loss rolling-origin một bước.
 
 Dữ liệu hoạt động hiện chỉ gồm 1.908 tick BTCUSDT trong khoảng 118,5 giây và
-biến OBI là trade-flow proxy, không phải L2 LOB. Walk-forward pooled cho thấy
-QRW kém baseline affine. Do đó nghiên cứu chưa hỗ trợ tuyên bố QRW vượt trội.
+biến OBI là trade-flow proxy, không phải L2 LOB.
+
+Một lỗi fit/predict mismatch từng khiến walk-forward pooled đánh giá QRW qua
+một công thức cổ điển bỏ sót tham số pha lượng tử (`alpha_phase`) mà bước
+calibrate có thể chọn. Sau khi sửa, walk-forward pooled trên một subset 3 ngày
+gần nhất cho thấy QRW **thắng** baseline affine có ý nghĩa thống kê (Brier
+edge −0,007383, KI 95% [−0,008306; −0,006482]), đảo ngược kết quả cũ
+(+0,049889). Tuy nhiên tham số pha tìm được gần như bằng 0 (~10⁻⁵), nên lợi
+thế này đến từ hệ số decoherence rất thấp chứ không phải giao thoa pha, và kết
+quả mới mới chỉ chạy trên subset — chưa chạy lại được trên toàn bộ dataset gốc
+vì giới hạn bộ nhớ khi xử lý ~32 triệu tick. Vì lợi thế quan sát được không đến
+từ giao thoa pha, nghiên cứu này chưa hỗ trợ tuyên bố QRW vượt trội nhờ cơ chế
+lượng tử; đây vẫn chưa đủ điều kiện cho một kết luận xác nhận (confirmatory).
 
 ## Phương pháp
 
@@ -45,6 +56,10 @@ khi mở nhãn holdout.
 
 ## Kết luận
 
-Đóng góp hiện tại là một pipeline mô phỏng và đánh giá có kiểm soát ngữ nghĩa,
-không phải bằng chứng về ưu thế lượng tử. Kết quả walk-forward âm và các hạn
-chế dữ liệu phải được báo cáo nguyên trạng.
+Đóng góp hiện tại là một pipeline mô phỏng và đánh giá có kiểm soát ngữ nghĩa.
+Sau khi sửa lỗi fit/predict mismatch, kết quả walk-forward trên subset gần
+nhất là dương cho QRW, nhưng đây là kết quả tạm thời: chưa được xác nhận trên
+toàn bộ dataset gốc, và tham số pha gần như bằng 0 nghĩa là đây không phải
+bằng chứng cho cơ chế giao thoa lượng tử cụ thể. Cả kết quả và các hạn chế dữ
+liệu/bộ nhớ phải được báo cáo nguyên trạng cho tới khi một đánh giá
+confirmatory đầy đủ được thực hiện.

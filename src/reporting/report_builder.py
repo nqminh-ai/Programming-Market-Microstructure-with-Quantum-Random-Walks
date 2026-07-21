@@ -37,6 +37,16 @@ class ReportContext:
     qrw_beta: float
     qrw_beta_ci_low: float
     qrw_beta_ci_high: float
+    walk_forward_folds: int
+    walk_forward_folds_qrw_better: int
+    walk_forward_brier_difference: float
+    walk_forward_ci_low: float
+    walk_forward_ci_high: float
+    walk_forward_verdict: str
+    top_directional_model: str
+    qrw_directional_rank: int
+    qrw_directional_log_loss: float
+    directional_test_events: int
 
 
 REFERENCES = (
@@ -230,10 +240,11 @@ because doing so would require inventing temporal coupling between independent
 horizon draws. The current primary endpoint does not support a general QRW
 advantage.
 
-The Phase 3 predictive audit is mixed after the causal rebuild: QRW beats the
-fair affine baseline on the final holdout but loses in pooled walk-forward
-evaluation. That instability and the Phase 5 scorecard answer different
-questions, but neither supports a current general superiority claim.
+The Phase 3 predictive audit is negative: QRW wins
+{context.walk_forward_folds_qrw_better}/{context.walk_forward_folds} folds and
+has pooled Brier difference {context.walk_forward_brier_difference:+.6f}, CI
+[{context.walk_forward_ci_low:+.6f}, {context.walk_forward_ci_high:+.6f}]. A
+single holdout cannot override this primary walk-forward result.
 
 ## 8. Limitations
 
@@ -264,8 +275,8 @@ continuous-time quantum walks with marked point-process baselines.
 """
 
 
-def build_final_report_markdown(context: ReportContext) -> str:
-    """Trả về báo cáo tiếng Việt, giữ nguyên kết luận khoa học âm."""
+def _build_final_report_markdown_vietnamese_v1(context: ReportContext) -> str:
+    """Giữ template tiếng Việt trước đây để đối chiếu; không dùng cho release."""
     return f"""# Báo cáo cuối: Quantum Random Walk cho vi cấu trúc thị trường
 
 ## Tóm tắt
@@ -319,6 +330,10 @@ Calibration và mô hình AR(1) cho OBI tương lai chỉ dùng train.
 | QRW variance beta | {context.qrw_beta:.4f} |
 | QRW beta 95% CI | [{context.qrw_beta_ci_low:.4f}; {context.qrw_beta_ci_high:.4f}] |
 | Thống kê path-dependent của QRW | không áp dụng |
+| Directional baseline đứng đầu | {context.top_directional_model} |
+| QRW directional rank | {context.qrw_directional_rank} |
+| QRW directional log loss | {context.qrw_directional_log_loss:.6g} |
+| Số test event chung | {context.directional_test_events:,} |
 
 ![Tiến hóa xác suất](../figures/prob_evolution.gif)
 
@@ -336,12 +351,146 @@ Calibration và mô hình AR(1) cho OBI tương lai chỉ dùng train.
 4. Walk-forward hiện không ủng hộ lợi thế QRW.
 5. Chưa có holdout multi-day untouched để đưa ra kết luận confirmatory.
 
-## 5. Kết luận
+## 5. Kết quả Walk-forward bắt buộc
+
+QRW thắng **{context.walk_forward_folds_qrw_better}/{context.walk_forward_folds}**
+fold. Chênh lệch Brier pooled `QRW - baseline` là
+**{context.walk_forward_brier_difference:+.6f}**, CI 95%
+**[{context.walk_forward_ci_low:+.6f}; {context.walk_forward_ci_high:+.6f}]**.
+Giá trị dương nghĩa là QRW kém hơn baseline.
+
+Verdict từ artifact audit có provenance:
+
+> {context.walk_forward_verdict}
+
+## 6. Kết luận
 
 Pipeline có thể kiểm toán ngữ nghĩa marginal, nhưng kết quả khoa học hiện tại
 vẫn âm: chưa có bằng chứng QRW vượt baseline cổ điển. Kết luận chỉ được xem xét
 lại sau khi protocol và provenance được đóng băng, đồng thời có ít nhất 20 ngày
 UTC mới cho mỗi tài sản với L2 LOB đồng bộ.
+"""
+
+
+def build_final_report_markdown(context: ReportContext) -> str:
+    """Tạo báo cáo UTF-8 tiếng Việt với diễn giải khớp dấu của kết quả walk-forward.
+
+    walk_forward_brier_difference âm nghĩa là QRW thắng baseline; các câu văn
+    tường thuật phải phản ánh đúng dấu này thay vì hardcode một kết luận cố
+    định, để báo cáo không tự mâu thuẫn với chính con số nó vừa in ra.
+    """
+    qrw_beats_baseline = context.walk_forward_brier_difference < 0.0
+    summary_evidence_line = (
+        "Kết quả này không thiết lập bằng chứng về ưu thế dự báo của QRW."
+        if not qrw_beats_baseline
+        else "Walk-forward cho thấy QRW có lợi thế Brier score so với baseline "
+        "trên dữ liệu đã kiểm toán; đây chưa phải kết luận confirmatory (xem §5)."
+    )
+    walk_forward_limitation_line = (
+        "Walk-forward hiện không ủng hộ lợi thế QRW."
+        if not qrw_beats_baseline
+        else "Walk-forward hiện ủng hộ lợi thế QRW trên dữ liệu đã kiểm toán, "
+        "nhưng chưa được xác nhận trên toàn bộ dataset gốc."
+    )
+    conclusion_evidence_line = (
+        "kết quả khoa học hiện tại vẫn âm: chưa có bằng chứng QRW vượt baseline "
+        "cổ điển."
+        if not qrw_beats_baseline
+        else "kết quả khoa học hiện tại là dương cho QRW trên dữ liệu đã kiểm "
+        "toán, nhưng vẫn cần xác nhận trên toàn bộ dataset gốc trước khi coi là "
+        "confirmatory."
+    )
+    return f"""# Báo cáo cuối: Quantum Random Walk cho vi cấu trúc thị trường
+
+## Tóm tắt
+
+Nghiên cứu đánh giá quantum random walk (QRW) density-matrix với coin thích
+nghi và decoherence. Tập đánh giá có {context.train_rows:,} dòng train,
+{context.holdout_rows:,} dòng holdout, {context.n_steps:,} horizon và
+{context.n_paths:,} mẫu biên cho mỗi mô hình/horizon. Endpoint chính là CRPS
+biên trung bình; log loss hướng chỉ dùng để phá hòa.
+
+{context.top_model} có CRPS thấp nhất ({context.top_mean_marginal_crps:.6g}).
+QRW xếp hạng {context.qrw_rank}, CRPS {context.qrw_mean_marginal_crps:.6g} và
+log loss hướng {context.qrw_mean_direction_log_loss:.6g}. {summary_evidence_line}
+
+## 1. Ngữ nghĩa đánh giá
+
+QRW chỉ tạo phân phối biên fixed-origin tại từng horizon. Các mẫu độc lập giữa
+các horizon không tạo thành trajectory. Vì vậy QRW không được đưa vào thống kê
+sai phân lợi suất, ACF, tail index hoặc Diebold–Mariano dựa trên đường đi.
+
+Diebold–Mariano chỉ dùng loss rolling-origin một bước, căn chỉnh trên cùng
+timestamp. ACF và tail là chẩn đoán `trajectory_only` cho baseline có đường đi
+thật.
+
+## 2. Dữ liệu và giao thức
+
+Artifact feature: `{context.feature_path}`.
+
+| Thành phần | Giá trị |
+|---|---:|
+| Train | {context.train_rows:,} dòng |
+| Holdout | {context.holdout_rows:,} dòng |
+| Horizon | {context.n_steps:,} |
+| Mẫu biên/mô hình/horizon | {context.n_paths:,} |
+| Seed | {context.random_seed} |
+
+OBI trong dữ liệu hiện tại là proxy mất cân bằng luồng giao dịch, không phải
+sổ lệnh giới hạn L2 đồng bộ. Calibration và mô hình AR(1) cho OBI tương lai chỉ
+dùng train.
+
+## 3. Kết quả định lượng
+
+| Đại lượng | Giá trị quan sát |
+|---|---:|
+| Mô hình đứng đầu | {context.top_model} |
+| CRPS đứng đầu | {context.top_mean_marginal_crps:.6g} |
+| Hạng tổng thể của QRW | {context.qrw_rank} |
+| CRPS biên trung bình của QRW | {context.qrw_mean_marginal_crps:.6g} |
+| Log loss hướng của QRW | {context.qrw_mean_direction_log_loss:.6g} |
+| Beta phương sai thực nghiệm | {context.empirical_beta:.4f} |
+| Beta phương sai QRW | {context.qrw_beta:.4f} |
+| Khoảng tin cậy 95% của beta QRW | [{context.qrw_beta_ci_low:.4f}; {context.qrw_beta_ci_high:.4f}] |
+| Thống kê phụ thuộc đường đi của QRW | không áp dụng |
+| Baseline hướng đứng đầu | {context.top_directional_model} |
+| Hạng hướng của QRW | {context.qrw_directional_rank} |
+| Log loss hướng QRW trong benchmark mạnh | {context.qrw_directional_log_loss:.6g} |
+| Số sự kiện test dùng chung | {context.directional_test_events:,} |
+
+![Tiến hóa xác suất](../figures/prob_evolution.gif)
+
+![Quy luật co giãn phương sai](../figures/variance_scaling.png)
+
+![Dải biên QRW và đường đi baseline](../figures/sample_paths.png)
+
+![Bảng điểm](../figures/scorecard.png)
+
+## 4. Giới hạn
+
+1. Dữ liệu hoạt động chỉ gồm một cửa sổ rất ngắn.
+2. OBI là proxy luồng giao dịch, không phải sổ lệnh L2 đồng bộ.
+3. Kết quả cross-asset cũ chưa đánh giá đầy đủ mọi ngày có sẵn.
+4. {walk_forward_limitation_line}
+5. Chưa có holdout đa ngày untouched để đưa ra kết luận confirmatory.
+
+## 5. Kết quả Walk-forward bắt buộc
+
+QRW thắng **{context.walk_forward_folds_qrw_better}/{context.walk_forward_folds}**
+fold. Chênh lệch Brier gộp `QRW - baseline` là
+**{context.walk_forward_brier_difference:+.6f}**, khoảng tin cậy 95%
+**[{context.walk_forward_ci_low:+.6f}; {context.walk_forward_ci_high:+.6f}]**.
+Giá trị dương nghĩa là QRW kém hơn baseline.
+
+Kết luận từ artifact audit có provenance:
+
+> {context.walk_forward_verdict}
+
+## 6. Kết luận
+
+Pipeline có thể kiểm toán ngữ nghĩa phân phối biên, và {conclusion_evidence_line}
+Kết luận chỉ được xem xét lại sau khi protocol và provenance được đóng băng,
+đồng thời có ít nhất 20 ngày UTC mới cho mỗi tài sản với sổ lệnh L2 đồng bộ.
 """
 
 
@@ -362,6 +511,14 @@ def build_presentation_markdown(context: ReportContext) -> str:
         ("Distribution Shape", "../figures/return_distributions.png"),
         ("Dependence and Paths", "../figures/acf_comparison.png"),
         ("Scorecard", f"{context.top_model} ranks first; QRW ranks {context.qrw_rank}."),
+        (
+            "Walk-forward Primary Result",
+            f"QRW wins {context.walk_forward_folds_qrw_better}/"
+            f"{context.walk_forward_folds} folds; pooled Brier difference "
+            f"{context.walk_forward_brier_difference:+.6f} with 95% CI "
+            f"[{context.walk_forward_ci_low:+.6f}, "
+            f"{context.walk_forward_ci_high:+.6f}].",
+        ),
         ("What We Can Claim", "The software pipeline passes. Current evidence does not establish QRW superiority."),
         ("Next Study", "Freeze protocol, collect 20+ fresh UTC days with synchronized LOB, then run one confirmatory evaluation."),
     )
@@ -412,7 +569,7 @@ def _text_page(
     fig.text(
         0.5,
         0.035,
-        f"QRW Market Microstructure | {page_number}",
+        f"QRW cho vi cấu trúc thị trường | {page_number}",
         ha="center",
         fontsize=8,
         color="#687785",
@@ -451,7 +608,7 @@ def _figure_page(
     fig.text(
         0.5,
         0.035,
-        f"QRW Market Microstructure | {page_number}",
+        f"QRW cho vi cấu trúc thị trường | {page_number}",
         ha="center",
         fontsize=8,
         color="#687785",
@@ -471,31 +628,50 @@ def _quantitative_page(
     fig.text(
         0.08,
         0.94,
-        "Quantitative Result Table",
+        "Bảng kết quả định lượng",
         fontsize=19,
         weight="bold",
         color="#16324F",
     )
     rows = (
-        ("Top model", context.top_model),
-        ("Top mean marginal CRPS", f"{context.top_mean_marginal_crps:.6g}"),
-        ("QRW overall rank", str(context.qrw_rank)),
-        ("QRW mean marginal CRPS", f"{context.qrw_mean_marginal_crps:.6g}"),
+        ("Mô hình đứng đầu", context.top_model),
+        ("CRPS biên trung bình tốt nhất", f"{context.top_mean_marginal_crps:.6g}"),
+        ("Hạng tổng thể của QRW", str(context.qrw_rank)),
+        ("CRPS biên trung bình của QRW", f"{context.qrw_mean_marginal_crps:.6g}"),
         (
-            "QRW direction log loss",
+            "Log loss hướng của QRW",
             f"{context.qrw_mean_direction_log_loss:.6g}",
         ),
-        ("Empirical variance beta", f"{context.empirical_beta:.4f}"),
-        ("QRW variance beta", f"{context.qrw_beta:.4f}"),
+        ("Beta phương sai thực nghiệm", f"{context.empirical_beta:.4f}"),
+        ("Beta phương sai QRW", f"{context.qrw_beta:.4f}"),
         (
-            "QRW beta 95% CI",
+            "Khoảng tin cậy 95% của beta QRW",
             f"[{context.qrw_beta_ci_low:.4f}, {context.qrw_beta_ci_high:.4f}]",
         ),
-        ("QRW path-dependent metrics", "not applicable"),
+        ("Chỉ số phụ thuộc đường đi của QRW", "không áp dụng"),
+        (
+            "Số fold walk-forward QRW thắng",
+            f"{context.walk_forward_folds_qrw_better}/{context.walk_forward_folds}",
+        ),
+        (
+            "Brier gộp QRW - baseline",
+            f"{context.walk_forward_brier_difference:+.6f}",
+        ),
+        (
+            "Khoảng tin cậy 95% Brier walk-forward",
+            f"[{context.walk_forward_ci_low:+.6f}, "
+            f"{context.walk_forward_ci_high:+.6f}]",
+        ),
+        ("Baseline hướng đứng đầu", context.top_directional_model),
+        ("Hạng hướng của QRW", str(context.qrw_directional_rank)),
+        (
+            "Log loss hướng của QRW",
+            f"{context.qrw_directional_log_loss:.6g}",
+        ),
     )
     table = axis.table(
         cellText=rows,
-        colLabels=("Quantity", "Observed value"),
+        colLabels=("Đại lượng", "Giá trị quan sát"),
         cellLoc="left",
         colLoc="left",
         loc="center",
@@ -514,14 +690,14 @@ def _quantitative_page(
     fig.text(
         0.08,
         0.12,
-        "All values are exploratory and come from one June 12, 2026 window.",
+        "Mọi giá trị đều mang tính thăm dò và đến từ một cửa sổ ngày 12/06/2026.",
         fontsize=9,
         color="#4D5D6A",
     )
     fig.text(
         0.5,
         0.035,
-        f"QRW Market Microstructure | {page_number}",
+        f"QRW cho vi cấu trúc thị trường | {page_number}",
         ha="center",
         fontsize=8,
         color="#687785",
@@ -541,46 +717,46 @@ def render_final_report_pdf(
     destination.parent.mkdir(parents=True, exist_ok=True)
     figure_pages = (
         (
-            "Probability Evolution",
+            "Tiến hóa xác suất",
             figures / "prob_evolution.gif",
-            "Coherent QRW interference and ballistic spread contrast with the "
-            "diffusive classical binomial distribution.",
+            "Giao thoa và độ phân tán ballistic của QRW coherent tương phản với "
+            "phân phối nhị thức khuếch tán cổ điển.",
         ),
         (
-            "Variance Scaling",
+            "Quy luật co giãn phương sai",
             figures / "variance_scaling.png",
-            "Regression slopes summarize how price-change variance grows with "
-            "horizon for the empirical path and every simulated model.",
+            "Độ dốc hồi quy tóm tắt cách phương sai biến động giá tăng theo "
+            "horizon trên dữ liệu thực nghiệm và từng mô hình mô phỏng.",
         ),
         (
-            "Return Distribution Comparison",
+            "So sánh phân phối lợi suất",
             figures / "return_distributions.png",
-            "Returns are standardized per series, so the comparison concerns "
-            "distributional shape rather than volatility scale.",
+            "Lợi suất được chuẩn hóa riêng cho từng chuỗi, nên phép so sánh tập "
+            "trung vào hình dạng phân phối thay vì thang đo biến động.",
         ),
         (
-            "Autocorrelation Comparison",
+            "So sánh tự tương quan",
             figures / "acf_comparison.png",
-            "The empirical series has dependence that no single simulated "
-            "baseline reproduces completely.",
+            "Chuỗi thực nghiệm có cấu trúc phụ thuộc mà không baseline mô phỏng "
+            "đơn lẻ nào tái tạo hoàn toàn.",
         ),
         (
-            "Sample Paths",
+            "Các đường mẫu",
             figures / "sample_paths.png",
-            "Direct path overlays reveal scale and directional differences "
-            "that are compressed by aggregate scores.",
+            "Việc chồng trực tiếp các đường đi cho thấy khác biệt về thang đo và "
+            "hướng vốn bị nén trong các điểm tổng hợp.",
         ),
         (
-            "Adaptive Coin Operator",
+            "Toán tử coin thích nghi",
             figures / "coin_operator_heatmap.png",
-            "The operator keeps balanced magnitudes while market information "
-            "changes complex phases.",
+            "Toán tử giữ độ lớn cân bằng trong khi thông tin thị trường làm thay "
+            "đổi các pha phức.",
         ),
         (
-            "Benchmark Scorecard",
+            "Bảng điểm benchmark",
             figures / "scorecard.png",
-            f"{context.top_model} is first overall. QRW is rank "
-            f"{context.qrw_rank} under the primary CRPS endpoint.",
+            f"{context.top_model} đứng đầu tổng thể. QRW xếp hạng "
+            f"{context.qrw_rank} theo endpoint CRPS chính.",
         ),
     )
     for _title, path, _caption in figure_pages:
@@ -593,7 +769,7 @@ def render_final_report_pdf(
         fig.text(
             0.08,
             0.72,
-            "Quantum Random Walks\nfor Market Microstructure",
+            "Quantum Random Walk\ncho vi cấu trúc thị trường",
             fontsize=28,
             weight="bold",
             color="#16324F",
@@ -602,15 +778,15 @@ def render_final_report_pdf(
         fig.text(
             0.08,
             0.60,
-            "Phase 6 Technical Report",
+            "Báo cáo kỹ thuật Giai đoạn 6",
             fontsize=16,
             color="#2A6F97",
         )
         fig.text(
             0.08,
             0.50,
-            "BTCUSDT event data | June 12, 2026\n"
-            "Reproducible exploratory benchmark",
+            "Dữ liệu sự kiện BTCUSDT | 12/06/2026\n"
+            "Benchmark thăm dò có thể tái lập",
             fontsize=12,
             color="#475B6B",
             linespacing=1.6,
@@ -618,8 +794,7 @@ def render_final_report_pdf(
         fig.text(
             0.08,
             0.12,
-            "Engineering conclusion: pipeline complete; no validated QRW "
-            "superiority.",
+            "Kết luận kỹ thuật: pipeline hoàn chỉnh; chưa xác nhận QRW vượt trội.",
             fontsize=10,
             color="#7A2E2E",
         )
@@ -628,96 +803,89 @@ def render_final_report_pdf(
 
         text_pages = (
             (
-                "Abstract",
+                "Tóm tắt",
                 (
-                    "This report evaluates a causally calibrated discrete-time "
-                    "quantum random walk for short-horizon market "
-                    "microstructure. It compares QRW Adaptive with three "
-                    "classical random walks, GARCH(1,1), and GBM under one "
-                    "chronological benchmark.",
-                    f"The active sample has {context.train_rows:,} training "
-                    f"rows and {context.holdout_rows:,} later holdout rows. "
-                    f"{context.top_model} ranks first, while QRW ranks "
+                    "Báo cáo đánh giá quantum random walk thời gian rời rạc được "
+                    "hiệu chỉnh nhân quả cho vi cấu trúc thị trường ở horizon "
+                    "ngắn. QRW Adaptive được so sánh với ba random walk cổ điển, "
+                    "GARCH(1,1) và GBM trong cùng một benchmark theo thời gian.",
+                    f"Mẫu đang dùng có {context.train_rows:,} hàng train và "
+                    f"{context.holdout_rows:,} hàng holdout về sau. "
+                    f"{context.top_model} đứng đầu, còn QRW xếp hạng "
                     f"{context.qrw_rank}.",
-                    "The software and artifact checkpoint passes, but the "
-                    "single-window evidence does not establish predictive or "
-                    "distributional superiority.",
+                    "Checkpoint phần mềm và artifact đạt yêu cầu, nhưng bằng "
+                    "chứng từ một cửa sổ chưa xác lập ưu thế dự báo hay phân phối.",
                 ),
             ),
             (
-                "1. Motivation and Research Question",
+                "1. Động cơ và câu hỏi nghiên cứu",
                 (
-                    "Market data arrive as discrete, dependent events with "
-                    "changing liquidity and heavy tails. A QRW offers "
-                    "interference and a controlled coherent-to-diffusive "
-                    "transition that classical random walks do not possess.",
-                    "The empirical question is whether those extra mechanisms "
-                    "improve fit under a fair chronological comparison. The "
-                    "project does not claim that market mechanics are quantum.",
+                    "Dữ liệu thị trường đến dưới dạng sự kiện rời rạc, phụ thuộc, "
+                    "với thanh khoản thay đổi và đuôi nặng. QRW cung cấp giao thoa "
+                    "và chuyển tiếp coherent-khuếch tán có kiểm soát mà random "
+                    "walk cổ điển không có.",
+                    "Câu hỏi thực nghiệm là các cơ chế bổ sung đó có cải thiện độ "
+                    "khớp trong một so sánh thời gian công bằng hay không. Dự án "
+                    "không tuyên bố cơ chế thị trường mang bản chất lượng tử.",
                 ),
             ),
             (
-                "2. QRW Formalism",
+                "2. Hình thức toán học QRW",
                 (
-                    "A coin operation acts on a two-state direction space, "
-                    "followed by a conditional shift on a one-dimensional "
-                    "position lattice. Position probabilities are obtained by "
-                    "marginalizing squared amplitudes over the coin state.",
-                    "The coherent Hadamard walk spreads ballistically. Basis "
-                    "dephasing damps off-diagonal density-matrix entries while "
-                    "preserving trace and populations, producing a transition "
-                    "toward classical diffusion.",
+                    "Phép toán coin tác động lên không gian hướng hai trạng thái, "
+                    "sau đó là dịch chuyển có điều kiện trên lattice vị trí một "
+                    "chiều. Xác suất vị trí được lấy bằng cách biên hóa bình "
+                    "phương biên độ qua trạng thái coin.",
+                    "Hadamard walk coherent phân tán theo ballistic. Khử pha theo "
+                    "cơ sở làm giảm các phần tử ngoài đường chéo của density "
+                    "matrix nhưng giữ trace và population, tạo chuyển tiếp về "
+                    "khuếch tán cổ điển.",
                 ),
             ),
             (
-                "3. Market Mapping",
+                "3. Ánh xạ sang thị trường",
                 (
-                    "Order-book imbalance, tick direction, imbalance change, "
-                    "and absolute imbalance form the adaptive directional "
-                    "signal. Trade intensity modulates event-level dephasing.",
-                    "The adaptive operator remains unitary. Its directional "
-                    "signal is encoded in phase, which is why magnitude-squared "
-                    "coin entries remain balanced.",
+                    "Mất cân bằng sổ lệnh, hướng tick, thay đổi mất cân bằng và "
+                    "trị tuyệt đối của mất cân bằng tạo thành tín hiệu hướng "
+                    "thích nghi. Cường độ giao dịch điều biến khử pha theo sự kiện.",
+                    "Toán tử thích nghi vẫn unitary. Tín hiệu hướng được mã hóa "
+                    "trong pha, vì vậy bình phương độ lớn các phần tử coin vẫn cân bằng.",
                 ),
             ),
             (
-                "4. Data and Causal Controls",
+                "4. Dữ liệu và kiểm soát nhân quả",
                 (
-                    f"Active artifact: {context.feature_path}. The final study "
-                    "uses only the causal-cleaned June 12, 2026 window.",
-                    "Historical June 1-7 derived artifacts were invalidated "
-                    "after detection of a one-tick look-ahead in the outlier "
-                    "filter. They may not support final conclusions until "
-                    "rebuilt.",
-                    "Calibration is chronological. Structural validation is "
-                    "not included in refitting, and the later bias update does "
-                    "not reuse the structural warmup.",
+                    f"Artifact đang dùng: {context.feature_path}. Nghiên cứu cuối "
+                    "chỉ dùng cửa sổ ngày 12/06/2026 đã làm sạch theo nhân quả.",
+                    "Các artifact dẫn xuất từ ngày 01-07/06 trước đây đã bị vô "
+                    "hiệu sau khi phát hiện look-ahead một tick trong bộ lọc "
+                    "outlier. Chúng không được hỗ trợ kết luận cuối cho đến khi tái tạo.",
+                    "Hiệu chỉnh tuân theo thời gian. Validation cấu trúc không được "
+                    "đưa vào refit và cập nhật bias về sau không tái dùng warmup cấu trúc.",
                 ),
             ),
             (
-                "5. Benchmark and Statistical Protocol",
+                "5. Benchmark và giao thức thống kê",
                 (
-                    f"The benchmark uses {context.n_paths:,} marginal draws "
-                    "per model and horizon, "
-                    f"{context.n_steps} simulation steps, and random seed "
+                    f"Benchmark dùng {context.n_paths:,} mẫu biên cho mỗi mô hình "
+                    f"và horizon, {context.n_steps} bước mô phỏng cùng seed "
                     f"{context.random_seed}.",
-                    "The primary endpoint is fixed-origin marginal CRPS; "
-                    "directional log loss is a tie-break. Marginal variance "
-                    "scaling is diagnostic.",
-                    "ACF and tail outputs are trajectory-only and exclude QRW. "
-                    "Diebold-Mariano uses aligned rolling one-step losses. "
-                    "AIC and BIC remain within matching likelihood families.",
+                    "Endpoint chính là CRPS biên fixed-origin; log loss hướng chỉ "
+                    "dùng để phá hòa. Co giãn phương sai biên là chỉ số chẩn đoán.",
+                    "ACF và kết quả tail chỉ áp dụng cho trajectory và loại QRW. "
+                    "Diebold-Mariano dùng loss rolling một bước đã căn chỉnh. "
+                    "AIC và BIC chỉ so sánh trong cùng họ likelihood.",
                 ),
             ),
             (
-                "6. Model Implementations",
+                "6. Hiện thực các mô hình",
                 (
-                    "QRW Adaptive uses a unitary phase-adaptive coin and "
-                    "intensity-dependent basis dephasing. Classical baselines "
-                    "include simple, biased, and correlated random walks.",
-                    "GARCH(1,1) supplies conditional volatility clustering and "
-                    "GBM supplies a continuous lognormal diffusion baseline. "
-                    "All models use the same training cutoff and test horizon.",
+                    "QRW Adaptive dùng coin unitary thích nghi theo pha và khử pha "
+                    "theo cơ sở phụ thuộc cường độ. Baseline cổ điển gồm random "
+                    "walk đơn giản, thiên lệch và tương quan.",
+                    "GARCH(1,1) cung cấp cụm biến động có điều kiện, còn GBM là "
+                    "baseline khuếch tán lognormal liên tục. Mọi mô hình dùng cùng "
+                    "mốc cắt train và cùng horizon test.",
                 ),
             ),
         )
@@ -740,48 +908,48 @@ def render_final_report_pdf(
 
         closing_pages = (
             (
-                "7. Discussion",
+                "7. Thảo luận",
                 (
-                    f"{context.top_model} has the lowest primary marginal CRPS. "
-                    f"QRW ranks {context.qrw_rank}; no path-dependent score is "
-                    "assigned to QRW.",
-                    "This restriction is intentional: independent horizon "
-                    "marginals do not define returns, ACF, or a tail sample.",
-                    "Phase 3 is mixed: QRW wins the final holdout but loses the "
-                    "pooled walk-forward comparison against a fair affine "
-                    "baseline.",
+                    f"{context.top_model} có CRPS biên chính thấp nhất. QRW xếp "
+                    f"hạng {context.qrw_rank}; QRW không được gán điểm phụ thuộc "
+                    "đường đi.",
+                    "Giới hạn này là có chủ đích: các marginal độc lập theo horizon "
+                    "không xác định lợi suất, ACF hay một mẫu tail.",
+                    f"Kết quả Giai đoạn 3 là âm: QRW thắng "
+                    f"{context.walk_forward_folds_qrw_better}/"
+                    f"{context.walk_forward_folds} fold; chênh lệch Brier gộp là "
+                    f"{context.walk_forward_brier_difference:+.6f}.",
                 ),
             ),
             (
-                "8. Limitations",
+                "8. Hạn chế",
                 (
-                    "The study uses one short event window and limited real "
-                    "synchronized order-book coverage.",
-                    "The adaptive calibration is data constrained, and the "
-                    "rank scorecard compresses dependent metrics to an equal "
-                    "weight average.",
-                    "No current artifact is a fresh untouched confirmatory "
-                    "holdout. The dashboard and visualizations are exploratory "
-                    "interfaces, not additional evidence.",
+                    "Nghiên cứu dùng một cửa sổ sự kiện ngắn và có ít dữ liệu sổ "
+                    "lệnh thực được đồng bộ.",
+                    "Hiệu chỉnh thích nghi bị giới hạn bởi dữ liệu. Scorecard dùng "
+                    "CRPS làm endpoint chính duy nhất và không lấy trung bình hạng "
+                    "qua các chỉ số chẩn đoán phụ thuộc nhau.",
+                    "Chưa có artifact nào là holdout confirmatory mới và chưa từng "
+                    "đụng tới. Dashboard cùng trực quan hóa chỉ là giao diện thăm "
+                    "dò, không phải bằng chứng bổ sung.",
                 ),
             ),
             (
-                "9. Conclusion and Future Work",
+                "9. Kết luận và hướng phát triển",
                 (
-                    "Phase 6 completes the reproducible visualization and "
-                    "reporting layer. The defensible conclusion is an "
-                    "engineering pass with no validated QRW superiority.",
-                    "Next work should freeze the protocol before observing new "
-                    "labels, collect at least 20 fresh UTC days with "
-                    "synchronized LOB data, and run one confirmatory analysis.",
-                    "Further model work may study regularized learned coins, "
-                    "two-dimensional multi-asset QRWs, and continuous-time "
-                    "walks against equally flexible classical point-process "
-                    "baselines.",
+                    "Giai đoạn 6 hoàn thiện lớp trực quan hóa và báo cáo có thể tái "
+                    "lập. Kết luận có thể bảo vệ là phần kỹ thuật đạt, nhưng chưa "
+                    "xác nhận QRW vượt trội.",
+                    "Nghiên cứu tiếp theo cần đóng băng protocol trước khi quan sát "
+                    "nhãn mới, thu thập ít nhất 20 ngày UTC mới với dữ liệu LOB đồng "
+                    "bộ và chỉ chạy một phân tích confirmatory.",
+                    "Hướng mô hình tiếp theo có thể nghiên cứu learned coin được "
+                    "regularize, QRW đa tài sản hai chiều và walk thời gian liên tục "
+                    "so với baseline point-process cổ điển linh hoạt tương đương.",
                 ),
             ),
             (
-                "References",
+                "Tài liệu tham khảo",
                 REFERENCES,
             ),
         )
@@ -882,6 +1050,15 @@ def render_presentation_pdf(
             f"{context.top_model} ranks first.\n"
             f"QRW Adaptive ranks {context.qrw_rank}.",
             "scorecard.png",
+        ),
+        (
+            "Walk-Forward Result",
+            f"QRW wins {context.walk_forward_folds_qrw_better}/"
+            f"{context.walk_forward_folds} folds.\n"
+            f"Brier difference = {context.walk_forward_brier_difference:+.6f}\n"
+            f"95% CI [{context.walk_forward_ci_low:+.6f}, "
+            f"{context.walk_forward_ci_high:+.6f}]",
+            None,
         ),
         (
             "What We Can Claim",

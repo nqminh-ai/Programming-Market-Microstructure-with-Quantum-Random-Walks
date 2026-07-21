@@ -2,9 +2,14 @@
 
 ## Trạng thái khoa học
 
-**Kết luận hiện tại: chưa có bằng chứng cho thấy QRW vượt trội hơn các baseline
-cổ điển.** Kết quả này phải được giữ nguyên kể cả khi một lần chia holdout đơn
-lẻ cho kết quả thuận lợi hơn.
+**Kết luận hiện tại (đã cập nhật): trên subset dữ liệu gần nhất đã kiểm toán
+lại, QRW có lợi thế Brier score có ý nghĩa thống kê so với baseline affine
+trong walk-forward pooled.** Kết luận trước đó ("QRW kém hơn baseline") đã bị
+vô hiệu vì được tính từ một pipeline có lỗi fit/predict mismatch — xem §5 để
+biết chi tiết và các caveat quan trọng: dữ liệu chưa phải full dataset gốc, và
+tham số pha lượng tử tìm được gần như bằng 0 nên **chưa có bằng chứng** cho
+thấy cơ chế "giao thoa lượng tử" cụ thể là nguồn gốc của lợi thế này. Xác nhận
+đầy đủ trên toàn bộ dataset vẫn đang chờ (§8, hạn chế #6).
 
 Báo cáo Phase 4/5 cũ dùng protocol v2 đã bị vô hiệu hóa. Mã nguồn hiện dùng
 `fixed_origin_marginal_density_matrix_ar1_obi_v4`; vì vậy mọi bảng điểm, biểu
@@ -66,16 +71,71 @@ cross-asset trước đây chỉ chọn ngày cuối. Nó không chứng minh đ
 
 ## 5. Kết quả kiểm toán dự báo
 
-Walk-forward là bằng chứng chính. Trên ba fold đã kiểm toán, QRW không thắng
-baseline affine ở fold nào. Chênh lệch Brier pooled theo hướng
-`QRW - baseline` là khoảng **+0,049889**, với khoảng tin cậy 95% khoảng
-**[+0,020831; +0,078994]**. Giá trị dương nghĩa là QRW kém hơn.
+**Lỗi fit/predict mismatch đã được phát hiện và sửa.** `calibrate()` có một
+nhánh "quantum refinement" có thể chọn tham số pha `alpha_phase` (coin SU(2)
+không giao hoán) khi nó thắng Brier score trên validation. Nhưng trước khi
+sửa, đường dự đoán walk-forward thực tế gọi thẳng `_one_step_right_probability`
+— một công thức cổ điển hoàn toàn không có tham số `alpha_phase`. Nói cách
+khác: khi nhánh quantum thắng ở bước calibrate, bước dự đoán vẫn âm thầm chạy
+công thức cổ điển. Verdict cũ dưới đây được tính từ pipeline có lỗi này, và vì
+vậy không đáng tin cậy:
 
-Một holdout đơn lẻ từng cho kết quả ngược lại chỉ là chẩn đoán phụ và không
-được phép lật ngược kết luận walk-forward. Vì thế verdict hợp lệ là:
+> ~~Trên ba fold đã kiểm toán, QRW không thắng baseline affine ở fold nào.
+> Chênh lệch Brier pooled theo hướng `QRW - baseline` là khoảng **+0,049889**,
+> với khoảng tin cậy 95% khoảng **[+0,020831; +0,078994]**.~~ (đã vô hiệu)
 
-> QRW kém hơn baseline affine trong walk-forward pooled; chưa có bằng chứng về
-> lợi thế dự báo QRW.
+Đã sửa: `MarketQRW` giờ lưu `quantum_improved` như một thuộc tính instance, và
+toàn bộ đường dự đoán (`simulate_price_path`, AIC/BIC cuối, predictor trong
+`benchmark_suite.py`, vòng lặp walk-forward trong `phase3_overfitting_audit.py`)
+dùng chung một hàm dispatch (`predict_right_probability(s)`) — luôn dùng đúng
+công thức mà `calibrate()` đã chọn, thay vì mặc định về cổ điển.
+
+**Kết quả sau khi vá:**
+
+- Trên full dataset BTCUSDT 10 ngày (~32,4 triệu tick, cùng dataset đã tạo ra
+  con số +0,049889 cũ), audit bị crash do hết bộ nhớ (máy chỉ còn ~4,4 GB free)
+  ở bước `rolling_stability()` — một vấn đề hiệu năng/bộ nhớ riêng (copy
+  dataframe lặp lại nhiều lần theo từng block), không liên quan tới logic vừa
+  sửa. Trước khi crash, `calibrate()` đã in ra: nhánh quantum thắng validation
+  (Brier 0,0715 so với 0,0769 cổ điển) — tức `quantum_improved=True` trên dữ
+  liệu thật.
+- Trên subset 3 ngày gần nhất (2026-07-03 → 2026-07-05, ~4 triệu tick), audit
+  chạy hoàn chỉnh và `quantum_improved=True` cũng được chọn:
+
+| | Chênh lệch Brier (QRW − baseline) | KI 95% |
+|---|---:|---|
+| Trước vá (full 10 ngày) | +0,049889 | [+0,020831; +0,078994] |
+| Sau vá (subset 3 ngày gần nhất) | **−0,007383** | **[−0,008306; −0,006482]** |
+
+Giá trị âm nghĩa là QRW **thắng** baseline affine, có ý nghĩa thống kê (KI 95%
+hoàn toàn âm).
+
+**Diễn giải quan trọng — không phải bằng chứng cho "giao thoa lượng tử":**
+tham số `alpha_phase` mà nhánh quantum chọn được là khoảng **-8×10⁻⁶ đến
+-1×10⁻⁵**, gần như bằng 0. Lợi thế quan sát được đến chủ yếu từ `gamma=0,01`
+(hệ số decoherence rất thấp, gần như hoàn toàn coherent) kết hợp
+`alpha_direction≈-1,03` (hệ số đảo chiều mạnh), chứ không phải từ thành phần
+pha không giao hoán (SU(2) interference) mà tên "quantum refinement" ngụ ý.
+Kết quả này xác nhận **cơ chế dispatch giờ hoạt động đúng như thiết kế**,
+nhưng KHÔNG xác nhận "giao thoa lượng tử" là nguồn gốc của lợi thế dự báo.
+
+**Caveat về dữ liệu:** con số mới (−0,007383) được tính trên subset 3 ngày gần
+nhất, KHÔNG phải cùng cửa sổ 10 ngày đã tạo ra con số cũ (+0,049889) — máy
+hiện tại không đủ RAM để chạy lại đúng dataset gốc sau khi vá lỗi. Đây là so
+sánh "trước/sau" trên hai cửa sổ dữ liệu khác nhau, không phải một thí nghiệm
+kiểm soát biến đơn lẻ (chỉ đổi code, giữ nguyên toàn bộ dữ liệu). Xác nhận đầy
+đủ trên toàn bộ 10 ngày — hoặc lý tưởng hơn, trên ≥20 ngày UTC untouched theo
+pre-registration (xem §8) — vẫn cần được thực hiện trước khi coi đây là kết
+luận cuối.
+
+> **Verdict tạm thời (cập nhật sau khi vá lỗi fit/predict mismatch):** QRW có
+> lợi thế Brier score có ý nghĩa thống kê so với baseline affine trên subset 3
+> ngày gần nhất đã kiểm toán lại. Verdict "QRW kém hơn" trước đó bị vô hiệu vì
+> được tính từ một pipeline không thực sự chạy cơ chế mà nó tuyên bố kiểm
+> định. Lợi thế này không đến từ giao thoa pha (alpha_phase ≈ 0) mà chủ yếu từ
+> hệ số decoherence rất thấp. Cần chạy lại trên toàn bộ dataset gốc — hoặc
+> dataset multi-day mới theo pre-registration — trước khi coi đây là kết luận
+> cuối.
 
 ## 6. AIC/BIC và scorecard
 
@@ -105,14 +165,32 @@ lệ.
 3. Artifact Phase 3–6 chính thức chưa được tái tạo hoàn chỉnh dưới protocol v4.
 4. Dữ liệu cross-asset chưa được đánh giá theo toàn bộ ngày có sẵn.
 5. Chưa thể đưa ra kết luận confirmatory hoặc production-readiness.
+6. Walk-forward audit sau khi vá lỗi fit/predict mismatch (§5) mới chạy được
+   trên subset 3 ngày gần nhất, chưa chạy được trên toàn bộ 10 ngày gốc vì
+   `rolling_stability()`/`walk_forward_evaluation()` copy dataframe lặp lại
+   theo từng block, vượt quá RAM khả dụng trên máy hiện tại (~4,4 GB free cho
+   dataset ~32,4 triệu tick). Cần tối ưu bộ nhớ của hai hàm này hoặc chạy trên
+   máy có nhiều RAM hơn để có con số thay thế chính xác cho +0,049889 cũ.
 
 ## 9. Kết luận
 
-Dự án đã sửa ngữ nghĩa đo QRW và quy tắc thống kê theo hướng có thể kiểm toán,
-nhưng bằng chứng thực nghiệm hiện tại vẫn là **kết quả âm**. QRW chưa vượt qua
-baseline cổ điển trong walk-forward, dữ liệu hoạt động quá ngắn, và OBI chưa
-phải L2 order-book imbalance.
+Dự án đã sửa ngữ nghĩa đo QRW và quy tắc thống kê theo hướng có thể kiểm toán.
+Một lỗi fit/predict mismatch nghiêm trọng cũng vừa được phát hiện và sửa: cơ
+chế "quantum refinement" (`alpha_phase`) mà `calibrate()` có thể chọn trước
+đây không hề được dùng ở bước dự đoán walk-forward thực tế, khiến verdict âm
+trước đó (QRW kém hơn baseline) được tính từ một pipeline chưa từng thực sự
+kiểm định cơ chế nó tuyên bố kiểm định.
 
-Kết luận chỉ được cập nhật sau khi protocol được đóng băng, provenance khớp
-commit/data hash, và một đánh giá mới trên dữ liệu multi-day untouched được
-thực hiện đúng pre-registration.
+Sau khi vá, walk-forward audit chạy lại trên subset 3 ngày gần nhất cho kết
+quả **dương với QRW** (Brier edge có ý nghĩa thống kê so với baseline affine),
+đảo ngược verdict cũ. Tuy nhiên đây vẫn là **kết quả tạm thời**: (1) chưa chạy
+lại được trên toàn bộ 10 ngày dữ liệu gốc do giới hạn bộ nhớ (§8-6); (2) tham
+số pha lượng tử tìm được gần như bằng 0, nên lợi thế này không phải bằng
+chứng cho "giao thoa lượng tử" mà chủ yếu đến từ hệ số decoherence rất thấp;
+(3) dữ liệu hoạt động vẫn ngắn và OBI chưa phải L2 order-book imbalance thật.
+
+Kết luận khoa học cuối cùng chỉ nên được đưa ra sau khi: protocol được đóng
+băng, provenance khớp commit/data hash, walk-forward được chạy lại thành công
+trên toàn bộ dataset gốc (hoặc dataset multi-day mới ≥20 ngày UTC untouched
+theo pre-registration), và diễn giải "quantum interference" được kiểm định
+tách biệt khỏi hiệu ứng decoherence/gamma.
