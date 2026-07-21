@@ -1,0 +1,314 @@
+{
+  "kind": "alpha_phase_ablation",
+  "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
+  "generated_utc": "2026-07-21T17:23:08.989708+00:00",
+  "git_commit": "3af0ded78e1a65998cb5ba3a7b33f2284b085eee",
+  "python": "3.14.5",
+  "feature_path": "D:\\Project made by me\\AI_Quantum\\Quantum 1\\data\\assets\\ethusdt\\features\\features_ETHUSDT_2026-06-12.parquet",
+  "rows": 2872918,
+  "folds": 3,
+  "bootstrap_samples": 2000,
+  "block_size": 16,
+  "seed": 2026,
+  "tick_size": 0.01,
+  "configs": {
+    "A_full": {
+      "quantum_improved": true,
+      "alpha_phase": 0.00016189277516765016,
+      "gamma": 0.01,
+      "alpha_obi": 0.0,
+      "alpha_direction": -0.8218764580827691,
+      "pooled": {
+        "events": 253817,
+        "brier": 0.09498345868772609,
+        "log_loss": 0.34697570889871504,
+        "accuracy": 0.8978870603623871,
+        "mean_probability": 0.484606336461077
+      },
+      "per_fold": [
+        {
+          "fold": 0,
+          "evaluation_rows": 574583,
+          "moving_events": 88348,
+          "obi_bias": 0.07088888588567871,
+          "brier": 0.0919811589756365
+        },
+        {
+          "fold": 1,
+          "evaluation_rows": 574584,
+          "moving_events": 85015,
+          "obi_bias": 0.08583834014661264,
+          "brier": 0.09053160422463853
+        },
+        {
+          "fold": 2,
+          "evaluation_rows": 574584,
+          "moving_events": 80454,
+          "obi_bias": 0.04377481708028751,
+          "brier": 0.1029845721456409
+        }
+      ]
+    },
+    "B_refit": {
+      "quantum_improved": true,
+      "alpha_phase": 0.0,
+      "gamma": 0.01,
+      "alpha_obi": 0.0,
+      "alpha_direction": -0.8216830253570546,
+      "pooled": {
+        "events": 253817,
+        "brier": 0.0949944499885663,
+        "log_loss": 0.3470103200211799,
+        "accuracy": 0.8978870603623871,
+        "mean_probability": 0.48459951366395954
+      },
+      "per_fold": [
+        {
+          "fold": 0,
+          "evaluation_rows": 574583,
+          "moving_events": 88348,
+          "obi_bias": 0.07094306091722234,
+          "brier": 0.09199314167695372
+        },
+        {
+          "fold": 1,
+          "evaluation_rows": 574584,
+          "moving_events": 85015,
+          "obi_bias": 0.08582851222434752,
+          "brier": 0.09054273886236626
+        },
+        {
+          "fold": 2,
+          "evaluation_rows": 574584,
+          "moving_events": 80454,
+          "obi_bias": 0.043759271142517875,
+          "brier": 0.10299432330882691
+        }
+      ]
+    },
+    "B_posthoc": {
+      "quantum_improved": true,
+      "alpha_phase": 0.0,
+      "gamma": 0.01,
+      "alpha_obi": 0.0,
+      "alpha_direction": -0.8218764580827691,
+      "pooled": {
+        "events": 253817,
+        "brier": 0.09498345864980046,
+        "log_loss": 0.34697570877641193,
+        "accuracy": 0.8978870603623871,
+        "mean_probability": 0.48460633645275886
+      },
+      "per_fold": [
+        {
+          "fold": 0,
+          "evaluation_rows": 574583,
+          "moving_events": 88348,
+          "obi_bias": 0.07088888588567871,
+          "brier": 0.09198115893682364
+        },
+        {
+          "fold": 1,
+          "evaluation_rows": 574584,
+          "moving_events": 85015,
+          "obi_bias": 0.08583834014661264,
+          "brier": 0.09053160418521902
+        },
+        {
+          "fold": 2,
+          "evaluation_rows": 574584,
+          "moving_events": 80454,
+          "obi_bias": 0.04377481708028751,
+          "brier": 0.10298457211026807
+        }
+      ]
+    },
+    "C_affine": {
+      "quantum_improved": false,
+      "alpha_phase": NaN,
+      "gamma": NaN,
+      "alpha_obi": NaN,
+      "alpha_direction": NaN,
+      "pooled": {
+        "events": 253817,
+        "brier": 0.08515873904137236,
+        "log_loss": 0.29927430271692146,
+        "accuracy": 0.8963071819460477,
+        "mean_probability": 0.4982353098344628
+      },
+      "per_fold": [
+        {
+          "fold": 0,
+          "moving_events": 88348,
+          "brier": 0.07553988852479301
+        },
+        {
+          "fold": 1,
+          "moving_events": 85015,
+          "brier": 0.07358701275954713
+        },
+        {
+          "fold": 2,
+          "moving_events": 80454,
+          "brier": 0.10794911012656548
+        }
+      ]
+    }
+  },
+  "comparisons": {
+    "A_full_vs_C_affine": {
+      "events": 253817,
+      "block_size": 16,
+      "model_minus_comparison": 0.009824719646353714,
+      "confidence_interval_95": [
+        0.008932245566137484,
+        0.010727755522346366
+      ],
+      "probability_model_improves": 0.0,
+      "significant": true,
+      "direction": "second_better"
+    },
+    "B_refit_vs_C_affine": {
+      "events": 253817,
+      "block_size": 16,
+      "model_minus_comparison": 0.009835710947193935,
+      "confidence_interval_95": [
+        0.008961775458703119,
+        0.010728259095236062
+      ],
+      "probability_model_improves": 0.0,
+      "significant": true,
+      "direction": "second_better"
+    },
+    "A_full_vs_B_refit": {
+      "events": 253817,
+      "block_size": 16,
+      "model_minus_comparison": -1.0991300840221812e-05,
+      "confidence_interval_95": [
+        -1.1119455836491927e-05,
+        -1.0867301338334378e-05
+      ],
+      "probability_model_improves": 1.0,
+      "significant": true,
+      "direction": "first_better"
+    }
+  },
+  "phase_sweep": [
+    {
+      "alpha_phase": 0.0,
+      "brier": 0.09498345864980046,
+      "log_loss": 0.34697570877641193,
+      "accuracy": 0.8978870603623871
+    },
+    {
+      "alpha_phase": 0.05,
+      "brier": 0.09498707641023564,
+      "log_loss": 0.3469873750026402,
+      "accuracy": 0.8978870603623871
+    },
+    {
+      "alpha_phase": 0.1,
+      "brier": 0.09499793187358638,
+      "log_loss": 0.34702237626160365,
+      "accuracy": 0.8978870603623871
+    },
+    {
+      "alpha_phase": 0.25,
+      "brier": 0.09507401171484373,
+      "log_loss": 0.34726749329813544,
+      "accuracy": 0.8978870603623871
+    },
+    {
+      "alpha_phase": 0.5,
+      "brier": 0.09534703125594508,
+      "log_loss": 0.34814444902533404,
+      "accuracy": 0.8978870603623871
+    },
+    {
+      "alpha_phase": 1.0,
+      "brier": 0.09645934380368427,
+      "log_loss": 0.3516757925077749,
+      "accuracy": 0.8978870603623871
+    },
+    {
+      "alpha_phase": 2.0,
+      "brier": 0.10122177479975165,
+      "log_loss": 0.36614823488761317,
+      "accuracy": 0.8978870603623871
+    }
+  ],
+  "fold_sensitivity": [
+    {
+      "folds": 2,
+      "a_full_brier": 0.09482834369569826,
+      "affine_brier": 0.08510408711613354,
+      "edge_a_minus_affine": 0.009724256579564714,
+      "confidence_interval_95": [
+        0.008859254623552516,
+        0.010614269695324995
+      ],
+      "significant": true,
+      "qrw_wins": false
+    },
+    {
+      "folds": 3,
+      "a_full_brier": 0.09498345868772609,
+      "affine_brier": 0.08515873904137236,
+      "edge_a_minus_affine": 0.009824719646353714,
+      "confidence_interval_95": [
+        0.008917294000420751,
+        0.01066468920202324
+      ],
+      "significant": true,
+      "qrw_wins": false
+    },
+    {
+      "folds": 4,
+      "a_full_brier": 0.09484268913405822,
+      "affine_brier": 0.08509471889055477,
+      "edge_a_minus_affine": 0.00974797024350344,
+      "confidence_interval_95": [
+        0.008885040730932561,
+        0.010616907012097093
+      ],
+      "significant": true,
+      "qrw_wins": false
+    },
+    {
+      "folds": 5,
+      "a_full_brier": 0.09474671356713735,
+      "affine_brier": 0.08507208068220232,
+      "edge_a_minus_affine": 0.00967463288493503,
+      "confidence_interval_95": [
+        0.008742249464519595,
+        0.010556495560945109
+      ],
+      "significant": true,
+      "qrw_wins": false
+    },
+    {
+      "folds": 6,
+      "a_full_brier": 0.09467224163113624,
+      "affine_brier": 0.08501318609632863,
+      "edge_a_minus_affine": 0.009659055534807606,
+      "confidence_interval_95": [
+        0.00876153719265063,
+        0.010506866351920273
+      ],
+      "significant": true,
+      "qrw_wins": false
+    },
+    {
+      "folds": 8,
+      "a_full_brier": 0.09461931831325955,
+      "affine_brier": 0.08493265643531628,
+      "edge_a_minus_affine": 0.009686661877943273,
+      "confidence_interval_95": [
+        0.008801961302585114,
+        0.010622129844332525
+      ],
+      "significant": true,
+      "qrw_wins": false
+    }
+  ]
+}

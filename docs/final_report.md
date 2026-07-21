@@ -2,14 +2,29 @@
 
 ## Trạng thái khoa học
 
-**Kết luận hiện tại (đã cập nhật): trên subset dữ liệu gần nhất đã kiểm toán
-lại, QRW có lợi thế Brier score có ý nghĩa thống kê so với baseline affine
-trong walk-forward pooled.** Kết luận trước đó ("QRW kém hơn baseline") đã bị
-vô hiệu vì được tính từ một pipeline có lỗi fit/predict mismatch — xem §5 để
-biết chi tiết và các caveat quan trọng: dữ liệu chưa phải full dataset gốc, và
-tham số pha lượng tử tìm được gần như bằng 0 nên **chưa có bằng chứng** cho
-thấy cơ chế "giao thoa lượng tử" cụ thể là nguồn gốc của lợi thế này. Xác nhận
-đầy đủ trên toàn bộ dataset vẫn đang chờ (§8, hạn chế #6).
+**Kết luận hiện tại (cập nhật sau ablation Phase 1): KHÔNG có bằng chứng cho
+một lợi thế dự báo bền vững của QRW, và cơ chế "giao thoa lượng tử" (tham số
+pha `alpha_phase`) đóng góp bằng 0.** Một nghiên cứu ablation cô lập
+([reports/research/alpha_phase_ablation.md](../reports/research/alpha_phase_ablation.md),
+gắn nhãn exploratory) chỉ ra hai điều:
+
+- Lợi thế Brier của QRW so với baseline affine **không nhất quán và không bền
+  vững**: kiểm chứng cross-asset cho thấy QRW thắng ổn định trên BNB, thua ổn
+  định trên ETH, và trên BTC thì mong manh — thắng ở walk-forward 2–4 fold
+  nhưng **đảo dấu thành thua** ở 5–8 fold. Con số dương báo cáo trước đây
+  (−0,007383, BTC 3 fold) vừa **không tổng quát sang asset khác** vừa là
+  **artifact của lựa chọn số fold**.
+- Nơi QRW có vẻ thắng, lợi thế đến **hoàn toàn từ windowing/decoherence, không
+  phải từ pha**: model bỏ pha (`alpha_phase=0`, refit) cho Brier giống hệt
+  model pha-tự-do tới 6 chữ số; ép pha lớn hơn còn làm dự báo **xấu đi đơn
+  điệu**. Đóng góp biên của pha đo được là ~9×10⁻⁸ Brier (nhỏ hơn edge chính 5
+  bậc độ lớn) và mang dấu bất lợi.
+
+Kết luận trước đó ("QRW có lợi thế Brier có ý nghĩa thống kê") vì vậy bị **thu
+hẹp mạnh**: lợi thế đó chỉ tồn tại ở protocol 3-fold cụ thể, không bền vững, và
+không đến từ cơ chế lượng tử. Xem §5b để biết chi tiết. Các caveat cũ vẫn giữ
+nguyên: dữ liệu hoạt động ngắn, OBI là proxy trade-flow, chưa chạy trên toàn bộ
+dataset gốc.
 
 Báo cáo Phase 4/5 cũ dùng protocol v2 đã bị vô hiệu hóa. Mã nguồn hiện dùng
 `fixed_origin_marginal_density_matrix_ar1_obi_v4`; vì vậy mọi bảng điểm, biểu
@@ -137,6 +152,71 @@ luận cuối.
 > dataset multi-day mới theo pre-registration — trước khi coi đây là kết luận
 > cuối.
 
+## 5b. Ablation cô lập alpha_phase (Phase 1, exploratory)
+
+Để trả lời trực tiếp câu hỏi cốt lõi — cơ chế lượng tử có đóng góp không —
+một ablation cô lập được chạy trên đúng dataset đã tạo ra con số dương
+(`features_BTCUSDT_recent_subset.parquet`, 4 triệu tick, folds=3). Bốn cấu hình
+khác nhau **duy nhất** ở pha / dispatch, giữ nguyên phần còn lại của warmup fit:
+
+| Config | pooled Brier | Ghi chú |
+|---|---:|---|
+| A_full (pha tự do, ≈3,6×10⁻⁵) | 0,100424 | model đã báo cáo |
+| B_refit (pha ghim = 0, refit) | 0,100424 | |
+| B_posthoc (pha zeroed) | 0,100424 | |
+| C_affine (baseline OLS độc lập) | 0,113292 | |
+
+Cơ sở lý thuyết: pha vào coin qua `phi = alpha_phase·direction/window`
+([qrw_market_sim.py](../src/models/qrw_market_sim.py)); khi `alpha_phase=0` mọi
+coin SU(2) suy biến thành phép quay thực SO(2) **giao hoán**, xoá đúng hiệu ứng
+giao thoa. Vì vậy toggle `alpha_phase` cô lập chính xác cơ chế lượng tử.
+
+**Phân rã cơ chế (paired Brier, block-bootstrap 95%):**
+
+- Pha thuần túy (A_full − B_refit): **+9×10⁻⁸** — bằng 0 về mặt thực tiễn (nhỏ
+  hơn edge chính 5 bậc độ lớn), dấu bất lợi. Phase sweep xác nhận: Brier tăng
+  đơn điệu khi ép pha 0 → 2,0.
+- Windowing không pha (B_refit − C_affine): **−0,012867** [−0,0138; −0,0119] —
+  toàn bộ lợi thế của QRW đến từ đây, không phải từ pha.
+
+**Độ bền theo số fold (A_full vs affine):**
+
+| folds | QRW Brier | affine Brier | edge | QRW thắng? |
+|---:|---:|---:|---:|:--:|
+| 2 | 0,100419 | 0,113134 | −0,012716 | ✔ |
+| 3 | 0,100424 | 0,113292 | −0,012867 | ✔ |
+| 4 | 0,102915 | 0,113350 | −0,010435 | ✔ |
+| 5 | 0,142450 | 0,113378 | +0,029072 | ✘ |
+| 6 | 0,158408 | 0,113255 | +0,045152 | ✘ |
+| 8 | 0,177498 | 0,113242 | +0,064256 | ✘ |
+
+QRW Brier suy thoái đơn điệu khi tăng fold; affine phẳng. Verdict "QRW thắng
+affine" đảo dấu ở fold ≥ 5 — không bền vững.
+
+**Cross-asset (ETH, BNB — mỗi asset ~4 triệu tick):** ablation được lặp lại
+([_ETHUSDT.md](../reports/research/alpha_phase_ablation_ETHUSDT.md),
+[_BNBUSDT.md](../reports/research/alpha_phase_ablation_BNBUSDT.md)).
+
+| Asset | Đóng góp pha (A−B_refit) | QRW vs affine (3-fold) | Ổn định theo fold |
+|---|---:|---:|---|
+| BTC | ~+9×10⁻⁸ (≈0) | −0,0129 (thắng) | Không — đảo dấu ở fold ≥ 5 |
+| ETH | ~+1×10⁻⁵ (≈0) | +0,0098 (**thua**) | Có (thua ổn định mọi fold) |
+| BNB | ~+1×10⁻⁶ (≈0) | −0,0111 (**thắng**) | Có (thắng ổn định mọi fold) |
+
+Hai kết luận cross-asset: (a) **đóng góp của pha lượng tử ≈ 0 trên cả ba
+asset**, và trên cả ba phase sweep đều cho Brier xấu đi đơn điệu — đây là phát
+hiện vững; (b) việc windowed-QRW có thắng affine hay không **phụ thuộc asset**
+(BNB thắng, ETH thua, BTC mong manh theo fold), nên không tồn tại một lợi thế
+QRW tổng quát, và ngay cả thành phần windowing/decoherence cũng không nhất
+quán giữa các asset.
+
+**Nghi phạm nguyên nhân của fold-fragility trên BTC (đầu mối cho Phase 2):** `calibrate_bias()`
+([qrw_market_sim.py](../src/models/qrw_market_sim.py)) tối ưu bias dưới công
+thức **cổ điển** `_direction_probability`, nhưng bước predict dùng công thức
+**quantum windowed** — một fit/predict inconsistency còn sót (họ hàng của
+C1/C2). Càng nhiều fold, bias re-estimate dưới sai công thức càng lệch, khiến
+QRW suy thoái trong khi affine (nhất quán nội tại) ổn định. Cần verify và sửa.
+
 ## 6. AIC/BIC và scorecard
 
 AIC/BIC chỉ được xếp hạng trong cùng họ likelihood:
@@ -181,13 +261,16 @@ chế "quantum refinement" (`alpha_phase`) mà `calibrate()` có thể chọn tr
 trước đó (QRW kém hơn baseline) được tính từ một pipeline chưa từng thực sự
 kiểm định cơ chế nó tuyên bố kiểm định.
 
-Sau khi vá, walk-forward audit chạy lại trên subset 3 ngày gần nhất cho kết
-quả **dương với QRW** (Brier edge có ý nghĩa thống kê so với baseline affine),
-đảo ngược verdict cũ. Tuy nhiên đây vẫn là **kết quả tạm thời**: (1) chưa chạy
-lại được trên toàn bộ 10 ngày dữ liệu gốc do giới hạn bộ nhớ (§8-6); (2) tham
-số pha lượng tử tìm được gần như bằng 0, nên lợi thế này không phải bằng
-chứng cho "giao thoa lượng tử" mà chủ yếu đến từ hệ số decoherence rất thấp;
-(3) dữ liệu hoạt động vẫn ngắn và OBI chưa phải L2 order-book imbalance thật.
+Sau khi vá, walk-forward audit ở protocol 3-fold từng cho kết quả dương với
+QRW. Nhưng ablation Phase 1 (§5b) đã **thu hẹp mạnh** kết luận đó: (1) lợi thế
+so với affine **không bền vững** — đảo dấu thành thua có ý nghĩa thống kê khi
+số fold ≥ 5, nên con số dương là artifact của lựa chọn 3-fold; (2) đóng góp
+của cơ chế giao thoa lượng tử (`alpha_phase`) đo được **bằng 0** — nơi QRW
+thắng, lợi thế đến hoàn toàn từ windowing/decoherence; (3) chưa chạy lại được
+trên toàn bộ 10 ngày dữ liệu gốc do giới hạn bộ nhớ (§8-6); (4) dữ liệu hoạt
+động vẫn ngắn và OBI chưa phải L2 order-book imbalance thật. Tổng hợp: **hiện
+chưa có bằng chứng cho một lợi thế dự báo bền vững của QRW, càng không phải từ
+cơ chế lượng tử.**
 
 Kết luận khoa học cuối cùng chỉ nên được đưa ra sau khi: protocol được đóng
 băng, provenance khớp commit/data hash, walk-forward được chạy lại thành công

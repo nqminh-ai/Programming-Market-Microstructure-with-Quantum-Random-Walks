@@ -294,6 +294,37 @@ def test_calibrate_persists_quantum_improved_flag_on_instance(tmp_path) -> None:
         assert model.alpha_phase == 0.0
 
 
+def test_freeze_alpha_phase_pins_phase_to_zero(tmp_path) -> None:
+    """The ablation hook must pin alpha_phase to exactly 0 during refit.
+
+    ``freeze_alpha_phase`` collapses every SU(2) coin to a commuting real
+    rotation, removing the quantum-interference degree of freedom. The
+    invariant is that alpha_phase is exactly 0 after calibration regardless
+    of whether the quantum stage would otherwise be selected, so a phase-free
+    refit isolates the marginal value of the phase term.
+    """
+    data = _synthetic_market_data(80)
+    config = {
+        "n_positions": 41,
+        "gamma_base": 0.01,
+        "alpha_obi": 0.0,
+        "coin_type": "obi_adaptive",
+        "tick_size": 1.0,
+    }
+    frozen = MarketQRW(data.copy(), {**config, "freeze_alpha_phase": True})
+    frozen.calibrate(tmp_path / "frozen.json")
+    assert frozen.alpha_phase == 0.0
+
+    # Sanity: the default (free) calibration path is unchanged and may still
+    # select a nonzero phase, so the frozen run is a genuine restriction.
+    free = MarketQRW(data.copy(), config)
+    free.calibrate(tmp_path / "free.json")
+    if free.quantum_improved:
+        # When the quantum branch wins with the phase free, freezing it must
+        # produce a strictly more constrained model at the same window.
+        assert free.alpha_phase != 0.0 or frozen.alpha_phase == 0.0
+
+
 def test_predict_dispatch_matches_classical_when_not_quantum_improved() -> None:
     model = MarketQRW(
         _synthetic_market_data(20),

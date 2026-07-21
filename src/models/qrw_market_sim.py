@@ -365,12 +365,23 @@ class MarketQRW:
             q_train_x = train_x
             q_train_y = train_y
 
+        # Ablation hook: when ``freeze_alpha_phase`` is set the phase degree of
+        # freedom is pinned to exactly 0. That collapses every SU(2) coin to a
+        # real SO(2) rotation (phi = alpha_phase*dir/window = 0), which commute,
+        # so the "quantum interference" mechanism is removed while all other
+        # structural parameters are still refit. Comparing the frozen fit
+        # against the free fit isolates the marginal predictive value of the
+        # phase term. Default False preserves the original calibration exactly.
+        freeze_alpha_phase = bool(self.config.get("freeze_alpha_phase", False))
+        initial_alpha_phase = 0.0 if freeze_alpha_phase else 0.5
+        alpha_phase_bounds = (0.0, 0.0) if freeze_alpha_phase else (-3.0, 3.0)
+
         quantum_initial = np.array([
             selected["bias"],
             selected["alpha"],
             selected["alpha_direction"],
             max(self.gamma * 0.1, 0.05),  # Start with much lower gamma
-            0.5,  # Initial alpha_phase
+            initial_alpha_phase,  # Initial alpha_phase (0 when frozen)
         ], dtype=np.float64)
 
         best_quantum_reg = selected["regularization"]
@@ -384,7 +395,7 @@ class MarketQRW:
                 (0.0, 5.0),    # alpha_obi
                 (-5.0, 5.0),   # alpha_direction
                 (0.01, 5.0),   # gamma (free! crucial for quantum advantage)
-                (-3.0, 3.0),   # alpha_phase (enables non-commuting coins)
+                alpha_phase_bounds,  # alpha_phase (pinned to 0 when frozen)
             ),
             options={"maxiter": 50, "ftol": 1e-6},
         )
