@@ -10,6 +10,8 @@ import numpy as np
 from loguru import logger
 from scipy.optimize import minimize
 
+from .rng_utils import as_generator
+
 
 class GARCHBaseline:
     """Fit and simulate a stationary Gaussian GARCH(1,1) process."""
@@ -203,11 +205,7 @@ class GARCHBaseline:
         if n_steps < 1 or n_paths < 1:
             raise ValueError("n_steps and n_paths must be positive")
         seed = self.random_state if random_state is None else random_state
-        rng = (
-            seed
-            if isinstance(seed, np.random.Generator)
-            else np.random.default_rng(seed)
-        )
+        rng = as_generator(seed)
         mu, omega, alpha, beta = self._decode(self._raw_parameters)
         residual = np.full(n_paths, self._last_residual, dtype=np.float64)
         variance = np.full(n_paths, self._last_variance, dtype=np.float64)

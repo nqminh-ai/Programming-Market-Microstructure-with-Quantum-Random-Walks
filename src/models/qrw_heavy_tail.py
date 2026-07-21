@@ -7,6 +7,7 @@ import pandas as pd
 from typing import Any
 from scipy.optimize import minimize
 from src.models.adaptive_market_qrw import AdaptiveDecoherenceQRW
+from src.models.rng_utils import as_generator
 
 class HeavyTailAdaptiveQRW(AdaptiveDecoherenceQRW):
     """Compatibility surrogate; this is not a unitary heavy-tail QRW."""
@@ -107,11 +108,7 @@ class HeavyTailAdaptiveQRW(AdaptiveDecoherenceQRW):
         if steps < 1 or steps > len(self.tick_data):
             raise ValueError("T must be within the available observations")
 
-        rng = (
-            random_state
-            if isinstance(random_state, np.random.Generator)
-            else np.random.default_rng(random_state)
-        )
+        rng = as_generator(random_state)
         probability = self.predict_probability()[:steps]
         moving = (
             rng.random((n_paths, steps))

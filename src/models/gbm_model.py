@@ -7,6 +7,8 @@ from typing import Any
 import numpy as np
 from loguru import logger
 
+from .rng_utils import as_generator
+
 
 class GBMBaseline:
     """Estimate and simulate a constant-drift, constant-volatility GBM."""
@@ -86,11 +88,7 @@ class GBMBaseline:
         if not np.isfinite(interval) or interval <= 0.0:
             raise ValueError("dt must be finite and positive")
         seed = self.random_state if random_state is None else random_state
-        rng = (
-            seed
-            if isinstance(seed, np.random.Generator)
-            else np.random.default_rng(seed)
-        )
+        rng = as_generator(seed)
         shocks = rng.standard_normal((n_paths, n_steps))
         log_increment = (
             (self.mu - 0.5 * self.sigma**2) * interval

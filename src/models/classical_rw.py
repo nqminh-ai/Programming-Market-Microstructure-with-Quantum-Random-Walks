@@ -7,6 +7,8 @@ from dataclasses import dataclass
 import numpy as np
 from loguru import logger
 
+from .rng_utils import as_generator
+
 
 @dataclass
 class ClassicalRandomWalk:
@@ -105,11 +107,7 @@ class ClassicalRandomWalk:
         if n_paths < 1:
             raise ValueError("n_paths must be positive")
         seed = self.random_state if random_state is None else random_state
-        rng = (
-            seed
-            if isinstance(seed, np.random.Generator)
-            else np.random.default_rng(seed)
-        )
+        rng = as_generator(seed)
 
         moving = rng.random((n_paths, n_steps)) < self.p_move
         if self.kind == "simple":

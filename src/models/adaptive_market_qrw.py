@@ -13,6 +13,7 @@ from scipy.optimize import minimize
 from .coin_operators import obi_adaptive_coin
 from .qrw_core import DensityMatrixQRW
 from .qrw_market_sim import MarketQRW
+from .rng_utils import as_generator
 
 
 class AdaptiveDecoherenceQRW:
@@ -486,11 +487,7 @@ class AdaptiveDecoherenceQRW:
             raise ValueError("T must be within the available observations")
         if steps > self.n_positions // 2:
             raise ValueError("n_positions must be at least 2*T + 1")
-        rng = (
-            random_state
-            if isinstance(random_state, np.random.Generator)
-            else np.random.default_rng(random_state)
-        )
+        rng = as_generator(random_state)
         probability = self.predict_probability()[:steps]
         moving = (
             rng.random((n_paths, steps))

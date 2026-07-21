@@ -89,6 +89,16 @@ def section_header(text: str) -> None:
     )
 
 
+def _artifacts_ready(*paths: Path) -> bool:
+    """True when DEMO_MODE is on and every given artifact file exists.
+
+    Shared by each tab's `_load_*` helper so the same
+    "DEMO_MODE and <file>.exists()" check isn't repeated with slightly
+    different shapes across five tabs.
+    """
+    return DEMO_MODE and all(path.exists() for path in paths)
+
+
 def synthetic_data_banner(command_hint: str) -> None:
     """Warn that the panel below is fabricated demo data, not a real result.
 
@@ -379,12 +389,12 @@ def tab_volatility(config: dict) -> None:
         vol_parquet = ROOT / "results" / "track_a" / "vol_metrics.parquet"
         metrics_json = ROOT / "results" / "track_a" / "vol_metrics.json"
         df, met = None, {}
-        if DEMO_MODE and vol_parquet.exists():
+        if _artifacts_ready(vol_parquet):
             try:
                 df = pd.read_parquet(vol_parquet)
             except Exception as error:
                 logger.warning("Found {} but failed to read it: {}", vol_parquet, error)
-        if DEMO_MODE and metrics_json.exists():
+        if _artifacts_ready(metrics_json):
             try:
                 with open(metrics_json) as f:
                     met = json.load(f)
@@ -619,7 +629,7 @@ def tab_risk(config: dict) -> None:
     @st.cache_data(ttl=60)
     def _load_risk_paths(scenario_key: str) -> pd.DataFrame | None:
         artifact = ROOT / "results" / "track_a" / "risk_paths.parquet"
-        if not (DEMO_MODE and artifact.exists()):
+        if not _artifacts_ready(artifact):
             return None
         stored = pd.read_parquet(artifact)
         return stored[stored["scenario"] == scenario_key]
@@ -627,7 +637,7 @@ def tab_risk(config: dict) -> None:
     @st.cache_data(ttl=60)
     def _load_risk_backtest() -> pd.DataFrame | None:
         backtest_artifact = ROOT / "results" / "track_a" / "risk_backtest.parquet"
-        if not (DEMO_MODE and backtest_artifact.exists()):
+        if not _artifacts_ready(backtest_artifact):
             return None
         return pd.read_parquet(backtest_artifact)
 
@@ -757,7 +767,7 @@ def tab_signal(config: dict) -> None:
     @st.cache_data(ttl=60)
     def _load_signal_artifact() -> pd.DataFrame | None:
         artifact = ROOT / "results" / "track_a" / "signal_log.parquet"
-        if DEMO_MODE and artifact.exists():
+        if _artifacts_ready(artifact):
             return pd.read_parquet(artifact)
         return None
 
@@ -986,10 +996,7 @@ def tab_optimizer(config: dict) -> None:
         surface_path = ROOT / "results" / "track_a" / "optimizer_surface.parquet"
         oos_path = ROOT / "results" / "track_a" / "optimizer_oos.parquet"
         metrics_path = ROOT / "results" / "track_a" / "optimizer_metrics.json"
-        if not (
-            DEMO_MODE
-            and all(path.exists() for path in (params_path, surface_path, oos_path, metrics_path))
-        ):
+        if not _artifacts_ready(params_path, surface_path, oos_path, metrics_path):
             return None
         return (
             json.loads(params_path.read_text(encoding="utf-8")),
@@ -1101,7 +1108,7 @@ def tab_anomaly(config: dict) -> None:
     def _load_anomaly_artifacts():
         log_path = ROOT / "results" / "track_a" / "anomaly_log.parquet"
         distribution_path = ROOT / "results" / "track_a" / "anomaly_distributions.parquet"
-        if not (DEMO_MODE and log_path.exists() and distribution_path.exists()):
+        if not _artifacts_ready(log_path, distribution_path):
             return None
         return pd.read_parquet(log_path), pd.read_parquet(distribution_path)
 

@@ -19,6 +19,7 @@ from .coin_operators import (
     obi_adaptive_coin,
 )
 from .qrw_core import DensityMatrixQRW
+from .rng_utils import as_generator
 
 
 class MarketQRW:
@@ -1156,11 +1157,7 @@ class MarketQRW:
                 "n_positions is too small for T local steps; "
                 "require n_positions >= 2*T + 1"
             )
-        rng = (
-            random_state
-            if isinstance(random_state, np.random.Generator)
-            else np.random.default_rng(random_state)
-        )
+        rng = as_generator(random_state)
         paths = np.empty((n_paths, steps), dtype=np.int64)
         positions = np.zeros(n_paths, dtype=np.int64)
         moving = (
