@@ -12,9 +12,11 @@ from scipy.optimize import minimize
 
 from .coin_operators import (
     biased_coin,
+    dephasing_channel,
     grover_coin,
     hadamard_coin,
     obi_adaptive_coin,
+    su2_market_coin,
 )
 from .qrw_core import DensityMatrixQRW
 
@@ -37,13 +39,17 @@ class MarketQRW:
         if tick_data.empty:
             raise ValueError("tick_data cannot be empty")
 
-        data = tick_data.copy()
-        data = data.sort_values("timestamp", kind="stable").reset_index(drop=True)
+        data = tick_data.copy(deep=False)
         numeric_columns = ["price", "tick_direction", "obi", "trade_intensity"]
-        numeric = data[numeric_columns].apply(pd.to_numeric, errors="coerce")
-        if not np.isfinite(numeric.to_numpy()).all():
-            raise ValueError("market features must be finite")
-        data[numeric_columns] = numeric
+        for col in numeric_columns:
+            if not pd.api.types.is_numeric_dtype(data[col]):
+                data[col] = pd.to_numeric(data[col], errors="coerce")
+        
+        # Check finity on small chunks to avoid memory spikes
+        for col in numeric_columns:
+            if not np.isfinite(data[col]).all():
+                raise ValueError(f"market feature {col} must be finite")
+                
         data["obi"] = data["obi"].clip(-1.0, 1.0)
 
         self.tick_data = data
@@ -57,11 +63,15 @@ class MarketQRW:
         self.alpha_direction = float(
             self.config.get("alpha_direction", 0.0)
         )
+        self.alpha_phase = float(self.config.get("alpha_phase", 0.0))
         self.obi_bias = float(self.config.get("obi_bias", 0.0))
         self.movement_probability = float(
             self.config.get("movement_probability", 1.0)
         )
         self.coin_type = str(self.config.get("coin_type", "obi_adaptive")).lower()
+        self.quantum_window = int(self.config.get("quantum_window", 5))
+        if self.quantum_window < 1:
+            raise ValueError("quantum_window must be at least 1")
         if self.gamma_base < 0.0 or not np.isfinite(self.gamma_base):
             raise ValueError("gamma_base must be finite and non-negative")
         if not np.isfinite(self.alpha_obi) or self.alpha_obi < 0.0:
@@ -75,6 +85,7 @@ class MarketQRW:
 
         self.gamma = self.gamma_base
         self.calibrated = False
+        self.quantum_improved = False
         self.calibrated_parameters: dict[str, Any] = {}
         self._probability_history: np.ndarray | None = None
         self._last_simulation_steps = 0
@@ -116,6 +127,7 @@ class MarketQRW:
             )
         )
         self.gamma = max(self.gamma_base, gamma_estimate)
+        classical_gamma = self.gamma
 
         price = self.tick_data["price"].to_numpy(dtype=np.float64)
         obi = self.tick_data["obi"].to_numpy(dtype=np.float64)
@@ -241,6 +253,7 @@ class MarketQRW:
             dtype=np.float64,
         )
 
+        # Stage 1: Classical pre-optimization (fast, finds good starting point)
         candidates: list[dict[str, Any]] = []
         for regularization in sorted(set(regularization_grid)):
             result = minimize(
@@ -308,6 +321,84 @@ class MarketQRW:
             ),
             key=lambda item: item["regularization"],
         )
+
+        # Stage 2: Quantum refinement using density matrix evolution
+        # Subsample for speed (quantum objective has Python loops)
+        quantum_max_events = int(self.config.get("quantum_calibration_max_events", 5000))
+        if len(train_y) > quantum_max_events:
+            rng = np.random.default_rng(42)
+            # Take a contiguous block to preserve temporal structure
+            start_idx = rng.integers(0, len(train_y) - quantum_max_events)
+            q_train_x = train_x[start_idx:start_idx + quantum_max_events]
+            q_train_y = train_y[start_idx:start_idx + quantum_max_events]
+        else:
+            q_train_x = train_x
+            q_train_y = train_y
+
+        quantum_initial = np.array([
+            selected["bias"],
+            selected["alpha"],
+            selected["alpha_direction"],
+            max(self.gamma * 0.1, 0.05),  # Start with much lower gamma
+            0.5,  # Initial alpha_phase
+        ], dtype=np.float64)
+
+        best_quantum_reg = selected["regularization"]
+        quantum_result = minimize(
+            self._quantum_calibration_objective,
+            x0=quantum_initial,
+            args=(q_train_x, q_train_y, self.quantum_window, best_quantum_reg),
+            method="L-BFGS-B",
+            bounds=(
+                (-3.0, 3.0),   # bias
+                (0.0, 5.0),    # alpha_obi
+                (-5.0, 5.0),   # alpha_direction
+                (0.01, 5.0),   # gamma (free! crucial for quantum advantage)
+                (-3.0, 3.0),   # alpha_phase (enables non-commuting coins)
+            ),
+            options={"maxiter": 50, "ftol": 1e-6},
+        )
+
+        print(f"Quantum optimization success: {quantum_result.success}, fun: {quantum_result.fun}")
+        # Evaluate quantum model on validation
+        if quantum_result.success and np.isfinite(quantum_result.fun):
+            q_bias = float(quantum_result.x[0])
+            q_alpha = float(quantum_result.x[1])
+            q_alpha_dir = float(quantum_result.x[2])
+            q_gamma = float(quantum_result.x[3])
+            q_alpha_phase = float(quantum_result.x[4])
+            
+            print(f"Quantum parameters: bias={q_bias}, alpha={q_alpha}, alpha_dir={q_alpha_dir}, gamma={q_gamma}, phase={q_alpha_phase}")
+
+            quantum_val_prob = self._quantum_windowed_probabilities(
+                validation_x[:, 0],
+                validation_x[:, 1],
+                bias=q_bias,
+                alpha_obi=q_alpha,
+                alpha_direction=q_alpha_dir,
+                alpha_phase=q_alpha_phase,
+                gamma=q_gamma,
+                window=self.quantum_window,
+            )
+            quantum_val_brier = float(np.mean((quantum_val_prob - validation_y) ** 2))
+            print(f"Quantum Val Brier: {quantum_val_brier}, Classical Val Brier: {selected['validation_brier']}")
+
+            # Use quantum parameters if they improve over classical
+            if quantum_val_brier < selected["validation_brier"]:
+                selected["bias"] = q_bias
+                selected["alpha"] = q_alpha
+                selected["alpha_direction"] = q_alpha_dir
+                selected["validation_brier"] = quantum_val_brier
+                selected["quantum_gamma"] = q_gamma
+                selected["quantum_alpha_phase"] = q_alpha_phase
+                selected["quantum_improved"] = True
+                self.gamma = q_gamma  # Override autocorrelation-based gamma
+                self.alpha_phase = q_alpha_phase
+            else:
+                selected["quantum_improved"] = False
+        else:
+            selected["quantum_improved"] = False
+
         neutral_validation_probability = np.full(len(validation_y), 0.5)
         neutral_validation_log_loss = self._log_loss(
             neutral_validation_probability,
@@ -369,6 +460,12 @@ class MarketQRW:
             self.alpha_obi = 0.0
             self.alpha_direction = 0.0
             calibration_status = "rejected_to_neutral"
+            # A neutral model carries no signal at all, so any quantum-phase
+            # refinement selected upstream is moot: reset it rather than
+            # leaving a stale nonzero alpha_phase/gamma on an all-zero model.
+            selected["quantum_improved"] = False
+            self.alpha_phase = 0.0
+            self.gamma = classical_gamma
         else:
             # Keep validation strictly selection-only. A later test set may
             # therefore score exactly the model that validation selected.
@@ -382,19 +479,20 @@ class MarketQRW:
                 else "accepted_below_linear_market"
             )
 
-        final_probability = self._direction_probability(
+        # Persist as a first-class instance attribute (not just a local dict
+        # key) so every prediction path can dispatch on the formula that was
+        # actually selected, instead of silently defaulting to classical.
+        self.quantum_improved = bool(selected["quantum_improved"])
+
+        final_probability = self.predict_right_probabilities(
             predictor[:, 0],
-            bias=self.obi_bias,
-            alpha=self.alpha_obi,
-            tick_direction=predictor[:, 1],
-            alpha_direction=self.alpha_direction,
-            coherence=coherence,
+            predictor[:, 1],
         )
         final_log_loss = float(self._log_loss(final_probability, target))
         n_obs = len(target)
-        k_params = 3  # bias, alpha_obi, alpha_direction
+        k_params = 5 if self.quantum_improved else 3  # + gamma, alpha_phase
         final_nll = final_log_loss * n_obs
-        
+
         aic = 2 * k_params + 2 * final_nll
         bic = k_params * np.log(n_obs) + 2 * final_nll
 
@@ -405,6 +503,9 @@ class MarketQRW:
             "rho_1": rho_1,
             "alpha_obi": self.alpha_obi,
             "alpha_direction": self.alpha_direction,
+            "alpha_phase": self.alpha_phase,
+            "quantum_window": self.quantum_window,
+            "quantum_improved": selected.get("quantum_improved", False),
             "obi_bias": self.obi_bias,
             "obi_slope_ticks": slope_ticks,
             "tick_intercept": intercept_ticks,
@@ -506,6 +607,11 @@ class MarketQRW:
         self.alpha_obi = float(structural["alpha_obi"])
         self.alpha_direction = float(structural["alpha_direction"])
         self.obi_bias = float(structural["obi_bias"])
+        # Carry the quantum-refinement outcome over too — otherwise a
+        # warmup fit that selected quantum_improved would be silently
+        # discarded here, leaving this model's predictions alpha_phase-blind.
+        self.alpha_phase = float(structural.get("alpha_phase", 0.0))
+        self.quantum_improved = bool(structural.get("quantum_improved", False))
         bias_data = self.tick_data.iloc[warmup_rows:].copy().reset_index(
             drop=True
         )
@@ -650,12 +756,87 @@ class MarketQRW:
         alpha_direction: float = 0.0,
         coherence: float,
     ) -> np.ndarray:
+        """Classical closed-form probability (kept as fallback)."""
         signal = np.tanh(
             bias
             + alpha * np.clip(obi, -1.0, 1.0)
             + alpha_direction * np.clip(tick_direction, -1.0, 1.0)
         )
         return np.clip(0.5 + 0.5 * coherence * signal, 1e-12, 1.0 - 1e-12)
+
+    @staticmethod
+    def _quantum_windowed_probabilities(
+        obi: np.ndarray,
+        direction: np.ndarray,
+        *,
+        bias: float,
+        alpha_obi: float,
+        alpha_direction: float,
+        alpha_phase: float,
+        gamma: float,
+        window: int = 5,
+    ) -> np.ndarray:
+        """Compute probabilities via accumulated 2x2 density matrix evolution.
+
+        For each event t, evolve a fresh density matrix through the last
+        `window` events (t-window+1, ..., t). Each step applies an SU(2)
+        coin (parameterized by that step's OBI and direction) followed by
+        dephasing. The final rho[0,0] gives P(up).
+
+        Because SU(2) coins with different phase angles do NOT commute,
+        the accumulated product encodes the SEQUENTIAL ORDER of recent
+        market events. This is genuine quantum interference that a linear
+        model cannot replicate.
+        """
+        n = len(obi)
+        result = np.empty(n, dtype=np.float64)
+        initial = np.array([1.0, 1.0], dtype=np.complex128) / np.sqrt(2.0)
+        rho_init = np.outer(initial, initial.conj())
+        coherence = 0.0 if np.isposinf(gamma) else float(np.exp(-gamma))
+
+        # Pre-clip inputs
+        obi_clipped = np.clip(obi, -1.0, 1.0)
+        dir_clipped = np.clip(direction, -1.0, 1.0)
+
+        for t in range(n):
+            rho = rho_init.copy()
+            start = max(0, t - window + 1)
+            for s in range(start, t + 1):
+                coin = su2_market_coin(
+                    float(obi_clipped[s]),
+                    float(dir_clipped[s]),
+                    bias=bias,
+                    alpha_obi=alpha_obi,
+                    alpha_direction=alpha_direction,
+                    alpha_phase=alpha_phase,
+                    window=window,
+                )
+                rho = coin @ rho @ coin.conj().T
+                # Apply dephasing (preserve diagonal, decay off-diagonal)
+                diag = rho[0, 0], rho[1, 1]
+                rho *= coherence
+                rho[0, 0] = diag[0]
+                rho[1, 1] = diag[1]
+            result[t] = float(np.clip(rho[0, 0].real, 1e-12, 1.0 - 1e-12))
+
+        return result
+
+    def quantum_probabilities(
+        self,
+        obi: np.ndarray,
+        direction: np.ndarray,
+    ) -> np.ndarray:
+        """Public interface for quantum windowed probability computation."""
+        return self._quantum_windowed_probabilities(
+            obi,
+            direction,
+            bias=self.obi_bias,
+            alpha_obi=self.alpha_obi,
+            alpha_direction=self.alpha_direction,
+            alpha_phase=self.alpha_phase,
+            gamma=self.gamma,
+            window=self.quantum_window,
+        )
 
     @staticmethod
     def _log_loss(probability: np.ndarray, target: np.ndarray) -> float:
@@ -676,6 +857,7 @@ class MarketQRW:
         coherence: float,
         regularization: float,
     ) -> float:
+        """Classical calibration objective (kept for fallback)."""
         bias, alpha, alpha_direction = (
             float(parameters[0]),
             float(parameters[1]),
@@ -691,6 +873,36 @@ class MarketQRW:
         )
         penalty = regularization * (
             bias**2 + alpha**2 + alpha_direction**2
+        )
+        return cls._log_loss(probability, target) + penalty
+
+    @classmethod
+    def _quantum_calibration_objective(
+        cls,
+        parameters: np.ndarray,
+        predictor: np.ndarray,
+        target: np.ndarray,
+        window: int,
+        regularization: float,
+    ) -> float:
+        """Quantum calibration objective using density matrix evolution."""
+        bias = float(parameters[0])
+        alpha_obi = float(parameters[1])
+        alpha_direction = float(parameters[2])
+        gamma = float(parameters[3])
+        alpha_phase = float(parameters[4])
+        probability = cls._quantum_windowed_probabilities(
+            predictor[:, 0],
+            predictor[:, 1],
+            bias=bias,
+            alpha_obi=alpha_obi,
+            alpha_direction=alpha_direction,
+            alpha_phase=alpha_phase,
+            gamma=gamma,
+            window=window,
+        )
+        penalty = regularization * (
+            bias**2 + alpha_obi**2 + alpha_direction**2 + alpha_phase**2
         )
         return cls._log_loss(probability, target) + penalty
 
@@ -746,6 +958,76 @@ class MarketQRW:
         coin = self._coin_for_obi(obi, tick_direction)
         evolved = coin @ rho @ coin.conj().T
         return float(np.clip(evolved[0, 0].real, 0.0, 1.0))
+
+    def predict_right_probability(
+        self,
+        obi_history: np.ndarray,
+        direction_history: np.ndarray,
+    ) -> float:
+        """Return the one-step right probability that ``calibrate()`` selected.
+
+        This is the single canonical prediction entry point: it dispatches to
+        the alpha_phase-aware windowed quantum formula when calibration set
+        ``quantum_improved``, otherwise falls back to the classical one-step
+        formula. ``_one_step_right_probability`` alone can never reflect a
+        quantum-refined fit because it has no ``alpha_phase``/window term.
+        ``obi_history``/``direction_history`` must end at the event being
+        predicted; only the trailing ``quantum_window`` entries are used.
+        """
+        obi_history = np.asarray(obi_history, dtype=np.float64)
+        direction_history = np.asarray(direction_history, dtype=np.float64)
+        if obi_history.ndim != 1 or obi_history.shape != direction_history.shape:
+            raise ValueError(
+                "obi_history and direction_history must be 1D arrays of equal length"
+            )
+        if obi_history.size == 0:
+            raise ValueError("obi_history must contain at least one event")
+        if self.quantum_improved:
+            window = min(self.quantum_window, obi_history.size)
+            probability = self._quantum_windowed_probabilities(
+                obi_history[-window:],
+                direction_history[-window:],
+                bias=self.obi_bias,
+                alpha_obi=self.alpha_obi,
+                alpha_direction=self.alpha_direction,
+                alpha_phase=self.alpha_phase,
+                gamma=self.gamma,
+                window=self.quantum_window,
+            )
+            return float(probability[-1])
+        return self._one_step_right_probability(
+            float(obi_history[-1]),
+            float(direction_history[-1]),
+        )
+
+    def predict_right_probabilities(
+        self,
+        obi: np.ndarray,
+        direction: np.ndarray,
+    ) -> np.ndarray:
+        """Batched sibling of :meth:`predict_right_probability`.
+
+        For the quantum branch this is exactly :meth:`quantum_probabilities`
+        (already alpha_phase-aware and windowed); for the classical branch it
+        is the closed-form :meth:`_direction_probability`, matching what
+        ``_one_step_right_probability`` computes per-event for
+        ``coin_type="obi_adaptive"``.
+        """
+        obi = np.asarray(obi, dtype=np.float64)
+        direction = np.asarray(direction, dtype=np.float64)
+        if obi.shape != direction.shape:
+            raise ValueError("obi and direction arrays must have the same shape")
+        if self.quantum_improved:
+            return self.quantum_probabilities(obi, direction)
+        coherence = float(np.exp(-self.gamma))
+        return self._direction_probability(
+            obi,
+            bias=self.obi_bias,
+            alpha=self.alpha_obi,
+            tick_direction=direction,
+            alpha_direction=self.alpha_direction,
+            coherence=coherence,
+        )
 
     def simulate(self, T: int) -> pd.DataFrame:
         """Simulate ``T`` adaptive steps and return all position marginals."""
@@ -845,9 +1127,9 @@ class MarketQRW:
             copy=False,
         )
         for time_index in range(steps):
-            probability_right = self._one_step_right_probability(
-                float(obi_values[time_index]),
-                float(direction_values[time_index]),
+            probability_right = self.predict_right_probability(
+                obi_values[: time_index + 1],
+                direction_values[: time_index + 1],
             )
             move_right = rng.random(n_paths) < probability_right
             positions += np.where(

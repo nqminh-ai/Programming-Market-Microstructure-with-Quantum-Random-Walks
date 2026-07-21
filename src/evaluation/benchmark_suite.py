@@ -9,7 +9,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from src.models.adaptive_market_qrw import AdaptiveDecoherenceQRW
+from src.models.qrw_market_sim import MarketQRW
+from src.models.coin_operators import su2_market_coin
 from src.models.classical_rw import ClassicalRandomWalk
 from src.models.garch_model import GARCHBaseline
 from src.models.gbm_model import GBMBaseline
@@ -20,7 +21,7 @@ class BenchmarkSuite:
     """Fit all models on a common past window and score one later path."""
 
     PROTOCOL_VERSION = "fixed_origin_marginal_density_matrix_ar1_obi_v4"
-    REQUIRED_COLUMNS = AdaptiveDecoherenceQRW.REQUIRED_COLUMNS
+    REQUIRED_COLUMNS = MarketQRW.REQUIRED_COLUMNS
     METRICS = (
         "mean_marginal_crps",
         "mean_marginal_absolute_error",
@@ -176,12 +177,17 @@ class BenchmarkSuite:
             for child in sequence.spawn(count)
         ]
 
-    def _fit_qrw(self) -> tuple[AdaptiveDecoherenceQRW, dict[str, Any]]:
-        calibration = AdaptiveDecoherenceQRW(
+    def _fit_qrw(self) -> tuple[MarketQRW, dict[str, Any]]:
+        calibration = MarketQRW(
             self.train,
-            {"n_positions": 2 * self.n_steps + 3},
+            {
+                "n_positions": 2 * self.n_steps + 3,
+                "coin_type": "obi_adaptive",
+                "quantum_calibration_max_events": 5000,
+                "quantum_window_size": 5,
+            },
         )
-        parameters = calibration.calibrate_two_stage(None)
+        parameters = calibration.calibrate("results/benchmark_params.json")
         return calibration, parameters
 
     @staticmethod
@@ -218,16 +224,16 @@ class BenchmarkSuite:
 
     def _forecast_qrw_features(
         self,
-        model: AdaptiveDecoherenceQRW,
+        model: MarketQRW,
     ) -> tuple[np.ndarray, dict[str, float | int]]:
         """Create a causal fixed-origin feature path for the QRW horizon."""
         ar1 = self._fit_obi_ar1(self.train)
-        features = np.empty((self.n_steps, 5), dtype=np.float64)
-        raw = model._raw_features()
-        features[0] = raw[-1]
+        features = np.empty((self.n_steps, 2), dtype=np.float64)
+        obi_history = model.tick_data["obi"].to_numpy(dtype=np.float64)
+        direction_history = model.tick_data["tick_direction"].to_numpy(dtype=np.float64)
+        features[0] = (obi_history[-1], direction_history[-1])
         obi = float(features[0, 0])
         direction = float(features[0, 1])
-        log_intensity = float(features[0, 4])
         for index in range(1, self.n_steps):
             forecast_obi = float(
                 np.clip(ar1["intercept"] + ar1["phi"] * obi, -1.0, 1.0)
@@ -235,16 +241,13 @@ class BenchmarkSuite:
             features[index] = (
                 forecast_obi,
                 direction,
-                forecast_obi - obi,
-                abs(forecast_obi),
-                log_intensity,
             )
             obi = forecast_obi
         return features, ar1
 
     def _simulate_qrw(
         self,
-        model: AdaptiveDecoherenceQRW,
+        model: MarketQRW,
         *,
         seed: int,
     ) -> np.ndarray:
@@ -266,7 +269,16 @@ class BenchmarkSuite:
         quantum_variance = np.empty(self.n_steps, dtype=np.float64)
         for index, feature in enumerate(features):
             previous_rho = engine.rho.copy()
-            event_gamma, coin = model._event_kernel(feature)
+            event_gamma = model.gamma
+            coin = su2_market_coin(
+                float(feature[0]),
+                float(feature[1]),
+                bias=model.obi_bias,
+                alpha_obi=model.alpha_obi,
+                alpha_direction=model.alpha_direction,
+                alpha_phase=getattr(model, "alpha_phase", 0.0),
+                window=getattr(model, "quantum_window_size", 1),
+            )
             engine.step_with_decoherence(event_gamma, coin_matrix=coin)
             if movement_probability < 1.0:
                 engine.rho = (
@@ -476,25 +488,31 @@ class BenchmarkSuite:
             ],
             ignore_index=True,
         )
-        qrw_predictor = AdaptiveDecoherenceQRW(
+        qrw_predictor = MarketQRW(
             predictor_frame,
             {
                 "n_positions": 101,
-                "gamma_base": qrw_parameters["gamma"],
-                "obi_bias": qrw_parameters["obi_bias"],
-                "alpha_obi": qrw_parameters["alpha_obi"],
-                "alpha_direction": qrw_parameters["alpha_direction"],
-                "alpha_obi_change": qrw_parameters["alpha_obi_change"],
-                "alpha_abs_obi": qrw_parameters["alpha_abs_obi"],
-                "gamma_intensity": qrw_parameters["gamma_intensity"],
-                "feature_mean": qrw_parameters["feature_mean"],
-                "feature_scale": qrw_parameters["feature_scale"],
-                "movement_probability": qrw_parameters[
-                    "movement_probability"
-                ],
+                "gamma_base": qrw_parameters.get("gamma", 0.0),
+                "obi_bias": qrw_parameters.get("obi_bias", 0.0),
+                "alpha_obi": qrw_parameters.get("alpha_obi", 0.0),
+                "alpha_direction": qrw_parameters.get("alpha_direction", 0.0),
+                "coin_type": "obi_adaptive",
+                "quantum_window": qrw_parameters.get("quantum_window", 5),
             },
         )
-        probability_up = qrw_predictor.predict_probability()[1:]
+        # Carry over the quantum-refinement outcome from the original fit:
+        # constructing a fresh MarketQRW here must not silently reset
+        # alpha_phase/quantum_improved to their un-refined defaults.
+        qrw_predictor.alpha_phase = float(qrw_parameters.get("alpha_phase", 0.0))
+        qrw_predictor.quantum_improved = bool(qrw_parameters.get("quantum_improved", False))
+        probability_up = np.clip(
+            qrw_predictor.predict_right_probabilities(
+                predictor_frame["obi"].to_numpy(dtype=np.float64)[:-1],
+                predictor_frame["tick_direction"].to_numpy(dtype=np.float64)[:-1]
+            ),
+            1e-12,
+            1.0 - 1e-12,
+        )
         qrw_prediction = origins + self.tick_size * self.movement_probability * (
             2.0 * probability_up - 1.0
         )
@@ -567,22 +585,29 @@ class BenchmarkSuite:
                 self.train["obi_valid"].astype(bool).to_numpy()[:-1]
             )
         train_target = train_change[train_valid] > 0.0
+        train_qrw_predictor = MarketQRW(
+            self.train.iloc[:-1].copy(),
+            {
+                "n_positions": 101,
+                "gamma_base": qrw_parameters.get("gamma", 0.0),
+                "obi_bias": qrw_parameters.get("obi_bias", 0.0),
+                "alpha_obi": qrw_parameters.get("alpha_obi", 0.0),
+                "alpha_direction": qrw_parameters.get("alpha_direction", 0.0),
+                "coin_type": "obi_adaptive",
+                "quantum_window": qrw_parameters.get("quantum_window", 5),
+            },
+        )
+        # Carry over the quantum-refinement outcome from the original fit —
+        # see the identical comment in _rolling_one_step_absolute_losses.
+        train_qrw_predictor.alpha_phase = float(qrw_parameters.get("alpha_phase", 0.0))
+        train_qrw_predictor.quantum_improved = bool(
+            qrw_parameters.get("quantum_improved", False)
+        )
         train_qrw_probability = np.clip(
-            AdaptiveDecoherenceQRW(
-                self.train.iloc[:-1].copy(),
-                {
-                    "n_positions": 101,
-                    "gamma_base": qrw_parameters["gamma"],
-                    "obi_bias": qrw_parameters["obi_bias"],
-                    "alpha_obi": qrw_parameters["alpha_obi"],
-                    "alpha_direction": qrw_parameters["alpha_direction"],
-                    "alpha_obi_change": qrw_parameters["alpha_obi_change"],
-                    "alpha_abs_obi": qrw_parameters["alpha_abs_obi"],
-                    "gamma_intensity": qrw_parameters["gamma_intensity"],
-                    "feature_mean": qrw_parameters["feature_mean"],
-                    "feature_scale": qrw_parameters["feature_scale"],
-                },
-            ).predict_probability()[train_valid],
+            train_qrw_predictor.predict_right_probabilities(
+                self.train["obi"].to_numpy(dtype=np.float64)[:-1],
+                self.train["tick_direction"].to_numpy(dtype=np.float64)[:-1]
+            )[train_valid],
             1e-12,
             1.0 - 1e-12,
         )
@@ -595,7 +620,7 @@ class BenchmarkSuite:
                 )
             )
         )
-        qrw_parameter_count = 6
+        qrw_parameter_count = 5 if train_qrw_predictor.quantum_improved else 3
         comparison_directions = np.where(train_target, 1.0, -1.0)
         comparison_rows.append(
             self._comparison_row(
@@ -710,6 +735,7 @@ class BenchmarkSuite:
             garch=garch,
             gbm=gbm,
         )
+        self.rolling_one_step_timestamps = self.test['timestamp'].to_numpy()[1:]
         self.model_comparison = self.rank_information_criteria(
             pd.DataFrame(comparison_rows)
         )
@@ -748,9 +774,13 @@ class BenchmarkSuite:
             "sample_semantics": self.sample_semantics,
             "path_dependent_metrics_include_qrw": False,
             "dm_forecast_alignment": "rolling_origin_one_step",
+            "dm_timestamp_alignment": "strictly_increasing_common_timestamp_index",
             "dm_loss_observations": self.n_steps,
-            "qrw_forecast_up_probability_h1": float(
-                qrw.predict_probability()[-1]
+            "qrw_probability_at_origin": float(
+                qrw.predict_right_probabilities(
+                    qrw.tick_data["obi"].to_numpy(dtype=np.float64)[:-1],
+                    qrw.tick_data["tick_direction"].to_numpy(dtype=np.float64)[:-1]
+                )[-1]
             ),
             "qrw_forecast": self._qrw_forecast_diagnostics,
             "information_criterion_scope": (

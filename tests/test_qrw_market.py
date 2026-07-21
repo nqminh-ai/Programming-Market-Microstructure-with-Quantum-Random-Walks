@@ -226,6 +226,135 @@ def test_tick_direction_changes_market_coin_probability() -> None:
     )
 
 
+def test_calibrate_persists_quantum_improved_flag_on_instance(tmp_path) -> None:
+    model = MarketQRW(
+        _synthetic_market_data(80),
+        {
+            "n_positions": 41,
+            "gamma_base": 0.01,
+            "alpha_obi": 0.0,
+            "coin_type": "obi_adaptive",
+            "tick_size": 1.0,
+        },
+    )
+    parameters = model.calibrate(tmp_path / "params.json")
+
+    # quantum_improved must be a first-class attribute on the calibrated
+    # instance, not just a key buried in the returned dict, so every
+    # prediction path can dispatch on it later.
+    assert model.quantum_improved == parameters["quantum_improved"]
+    if model.quantum_improved:
+        assert model.alpha_phase != 0.0
+    else:
+        assert model.alpha_phase == 0.0
+
+
+def test_predict_dispatch_matches_classical_when_not_quantum_improved() -> None:
+    model = MarketQRW(
+        _synthetic_market_data(20),
+        {
+            "n_positions": 41,
+            "gamma_base": 0.3,
+            "alpha_obi": 0.4,
+            "alpha_direction": -0.2,
+            "obi_bias": 0.1,
+            "coin_type": "obi_adaptive",
+        },
+    )
+    assert model.quantum_improved is False
+    obi_history = np.array([0.1, -0.2, 0.6])
+    direction_history = np.array([1.0, -1.0, 1.0])
+
+    dispatched = model.predict_right_probability(obi_history, direction_history)
+    classical = model._one_step_right_probability(0.6, 1.0)
+
+    assert dispatched == pytest.approx(classical, abs=1e-12)
+    np.testing.assert_allclose(
+        model.predict_right_probabilities(obi_history, direction_history),
+        model._direction_probability(
+            obi_history,
+            bias=model.obi_bias,
+            alpha=model.alpha_obi,
+            tick_direction=direction_history,
+            alpha_direction=model.alpha_direction,
+            coherence=float(np.exp(-model.gamma)),
+        ),
+        atol=1e-12,
+    )
+
+
+def test_predict_dispatch_uses_quantum_windowed_formula_when_improved() -> None:
+    """Regression test for the fit/predict mismatch (audit finding C1/C2).
+
+    calibrate() can fit alpha_phase via a windowed, non-commuting SU(2)
+    formula, but the one-step prediction path used to have no alpha_phase
+    term at all. This proves the dispatch actually changes behavior once
+    quantum_improved is engaged, instead of silently ignoring alpha_phase.
+    """
+    model = MarketQRW(
+        _synthetic_market_data(20),
+        {
+            "n_positions": 41,
+            "gamma_base": 0.3,
+            "alpha_obi": 0.4,
+            "alpha_direction": -0.2,
+            "obi_bias": 0.1,
+            "coin_type": "obi_adaptive",
+            "quantum_window": 4,
+        },
+    )
+    model.alpha_phase = 0.9
+    model.quantum_improved = True
+    obi_history = np.array([0.1, -0.2, 0.6, 0.3])
+    direction_history = np.array([1.0, -1.0, 1.0, -1.0])
+
+    dispatched = model.predict_right_probability(obi_history, direction_history)
+    classical = model._one_step_right_probability(
+        float(obi_history[-1]), float(direction_history[-1])
+    )
+    expected_quantum = model._quantum_windowed_probabilities(
+        obi_history,
+        direction_history,
+        bias=model.obi_bias,
+        alpha_obi=model.alpha_obi,
+        alpha_direction=model.alpha_direction,
+        alpha_phase=model.alpha_phase,
+        gamma=model.gamma,
+        window=model.quantum_window,
+    )[-1]
+
+    assert dispatched == pytest.approx(expected_quantum, abs=1e-12)
+    assert dispatched != pytest.approx(classical, abs=1e-6)
+    np.testing.assert_allclose(
+        model.predict_right_probabilities(obi_history, direction_history),
+        model.quantum_probabilities(obi_history, direction_history),
+        atol=1e-12,
+    )
+
+
+def test_quantum_improved_changes_simulated_price_path() -> None:
+    """simulate_price_path must actually exercise the selected formula."""
+    data = _synthetic_market_data(30)
+    config = {
+        "n_positions": 41,
+        "gamma_base": 0.3,
+        "alpha_obi": 0.4,
+        "alpha_direction": -0.2,
+        "obi_bias": 0.1,
+        "coin_type": "obi_adaptive",
+        "quantum_window": 4,
+    }
+    classical_model = MarketQRW(data, config)
+    quantum_model = MarketQRW(data, config)
+    quantum_model.alpha_phase = 0.9
+    quantum_model.quantum_improved = True
+
+    classical_paths = classical_model.simulate_price_path(200, T=10, random_state=7)
+    quantum_paths = quantum_model.simulate_price_path(200, T=10, random_state=7)
+
+    assert not np.array_equal(classical_paths, quantum_paths)
+
+
 def test_bias_update_keeps_structural_parameters_fixed() -> None:
     model = MarketQRW(
         _synthetic_market_data(),

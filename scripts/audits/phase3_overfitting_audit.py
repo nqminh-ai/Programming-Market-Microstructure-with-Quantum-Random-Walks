@@ -16,7 +16,6 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.phase3_pipeline import resolve_feature_path
 from src.models.qrw_market_sim import MarketQRW
 
 
@@ -49,14 +48,18 @@ def fit_fixed_structure_model(
         {
             "n_positions": 101,
             "gamma_base": float(structural["gamma"]),
-            "alpha_obi": float(structural["alpha_obi"]),
-            "alpha_direction": float(structural["alpha_direction"]),
+            "alpha_obi": float(structural.get("alpha_obi", 0.0)),
+            "alpha_direction": float(structural.get("alpha_direction", 0.0)),
             "obi_bias": prior_bias,
             "coin_type": "obi_adaptive",
             "tick_size": tick_size,
+            "quantum_window": int(structural.get("quantum_window", 5)),
+            "quantum_calibration_max_events": 5000,
         },
     )
     model.gamma = float(structural["gamma"])
+    model.alpha_phase = float(structural.get("alpha_phase", 0.0))
+    model.quantum_improved = bool(structural.get("quantum_improved", False))
     if not update_bias:
         return model, {
             "obi_bias": prior_bias,
@@ -149,13 +152,11 @@ def evaluate_split(
     linear_market_coefficients: np.ndarray,
 ) -> dict[str, dict[str, float | int]]:
     obi, direction, target = market_events(frame)
-    model_probability = np.asarray(
-        [
-            model._one_step_right_probability(value, tick)
-            for value, tick in zip(obi, direction, strict=True)
-        ],
-        dtype=np.float64,
-    )
+    # Dispatch on quantum_improved rather than calling quantum_probabilities
+    # unconditionally: when the quantum stage did not win, alpha_phase is 0
+    # but the windowed accumulation still differs from the classical
+    # single-event formula, so scoring "model" must match what was selected.
+    model_probability = model.predict_right_probabilities(obi, direction)
     linear_probability = np.clip(
         linear_coefficients[0] + linear_coefficients[1] * obi,
         0.0,
@@ -226,13 +227,7 @@ def paired_bootstrap_brier(
     rng: np.random.Generator,
 ) -> dict[str, float | list[float]]:
     obi, direction, target = market_events(frame)
-    probability = np.asarray(
-        [
-            model._one_step_right_probability(value, tick)
-            for value, tick in zip(obi, direction, strict=True)
-        ],
-        dtype=np.float64,
-    )
+    probability = model.predict_right_probabilities(obi, direction)
     paired_difference = (
         (probability - target) ** 2
         - (comparison_probability - target) ** 2
@@ -397,13 +392,11 @@ def walk_forward_evaluation(
             linear_market_coefficients=linear_market_coefficients,
         )
         obi, direction, target = market_events(evaluation)
-        model_probability = np.asarray(
-            [
-                model._one_step_right_probability(value, tick)
-                for value, tick in zip(obi, direction, strict=True)
-            ],
-            dtype=np.float64,
-        )
+        # Use the same dispatch as evaluate_split()/paired_bootstrap_brier()
+        # above: _one_step_right_probability alone is alpha_phase-blind and
+        # would silently ignore a quantum-refined fit (see predict_right_
+        # probabilities docstring in MarketQRW).
+        model_probability = model.predict_right_probabilities(obi, direction)
         linear_market_probability = np.clip(
             linear_market_coefficients[0]
             + linear_market_coefficients[1] * obi
@@ -560,7 +553,9 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    feature_path = resolve_feature_path(args.feature_path)
+    feature_path = Path(args.feature_path).resolve()
+    if not feature_path.exists():
+        raise FileNotFoundError(f"Feature file not found: {feature_path}")
     frame = pd.read_parquet(feature_path).sort_values(
         "timestamp",
         kind="stable",
