@@ -20,6 +20,19 @@ class StatisticalTestSuite:
 
     PRIMARY_HORIZONS = (1, 5, 10, 20, 50, 100, 200, 500)
     SCALING_HORIZONS = (1, 5, 10, 20, 50, 100, 200, 500)
+    BOOTSTRAP_SCORECARD_METRICS = (
+        "mean_crps",
+        "mean_absolute_error",
+        "mean_direction_brier_score",
+        "mean_direction_log_loss",
+        "coverage_90",
+        "coverage_90_absolute_error",
+        "mean_interval_90_width",
+    )
+    BOOTSTRAP_SELECTION_RULE = (
+        "primary=mean_crps; tiebreak=mean_direction_log_loss; "
+        "remaining_metrics=diagnostic_only"
+    )
 
     def __init__(
         self,
@@ -28,6 +41,7 @@ class StatisticalTestSuite:
         *,
         sample_semantics: Mapping[str, str] | None = None,
         rolling_one_step_losses: Mapping[str, np.ndarray] | None = None,
+        rolling_one_step_timestamps: np.ndarray | None = None,
         random_seed: int = 2026,
         bootstrap_iterations: int = 1_000,
         max_lag: int = 20,
@@ -86,6 +100,9 @@ class StatisticalTestSuite:
         self.rolling_one_step_losses = self._validated_rolling_losses(
             rolling_one_step_losses
         )
+        self.rolling_one_step_timestamps = (
+            self._validated_rolling_timestamps(rolling_one_step_timestamps)
+        )
         self.acf_profiles: dict[str, np.ndarray] = {}
         self.pacf_profiles: dict[str, np.ndarray] = {}
         self.scaling_points: dict[str, tuple[np.ndarray, np.ndarray]] = {}
@@ -116,6 +133,33 @@ class StatisticalTestSuite:
         if len(lengths) != 1:
             raise ValueError("rolling one-step losses must be time aligned")
         return result
+
+    def _validated_rolling_timestamps(
+        self,
+        values: np.ndarray | None,
+    ) -> np.ndarray | None:
+        if self.rolling_one_step_losses is None:
+            if values is not None:
+                raise ValueError(
+                    "rolling timestamps require rolling one-step losses"
+                )
+            return None
+        if values is None:
+            raise ValueError(
+                "rolling_one_step_timestamps are required for DM alignment"
+            )
+        timestamps = np.asarray(values).reshape(-1)
+        expected = len(next(iter(self.rolling_one_step_losses.values())))
+        if len(timestamps) != expected:
+            raise ValueError(
+                "rolling timestamps must match every one-step loss sequence"
+            )
+        index = pd.Index(timestamps)
+        if index.hasnans or index.has_duplicates:
+            raise ValueError("rolling timestamps must be finite and unique")
+        if not index.is_monotonic_increasing:
+            raise ValueError("rolling timestamps must be strictly increasing")
+        return timestamps.copy()
 
     @staticmethod
     def _log_returns(prices: np.ndarray) -> np.ndarray:
@@ -231,6 +275,7 @@ class StatisticalTestSuite:
                         ),
                         "interval_90_low": float(lower),
                         "interval_90_high": float(upper),
+                        "interval_90_width": float(upper - lower),
                         "interval_90_covered": int(
                             lower <= observation <= upper
                         ),
@@ -783,10 +828,17 @@ class StatisticalTestSuite:
                 n = len(d)
                 gamma0 = np.var(d, ddof=1)
                 variance_d = gamma0
+                centered = d - mean_d
                 for lag in range(1, self.max_lag + 1):
                     if lag >= len(d):
                         break
-                    gamma_lag = np.cov(d[:-lag], d[lag:])[0, 1]
+                    # Autocovariance must center both arms on the shared
+                    # sample mean_d, not np.cov's own per-argument means,
+                    # or the HAC variance estimate is subtly biased.
+                    gamma_lag = float(
+                        np.sum(centered[:-lag] * centered[lag:])
+                        / (len(d) - lag - 1)
+                    )
                     weight = 1.0 - lag / (self.max_lag + 1)
                     variance_d += 2 * weight * gamma_lag
                 variance_d = max(variance_d, 1e-12)
@@ -802,6 +854,9 @@ class StatisticalTestSuite:
                         "observations": n,
                         "loss_type": "absolute_price_error",
                         "forecast_alignment": "rolling_origin_one_step",
+                        "timestamp_alignment": (
+                            "strictly_increasing_common_timestamp_index"
+                        ),
                         "model1_better": stat < 0.0,
                     }
                 )
@@ -817,7 +872,7 @@ class StatisticalTestSuite:
         *,
         output: str | Path | None = None,
     ) -> pd.DataFrame:
-        """Bootstrap both pre-registered marginal primary endpoints."""
+        """Resample seven valid marginal metrics and rerank each replicate."""
         models = list(self.forecast_samples)
         horizons = np.asarray(
             [h for h in self.PRIMARY_HORIZONS if h <= self.n_steps],
@@ -825,16 +880,21 @@ class StatisticalTestSuite:
         )
         if len(horizons) < 2:
             raise ValueError("at least two primary horizons are required")
-        results: list[dict[str, float | str]] = []
+        results: list[dict[str, float | int | str]] = []
         rng = np.random.default_rng(self.random_seed + 3)
-        for _ in range(self.bootstrap_iterations):
+        for iteration in range(self.bootstrap_iterations):
             selected_horizons = rng.choice(
                 horizons, size=len(horizons), replace=True
             )
+            iteration_rows: list[dict[str, float | int | str]] = []
             for model in models:
                 samples = self.forecast_samples[model]
                 crps_values: list[float] = []
+                absolute_errors: list[float] = []
+                brier_scores: list[float] = []
                 log_losses: list[float] = []
+                coverage: list[float] = []
+                interval_widths: list[float] = []
                 for horizon in selected_horizons:
                     indices = rng.integers(
                         0, samples.shape[0], size=samples.shape[0]
@@ -851,56 +911,93 @@ class StatisticalTestSuite:
                     crps_values.append(
                         self._sample_crps(simulated, observation)
                     )
+                    absolute_errors.append(
+                        float(np.mean(np.abs(simulated - observation)))
+                    )
+                    probability_up = float(np.mean(simulated > 0.0))
+                    target_up = float(observation > 0.0)
                     probability = float(
                         np.clip(
-                            np.mean(simulated > 0.0),
+                            probability_up,
                             1e-12,
                             1.0 - 1e-12,
                         )
                     )
+                    brier_scores.append((probability_up - target_up) ** 2)
                     log_losses.append(
                         float(
                             -np.log(probability)
-                            if observation > 0.0
+                            if target_up
                             else -np.log1p(-probability)
                         )
                     )
-                results.append(
+                    lower, upper = np.quantile(simulated, [0.05, 0.95])
+                    coverage.append(float(lower <= observation <= upper))
+                    interval_widths.append(float(upper - lower))
+
+                mean_coverage = float(np.mean(coverage))
+                iteration_rows.append(
                     {
+                        "bootstrap_iteration": iteration,
                         "model": model,
                         "mean_crps": float(np.mean(crps_values)),
+                        "mean_absolute_error": float(
+                            np.mean(absolute_errors)
+                        ),
+                        "mean_direction_brier_score": float(
+                            np.mean(brier_scores)
+                        ),
                         "mean_direction_log_loss": float(
                             np.mean(log_losses)
+                        ),
+                        "coverage_90": mean_coverage,
+                        "coverage_90_absolute_error": abs(
+                            mean_coverage - 0.90
+                        ),
+                        "mean_interval_90_width": float(
+                            np.mean(interval_widths)
                         ),
                     }
                 )
 
+            ranked = pd.DataFrame(iteration_rows).sort_values(
+                ["mean_crps", "mean_direction_log_loss", "model"],
+                kind="stable",
+            )
+            ranked["overall_rank"] = np.arange(1, len(ranked) + 1)
+            results.extend(ranked.to_dict(orient="records"))
+
         frame = pd.DataFrame(results)
         summary_rows: list[dict[str, float | str | int]] = []
         for model, group in frame.groupby("model", sort=False):
-            summary_rows.append(
-                {
-                    "model": model,
-                    "bootstrap_iterations": len(group),
-                    "mean_crps": float(group["mean_crps"].mean()),
-                    "mean_crps_ci_low": float(
-                        group["mean_crps"].quantile(0.025)
-                    ),
-                    "mean_crps_ci_high": float(
-                        group["mean_crps"].quantile(0.975)
-                    ),
-                    "mean_direction_log_loss": float(
-                        group["mean_direction_log_loss"].mean()
-                    ),
-                    "mean_direction_log_loss_ci_low": float(
-                        group["mean_direction_log_loss"].quantile(0.025)
-                    ),
-                    "mean_direction_log_loss_ci_high": float(
-                        group["mean_direction_log_loss"].quantile(0.975)
-                    ),
-                    "resampling_unit": "horizons_and_marginal_draws",
-                }
-            )
+            summary: dict[str, float | str | int] = {
+                "model": model,
+                "bootstrap_iterations": len(group),
+                "resampled_metric_count": len(
+                    self.BOOTSTRAP_SCORECARD_METRICS
+                ),
+                "mean_overall_rank": float(group["overall_rank"].mean()),
+                "overall_rank_ci_low": float(
+                    group["overall_rank"].quantile(0.025)
+                ),
+                "overall_rank_ci_high": float(
+                    group["overall_rank"].quantile(0.975)
+                ),
+                "probability_rank_1": float(
+                    np.mean(group["overall_rank"] == 1)
+                ),
+                "rank_selection_rule": self.BOOTSTRAP_SELECTION_RULE,
+                "resampling_unit": "horizons_and_marginal_draws",
+            }
+            for metric in self.BOOTSTRAP_SCORECARD_METRICS:
+                summary[metric] = float(group[metric].mean())
+                summary[f"{metric}_ci_low"] = float(
+                    group[metric].quantile(0.025)
+                )
+                summary[f"{metric}_ci_high"] = float(
+                    group[metric].quantile(0.975)
+                )
+            summary_rows.append(summary)
         summary = pd.DataFrame(summary_rows)
         self._write_csv(output, summary)
         return summary

@@ -225,25 +225,21 @@ def paired_bootstrap_brier(
     comparison_probability: np.ndarray,
     samples: int,
     rng: np.random.Generator,
-) -> dict[str, float | list[float]]:
+) -> dict[str, float | int | list[float]]:
+    """Paired Brier-difference bootstrap over a single (final-holdout) frame.
+
+    Uses the same moving-block resampling as the primary walk-forward verdict
+    (moving_block_bootstrap_mean) rather than an IID bootstrap: the paired
+    differences are autocorrelated tick-by-tick, so resampling individual
+    points independently understates their true variance.
+    """
     obi, direction, target = market_events(frame)
     probability = model.predict_right_probabilities(obi, direction)
     paired_difference = (
         (probability - target) ** 2
         - (comparison_probability - target) ** 2
     )
-    bootstrap = np.empty(samples, dtype=np.float64)
-    for index in range(samples):
-        sampled = rng.integers(0, len(paired_difference), size=len(paired_difference))
-        bootstrap[index] = float(paired_difference[sampled].mean())
-    return {
-        "model_minus_comparison": float(paired_difference.mean()),
-        "confidence_interval_95": [
-            float(np.quantile(bootstrap, 0.025)),
-            float(np.quantile(bootstrap, 0.975)),
-        ],
-        "probability_model_improves": float(np.mean(bootstrap < 0.0)),
-    }
+    return moving_block_bootstrap_mean(paired_difference, samples=samples, rng=rng)
 
 
 def moving_block_bootstrap_mean(
