@@ -206,16 +206,33 @@ class MarketQRW:
         train_count = len(target) - validation_count
         train_x, validation_x = predictor[:train_count], predictor[train_count:]
         train_y, validation_y = target[:train_count], target[train_count:]
-        # NOTE (known limitation, audit finding H1): this same validation_x/
-        # validation_y is reused for two sequential model-selection decisions
-        # below -- first the regularization-grid choice (Stage 1), then the
-        # quantum-vs-classical choice (Stage 2). Neither decision gets its
-        # own disjoint holdout, so there is some risk of overfitting to this
-        # single validation split across both decisions. A nested/disjoint
-        # validation scheme would remove this risk but was not implemented
-        # here to avoid changing calibration behavior while other higher-
-        # severity fixes were in flight; flagging explicitly rather than
-        # silently accepting.
+
+        # Fix for audit finding H1: the same validation set used to be
+        # reused for two sequential model-selection decisions -- first the
+        # regularization-grid choice (Stage 1), then the quantum-vs-classical
+        # choice (Stage 2) -- which biased the Stage 2 comparison, since the
+        # classical model's brier on that set benefited from having just
+        # been chosen (via the one-SE rule) partly because it did well
+        # there. Carve a second, chronologically later, disjoint slice
+        # (validation_b) out of the validation region so Stage 2 can score
+        # both the winning classical model and the quantum candidate on
+        # data neither has been selected against. Stage 1 keeps using the
+        # earlier slice (validation_a) for the regularization choice and
+        # the final accept/reject-to-neutral gate below. Falls back to the
+        # old single-set behavior (disclosed via
+        # quantum_classical_disjoint_validation) only when the validation
+        # region is too small to halve without either half being too thin
+        # to interpret.
+        quantum_classical_disjoint_validation = len(validation_y) >= 10
+        if quantum_classical_disjoint_validation:
+            validation_b_count = len(validation_y) // 2
+            validation_a_x = validation_x[:-validation_b_count]
+            validation_a_y = validation_y[:-validation_b_count]
+            validation_b_x = validation_x[-validation_b_count:]
+            validation_b_y = validation_y[-validation_b_count:]
+        else:
+            validation_a_x, validation_a_y = validation_x, validation_y
+            validation_b_x, validation_b_y = validation_x, validation_y
 
         regularization_grid = tuple(
             float(value)
@@ -282,18 +299,18 @@ class MarketQRW:
                 float(result.x[2]),
             )
             validation_probability = self._direction_probability(
-                validation_x[:, 0],
+                validation_a_x[:, 0],
                 bias=bias,
                 alpha=alpha,
-                tick_direction=validation_x[:, 1],
+                tick_direction=validation_a_x[:, 1],
                 alpha_direction=alpha_direction,
                 coherence=coherence,
             )
             block_losses = [
-                self._log_loss(validation_probability[index], validation_y[index])
+                self._log_loss(validation_probability[index], validation_a_y[index])
                 for index in np.array_split(
-                    np.arange(len(validation_y)),
-                    min(4, len(validation_y)),
+                    np.arange(len(validation_a_y)),
+                    min(4, len(validation_a_y)),
                 )
                 if len(index)
             ]
@@ -313,7 +330,7 @@ class MarketQRW:
                         else 0.0
                     ),
                     "validation_brier": float(
-                        np.mean((validation_probability - validation_y) ** 2)
+                        np.mean((validation_probability - validation_a_y) ** 2)
                     ),
                 }
             )
@@ -390,9 +407,29 @@ class MarketQRW:
                 q_bias, q_alpha, q_alpha_dir, q_gamma, q_alpha_phase,
             )
 
+            # Fix for audit finding H1: score both the winning classical
+            # model and the quantum candidate on validation_b (disjoint
+            # from validation_a, which selected the classical model above)
+            # instead of re-scoring the classical model on the same set
+            # that just picked it. Re-evaluating the classical model here
+            # rather than reusing selected["validation_brier"] is what
+            # makes the comparison fair.
+            classical_validation_b_probability = self._direction_probability(
+                validation_b_x[:, 0],
+                bias=selected["bias"],
+                alpha=selected["alpha"],
+                tick_direction=validation_b_x[:, 1],
+                alpha_direction=selected["alpha_direction"],
+                coherence=coherence,
+            )
+            classical_validation_b_brier = float(
+                np.mean(
+                    (classical_validation_b_probability - validation_b_y) ** 2
+                )
+            )
             quantum_val_prob = self._quantum_windowed_probabilities(
-                validation_x[:, 0],
-                validation_x[:, 1],
+                validation_b_x[:, 0],
+                validation_b_x[:, 1],
                 bias=q_bias,
                 alpha_obi=q_alpha,
                 alpha_direction=q_alpha_dir,
@@ -400,15 +437,15 @@ class MarketQRW:
                 gamma=q_gamma,
                 window=self.quantum_window,
             )
-            quantum_val_brier = float(np.mean((quantum_val_prob - validation_y) ** 2))
+            quantum_val_brier = float(np.mean((quantum_val_prob - validation_b_y) ** 2))
             logger.debug(
                 "Quantum Val Brier: {}, Classical Val Brier: {}",
                 quantum_val_brier,
-                selected["validation_brier"],
+                classical_validation_b_brier,
             )
 
             # Use quantum parameters if they improve over classical
-            if quantum_val_brier < selected["validation_brier"]:
+            if quantum_val_brier < classical_validation_b_brier:
                 selected["bias"] = q_bias
                 selected["alpha"] = q_alpha
                 selected["alpha_direction"] = q_alpha_dir
@@ -423,18 +460,23 @@ class MarketQRW:
         else:
             selected["quantum_improved"] = False
 
-        neutral_validation_probability = np.full(len(validation_y), 0.5)
+        # These descriptive baselines are compared against
+        # selected["validation_log_loss"]/["validation_brier"] below and in
+        # the returned parameters, both of which come from Stage 1's
+        # evaluation on validation_a -- so score every baseline on
+        # validation_a too, for an apples-to-apples comparison.
+        neutral_validation_probability = np.full(len(validation_a_y), 0.5)
         neutral_validation_log_loss = self._log_loss(
             neutral_validation_probability,
-            validation_y,
+            validation_a_y,
         )
         train_prior_validation_probability = np.full(
-            len(validation_y),
+            len(validation_a_y),
             prior_mean,
         )
         train_prior_validation_log_loss = self._log_loss(
             train_prior_validation_probability,
-            validation_y,
+            validation_a_y,
         )
 
         linear_design = np.column_stack(
@@ -447,13 +489,13 @@ class MarketQRW:
         )[0]
         linear_validation_probability = np.clip(
             linear_coefficients[0]
-            + linear_coefficients[1] * validation_x[:, 0],
+            + linear_coefficients[1] * validation_a_x[:, 0],
             0.0,
             1.0,
         )
         linear_validation_log_loss = self._log_loss(
             linear_validation_probability,
-            validation_y,
+            validation_a_y,
         )
         market_design = np.column_stack(
             [np.ones(len(train_x), dtype=np.float64), train_x]
@@ -466,8 +508,8 @@ class MarketQRW:
         linear_market_validation_probability = np.clip(
             np.column_stack(
                 [
-                    np.ones(len(validation_x), dtype=np.float64),
-                    validation_x,
+                    np.ones(len(validation_a_x), dtype=np.float64),
+                    validation_a_x,
                 ]
             )
             @ linear_market_coefficients,
@@ -476,7 +518,7 @@ class MarketQRW:
         )
         linear_market_validation_log_loss = self._log_loss(
             linear_market_validation_probability,
-            validation_y,
+            validation_a_y,
         )
 
         if selected["validation_log_loss"] >= neutral_validation_log_loss:
@@ -547,6 +589,11 @@ class MarketQRW:
             "calibration_status": calibration_status,
             "calibration_train_events": int(len(train_y)),
             "calibration_validation_events": int(len(validation_y)),
+            "quantum_classical_disjoint_validation": (
+                quantum_classical_disjoint_validation
+            ),
+            "validation_a_events": int(len(validation_a_y)),
+            "validation_b_events": int(len(validation_b_y)),
             "structural_fit_events": int(len(train_y)),
             "final_refit_includes_validation": False,
             "events_per_structural_parameter": float(len(train_y) / 3.0),

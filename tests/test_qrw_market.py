@@ -116,6 +116,51 @@ def test_market_calibration_persists_finite_parameters(tmp_path) -> None:
     )
     assert parameters["selected_regularization"] == expected_regularization
 
+    # Regression test for audit finding H1: the regularization choice and
+    # the quantum-vs-classical choice must be scored on disjoint slices of
+    # the validation region, not the same one twice.
+    assert parameters["quantum_classical_disjoint_validation"] is True
+    assert (
+        parameters["validation_a_events"] + parameters["validation_b_events"]
+        == parameters["calibration_validation_events"]
+    )
+    assert parameters["validation_a_events"] > 0
+    assert parameters["validation_b_events"] > 0
+
+
+def test_calibrate_falls_back_to_shared_validation_when_too_small_to_split(
+    tmp_path,
+) -> None:
+    """H1's disjoint validation_a/validation_b split is skipped (falling
+    back to the pre-fix shared-set behavior, disclosed via
+    quantum_classical_disjoint_validation) when the validation region is
+    too small to halve without either half becoming too thin to
+    interpret."""
+    model = MarketQRW(
+        _synthetic_market_data(60),
+        {
+            "n_positions": 41,
+            "gamma_base": 0.01,
+            "alpha_obi": 0.0,
+            "coin_type": "obi_adaptive",
+            "tick_size": 1.0,
+            "calibration_validation_fraction": 0.1,
+        },
+    )
+
+    parameters = model.calibrate(tmp_path / "params.json")
+
+    # 59 moving events * 0.1 fraction -> a 6-event validation region, below
+    # the >= 10 threshold required to halve it.
+    assert parameters["calibration_validation_events"] == 6
+    assert parameters["quantum_classical_disjoint_validation"] is False
+    assert (
+        parameters["validation_a_events"]
+        == parameters["validation_b_events"]
+        == parameters["calibration_validation_events"]
+        == 6
+    )
+
 
 def test_market_calibration_excludes_invalid_obi_warmup(tmp_path) -> None:
     data = _synthetic_market_data()

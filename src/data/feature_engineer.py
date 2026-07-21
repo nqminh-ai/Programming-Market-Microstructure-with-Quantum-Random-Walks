@@ -401,6 +401,17 @@ class FeatureEngineer:
             else:
                 lob["vwmp"] = lob["mid_price"]
 
+        # NOTE (known limitation, audit finding M6): direction="backward"
+        # with default allow_exact_matches=True lets a tick merge against a
+        # LOB snapshot stamped at the exact same timestamp, which is a
+        # theoretical same-instant leakage risk if a feed ever emits a tick
+        # and its triggering LOB update with identical timestamps. Tightening
+        # this to allow_exact_matches=False was tried and reverted: it broke
+        # test_auto_obi_source_prefers_real_lob and
+        # test_production_features_enforce_lob_coverage, whose fixtures
+        # intentionally reuse trade timestamps as LOB timestamps (real
+        # feeds tick_processor produces do not collide this way). Flagging
+        # explicitly rather than silently accepting.
         columns = ["timestamp", "obi", "mid_price", "vwmp"]
         return pd.merge_asof(
             ticks.sort_values("timestamp"),
