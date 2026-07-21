@@ -205,6 +205,16 @@ class MarketQRW:
         train_count = len(target) - validation_count
         train_x, validation_x = predictor[:train_count], predictor[train_count:]
         train_y, validation_y = target[:train_count], target[train_count:]
+        # NOTE (known limitation, audit finding H1): this same validation_x/
+        # validation_y is reused for two sequential model-selection decisions
+        # below -- first the regularization-grid choice (Stage 1), then the
+        # quantum-vs-classical choice (Stage 2). Neither decision gets its
+        # own disjoint holdout, so there is some risk of overfitting to this
+        # single validation split across both decisions. A nested/disjoint
+        # validation scheme would remove this risk but was not implemented
+        # here to avoid changing calibration behavior while other higher-
+        # severity fixes were in flight; flagging explicitly rather than
+        # silently accepting.
 
         regularization_grid = tuple(
             float(value)
