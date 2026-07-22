@@ -16,7 +16,10 @@ Fold-fragility trên BTC là bug `calibrate_bias` đã sửa (Phase 2); full 32M
 gốc đã chạy được (Phase 4). OBI vẫn là trade-flow proxy, không phải L2 LOB. Xem
 [báo cáo cuối](docs/final_report.md) §5b–5d.
 
-Xem [báo cáo cuối](docs/final_report.md) và
+**Bắt đầu từ đây:** [tóm tắt điều hành](docs/executive_summary.md) — một trang
+kết luận, bằng chứng chốt và hạn chế, dành cho người đọc lần đầu.
+
+Chi tiết đầy đủ ở [báo cáo cuối](docs/final_report.md) và
 [trạng thái artifact](reports/ARTIFACT_STATUS.md).
 
 ## Cài đặt

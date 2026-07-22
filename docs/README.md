@@ -1,5 +1,7 @@
 # Project Documents
 
+- `executive_summary.md`: one-page verdict, headline evidence and limitations —
+  start here.
 - `ke_hoach_QRW_market_microstructure.md`: project roadmap and acceptance
   criteria.
 - `theory_notes.pdf`: compiled Phase 1 theory document.
