@@ -5,6 +5,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from src.data.common import timestamps_to_nanoseconds
+
 
 SECONDS_PER_YEAR = 365.25 * 24 * 3600
 
@@ -12,31 +14,30 @@ SECONDS_PER_YEAR = 365.25 * 24 * 3600
 def _bars_per_year(timestamps: pd.Series) -> float | None:
     """Infer how many bars fit in a year from observed spacing.
 
-    Returns ``None`` when the column cannot be interpreted as wall-clock time,
-    so callers report no Sharpe rather than a meaningless one. Uses the median
-    gap because tick spacing is heavy-tailed and a mean would be dominated by
+    Returns ``None`` when the column cannot be read as wall-clock time, so
+    callers report no Sharpe rather than a meaningless one. Uses the median gap
+    because tick spacing is heavy-tailed and a mean would be dominated by
     overnight or outage gaps.
+
+    Unit detection is delegated to ``timestamps_to_nanoseconds``, which keys off
+    the magnitude of the epoch value. Deriving it from the observed span instead
+    is ambiguous: a nanosecond feed covering two days also reads as a plausible
+    multi-year span in microseconds, which scales the result by 1000.
     """
-    values = pd.to_numeric(timestamps, errors="coerce").to_numpy(dtype="float64")
-    values = values[np.isfinite(values)]
-    if values.size < 3:
+    try:
+        nanoseconds = timestamps_to_nanoseconds(timestamps).to_numpy(dtype="int64")
+    except (ValueError, TypeError, OverflowError):
         return None
-    gaps = np.diff(np.sort(values))
+    if nanoseconds.size < 3:
+        return None
+    gaps = np.diff(np.sort(nanoseconds))
     gaps = gaps[gaps > 0]
     if gaps.size == 0:
         return None
-    median_gap = float(np.median(gaps))
-    span = float(values.max() - values.min())
-    # Binance feeds are nanoseconds; accept second/milli/micro/nano by picking
-    # the unit whose implied span is a plausible observation window.
-    for scale in (1.0, 1e3, 1e6, 1e9):
-        span_seconds = span / scale
-        if 60.0 <= span_seconds <= 10.0 * 365.25 * 24 * 3600:
-            gap_seconds = median_gap / scale
-            if gap_seconds <= 0:
-                return None
-            return SECONDS_PER_YEAR / gap_seconds
-    return None
+    median_gap_seconds = float(np.median(gaps)) / 1e9
+    if median_gap_seconds <= 0:
+        return None
+    return SECONDS_PER_YEAR / median_gap_seconds
 
 
 class QRWSignalEngine:
