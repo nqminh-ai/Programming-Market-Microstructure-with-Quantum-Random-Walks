@@ -7,6 +7,59 @@ import pandas as pd
 import pytest
 
 from scripts.research import horizon_label_baselines as hlb
+from src.evaluation.directional_baselines import _lagged_direction
+
+
+def _events_via_full_length_arrays(frame: pd.DataFrame, horizon: int) -> dict[str, np.ndarray]:
+    """The original formulation, kept as the reference for the gathered one.
+
+    It materialises every intermediate at full length, which is exactly why the
+    real script no longer does it; here the frames are small and it serves as
+    an independent statement of what the features are supposed to be.
+    """
+    price = frame["price"].to_numpy(dtype=np.float64)
+    obi = frame["obi"].to_numpy(dtype=np.float64)
+    direction = frame["tick_direction"].to_numpy(dtype=np.float64)
+    intensity = frame["trade_intensity"].to_numpy(dtype=np.float64)
+
+    obi_change = np.zeros(len(frame), dtype=np.float64)
+    obi_change[1:] = np.diff(obi)
+    if "segment_id" in frame.columns:
+        segment = frame["segment_id"].to_numpy(copy=False)
+        obi_change[1:][segment[:-1] != segment[1:]] = 0.0
+    else:
+        segment = np.zeros(len(frame), dtype=np.int64)
+
+    features = np.column_stack(
+        [obi, direction, obi_change, np.abs(obi), np.log1p(np.maximum(intensity, 0.0))]
+    )
+    lagged = _lagged_direction(direction, lags=5)
+
+    anchors = np.arange(0, len(frame) - horizon, horizon, dtype=np.int64)
+    future = anchors + horizon
+    usable = (
+        (segment[anchors] == segment[future])
+        & np.isfinite(price[anchors])
+        & np.isfinite(price[future])
+        & (price[anchors] > 0)
+        & (price[future] > 0)
+        & np.isfinite(features[anchors]).all(axis=1)
+    )
+    if "obi_valid" in frame.columns:
+        usable &= frame["obi_valid"].to_numpy()[anchors].astype(bool)
+
+    anchors, future = anchors[usable], future[usable]
+    log_return = np.log(price[future] / price[anchors])
+    moved = np.abs(log_return) > 1e-12
+    anchors, log_return = anchors[moved], log_return[moved]
+
+    return {
+        "features": features[anchors],
+        "lagged": lagged[anchors],
+        "target": (log_return > 0.0).astype(np.float64),
+        "log_return": log_return,
+        "timestamp": frame["timestamp"].to_numpy()[anchors],
+    }
 
 
 def _frame(n: int = 150_000, seed: int = 2026, drift_from_flow: float = 0.0) -> pd.DataFrame:
@@ -109,3 +162,67 @@ def test_net_edge_subtracts_the_round_trip_cost() -> None:
 def test_too_few_windows_is_reported_not_silently_scored() -> None:
     analysis = hlb.analyse(_frame(20_000), (10_000,), 0.70)
     assert "skipped" in analysis["horizons"][0]
+
+
+@pytest.mark.parametrize("horizon", [7, 50, 200, 1_000])
+def test_gathering_only_anchor_rows_matches_the_full_length_formulation(horizon) -> None:
+    """The memory rewrite must not move a single number.
+
+    The frame carries the awkward cases on purpose: a segment break, a
+    non-finite price, and an invalid OBI row, each of which the two code paths
+    have to exclude identically.
+    """
+    frame = _frame(20_000, drift_from_flow=2e-6)
+    frame.loc[9_000:, "segment_id"] = 1
+    frame.loc[13_000, "price"] = np.nan
+    frame.loc[15_000, "obi_valid"] = False
+    frame.loc[17_000, "obi"] = np.nan
+
+    gathered = hlb.build_horizon_events(frame, horizon)
+    reference = _events_via_full_length_arrays(frame, horizon)
+
+    assert len(gathered["target"]) == len(reference["target"]) > 0
+    for key in ("features", "lagged", "target", "log_return", "timestamp"):
+        np.testing.assert_array_equal(gathered[key], reference[key])
+
+
+def test_obi_change_is_zero_at_the_first_row_and_across_a_segment_break() -> None:
+    """Anchor 0 has no predecessor, and a break must not be differenced across."""
+    frame = _frame(3_000)
+    frame.loc[1_000:, "segment_id"] = 1
+    frame["obi"] = np.linspace(-1.0, 1.0, len(frame))
+
+    events = hlb.build_horizon_events(frame, 500)
+
+    # Anchors 0, 500, 1000, 1500, 2000. Anchor 500 is dropped because its label
+    # would span the break; anchor 1000 sits exactly on it.
+    assert events["timestamp"].size == 4
+    obi_change = events["features"][:, 2]
+    assert obi_change[0] == 0.0, "row 0 has no predecessor to difference against"
+    assert obi_change[1] == 0.0, "differenced across the segment break"
+    step = 2.0 / (len(frame) - 1)
+    assert obi_change[2:] == pytest.approx(step)
+
+
+def test_half_spread_is_unchanged_by_the_chunk_size() -> None:
+    """Chunking exists only to bound memory; it must not move the estimate."""
+    frame = _frame(20_000)
+    frame["mid_price"] = frame["price"] * (1.0 + 2e-5)
+
+    whole = hlb.measure_half_spread(frame, chunk=len(frame))
+    split = hlb.measure_half_spread(frame, chunk=1_000)
+    uneven = hlb.measure_half_spread(frame, chunk=7_777)
+
+    # The deviation is normalised by mid, not by price, so it is 2e-5/(1+2e-5).
+    assert whole == pytest.approx(2e-5 / (1 + 2e-5), rel=1e-9)
+    assert split == pytest.approx(whole, rel=1e-12)
+    assert uneven == pytest.approx(whole, rel=1e-12)
+
+
+def test_half_spread_ignores_rows_a_chunk_boundary_could_hide() -> None:
+    frame = _frame(5_000)
+    frame["mid_price"] = frame["price"]
+    frame.loc[999, "mid_price"] = 0.0  # invalid, and the last row of chunk 0
+    frame.loc[1_000, "mid_price"] = np.nan  # invalid, and the first of chunk 1
+
+    assert hlb.measure_half_spread(frame, chunk=1_000) == pytest.approx(0.0)

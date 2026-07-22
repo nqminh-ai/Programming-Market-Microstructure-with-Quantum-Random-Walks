@@ -46,7 +46,6 @@ from src.data.common import timestamps_to_nanoseconds
 from src.evaluation.directional_baselines import (
     FEATURE_NAMES,
     _fit_logistic,
-    _lagged_direction,
     _pairwise,
 )
 from src.evaluation.provenance import canonical_repo_path, sha256_file
@@ -146,54 +145,82 @@ def build_horizon_events(frame: pd.DataFrame, horizon: int) -> dict[str, np.ndar
 
     Anchors are spaced ``horizon`` apart so that no two labels share any future
     return, and both endpoints must lie in the same contiguous segment.
-    """
-    price = frame["price"].to_numpy(dtype=np.float64)
-    obi = frame["obi"].to_numpy(dtype=np.float64)
-    direction = frame["tick_direction"].to_numpy(dtype=np.float64)
-    intensity = frame["trade_intensity"].to_numpy(dtype=np.float64)
 
-    obi_change = np.zeros(len(frame), dtype=np.float64)
-    obi_change[1:] = np.diff(obi)
+    Only the rows the anchors actually touch are materialised. Building the
+    five feature columns at full length first costs 5 x 8 bytes per row -- 10GB
+    on a 69-day store of ~250M rows for that one array, on top of a float64
+    copy of every source column it is built from -- to then keep one row in
+    every ``horizon``. At h=50,000 that is 0.002% of what was allocated.
+    """
+    n_rows = len(frame)
+    anchors = np.arange(0, n_rows - horizon, horizon, dtype=np.int64)
+    if anchors.size == 0:
+        raise ValueError(f"horizon {horizon} exceeds the available rows")
+    future = anchors + horizon
+
+    price_column = frame["price"].to_numpy()
+    obi_column = frame["obi"].to_numpy()
+    direction_column = frame["tick_direction"].to_numpy()
+
+    obi = obi_column[anchors].astype(np.float64)
+    direction = direction_column[anchors].astype(np.float64)
+    intensity = frame["trade_intensity"].to_numpy()[anchors].astype(np.float64)
+
+    # Anchor 0 has no predecessor; clamping keeps the gather in bounds and the
+    # value is discarded by the mask below.
+    previous = np.maximum(anchors - 1, 0)
     if "segment_id" in frame.columns:
-        segment = frame["segment_id"].to_numpy(copy=False)
-        obi_change[1:][segment[:-1] != segment[1:]] = 0.0
+        segment_column = frame["segment_id"].to_numpy(copy=False)
+        segment_at = segment_column[anchors]
+        segment_future = segment_column[future]
+        segment_previous = segment_column[previous]
     else:
-        segment = np.zeros(len(frame), dtype=np.int64)
+        segment_at = np.zeros(anchors.size, dtype=np.int64)
+        segment_future = segment_at
+        segment_previous = segment_at
+
+    # obi_change[t] = obi[t] - obi[t-1], zero at t = 0 and across a segment break.
+    obi_change = obi - obi_column[previous].astype(np.float64)
+    obi_change[anchors == 0] = 0.0
+    obi_change[segment_previous != segment_at] = 0.0
 
     features = np.column_stack(
         [obi, direction, obi_change, np.abs(obi), np.log1p(np.maximum(intensity, 0.0))]
     )
-    lagged = _lagged_direction(direction, lags=5)
 
-    anchors = np.arange(0, len(frame) - horizon, horizon, dtype=np.int64)
-    if anchors.size == 0:
-        raise ValueError(f"horizon {horizon} exceeds the available rows")
+    # lagged[i, k] = direction[anchor_i - (k + 1)], zero before the start.
+    lagged = np.zeros((anchors.size, 5), dtype=np.float64)
+    for lag in range(1, 6):
+        source = anchors - lag
+        in_range = source >= 0
+        lagged[in_range, lag - 1] = direction_column[source[in_range]].astype(np.float64)
 
-    future = anchors + horizon
+    price_at = price_column[anchors].astype(np.float64)
+    price_future = price_column[future].astype(np.float64)
+
     usable = (
-        (segment[anchors] == segment[future])
-        & np.isfinite(price[anchors])
-        & np.isfinite(price[future])
-        & (price[anchors] > 0)
-        & (price[future] > 0)
-        & np.isfinite(features[anchors]).all(axis=1)
+        (segment_at == segment_future)
+        & np.isfinite(price_at)
+        & np.isfinite(price_future)
+        & (price_at > 0)
+        & (price_future > 0)
+        & np.isfinite(features).all(axis=1)
     )
     if "obi_valid" in frame.columns:
         usable &= frame["obi_valid"].to_numpy()[anchors].astype(bool)
 
-    anchors, future = anchors[usable], future[usable]
-    log_return = np.log(price[future] / price[anchors])
+    log_return = np.full(anchors.size, np.nan)
+    log_return[usable] = np.log(price_future[usable] / price_at[usable])
     # A window that ends exactly where it began carries no directional
     # information and would otherwise be scored as a "down" label.
-    moved = np.abs(log_return) > 1e-12
-    anchors, future, log_return = anchors[moved], future[moved], log_return[moved]
+    keep = usable & (np.abs(log_return) > 1e-12)
 
     return {
-        "features": features[anchors],
-        "lagged": lagged[anchors],
-        "target": (log_return > 0.0).astype(np.float64),
-        "log_return": log_return,
-        "timestamp": frame["timestamp"].to_numpy()[anchors],
+        "features": features[keep],
+        "lagged": lagged[keep],
+        "target": (log_return[keep] > 0.0).astype(np.float64),
+        "log_return": log_return[keep],
+        "timestamp": frame["timestamp"].to_numpy()[anchors[keep]],
     }
 
 

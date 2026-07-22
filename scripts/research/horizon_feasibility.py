@@ -112,16 +112,37 @@ def _load(path: Path, max_rows: int) -> pd.DataFrame:
     return frame
 
 
-def measure_half_spread(frame: pd.DataFrame) -> float | None:
-    """Mean ``|price - mid| / mid`` as a fraction, or None when unavailable."""
+def measure_half_spread(frame: pd.DataFrame, chunk: int = 10_000_000) -> float | None:
+    """Mean ``|price - mid| / mid`` as a fraction, or None when unavailable.
+
+    Accumulated in chunks. Doing it in one shot casts both columns to float64
+    at full length and then takes a boolean-indexed copy of each, which on a
+    69-day store of ~250M rows is roughly 8GB of transient allocation to
+    produce one scalar. The value is unchanged: the ratio of the two means is
+    the ratio of the two sums, since both are over the same rows.
+    """
     if "mid_price" not in frame.columns:
         return None
-    price = frame["price"].to_numpy(dtype=float)
-    mid = frame["mid_price"].to_numpy(dtype=float)
-    valid = np.isfinite(price) & np.isfinite(mid) & (mid > 0)
-    if not valid.any():
+    price_column = frame["price"].to_numpy()
+    mid_column = frame["mid_price"].to_numpy()
+
+    deviation_sum = 0.0
+    mid_sum = 0.0
+    count = 0
+    for start in range(0, len(frame), chunk):
+        stop = min(start + chunk, len(frame))
+        price = price_column[start:stop].astype(np.float64, copy=False)
+        mid = mid_column[start:stop].astype(np.float64, copy=False)
+        valid = np.isfinite(price) & np.isfinite(mid) & (mid > 0)
+        if not valid.any():
+            continue
+        deviation_sum += float(np.abs(price[valid] - mid[valid]).sum())
+        mid_sum += float(mid[valid].sum())
+        count += int(valid.sum())
+
+    if count == 0 or mid_sum <= 0.0:
         return None
-    return float(np.abs(price[valid] - mid[valid]).mean() / mid[valid].mean())
+    return deviation_sum / mid_sum
 
 
 def seconds_per_tick(frame: pd.DataFrame) -> float | None:
