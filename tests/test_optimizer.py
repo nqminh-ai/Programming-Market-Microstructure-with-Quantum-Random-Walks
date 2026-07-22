@@ -70,9 +70,32 @@ def test_default_search_space_fully_explored():
 
 def test_n_trades_constraint_respected_when_feasible():
     optimizer = QRWStrategyOptimizer()
-    result = optimizer.grid_search(market_frame(), theta_grid=[0.52, 0.56, 0.60], min_trades=20)
+    # 10 round trips is what this fixture actually supports. The threshold used
+    # to be 20, which only passed while n_trades counted bars-in-position
+    # (148-163 here) instead of completed round trips.
+    result = optimizer.grid_search(market_frame(), theta_grid=[0.52, 0.56, 0.60], min_trades=10)
     assert not result["ALL"]["constraint_relaxed"]
-    assert result["ALL"]["metrics"]["n_trades"] >= 20
+    assert result["ALL"]["metrics"]["n_trades"] >= 10
+
+
+def test_n_trades_counts_round_trips_not_bars_in_position():
+    """A position held across many bars is one trade, not many.
+
+    Conflating the two inflated the count ~15x on this fixture and turned
+    hit rate and profit factor into per-bar statistics wearing per-trade names.
+    """
+    optimizer = QRWStrategyOptimizer()
+    optimizer.grid_search(market_frame(), theta_grid=[0.52, 0.56, 0.60], min_trades=0)
+    surface = optimizer.search_surface
+    surface = surface[surface["regime"] == "ALL"]
+    assert (surface["n_trades"] < surface["n_bars_in_position"]).all()
+    assert surface["n_trades"].max() <= 20
+
+
+def test_infeasible_trade_constraint_relaxes_rather_than_silently_passing():
+    optimizer = QRWStrategyOptimizer()
+    result = optimizer.grid_search(market_frame(), theta_grid=[0.52, 0.60], min_trades=10_000)
+    assert result["ALL"]["constraint_relaxed"] is True
 
 
 def test_oos_vectorized_backtest_matches_per_row_loop_reference():

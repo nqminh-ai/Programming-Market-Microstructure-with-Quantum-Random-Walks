@@ -1144,17 +1144,33 @@ def tab_optimizer(config: dict) -> None:
 
     from src.strategy.optimizer import QRWStrategyOptimizer
 
-    section_header("STRATEGY OPTIMIZER — MODULE A4")
+    section_header("DÒ TÌM THAM SỐ TỐT NHẤT")
     controls = st.columns([2, 2, 1])
+    objective_labels = {
+        "t_stat": "Độ chắc chắn lợi nhuận khác 0 (t-statistic)",
+        "hit_rate": "Tỷ lệ lệnh thắng",
+        "profit_factor": "Tỷ lệ tiền thắng / tiền thua",
+    }
     with controls[0]:
         objective = st.selectbox(
-            "Objective", ["sharpe", "hit_rate", "profit_factor"], key="opt_obj"
+            "Tối ưu theo tiêu chí nào?",
+            list(objective_labels),
+            format_func=lambda key: objective_labels[key],
+            key="opt_obj",
+            help="Máy sẽ thử mọi tổ hợp tham số và giữ lại tổ hợp tốt nhất theo "
+                 "tiêu chí bạn chọn. Lưu ý: thử càng nhiều tổ hợp thì càng dễ "
+                 "tìm được thứ 'có vẻ tốt' do ngẫu nhiên.",
         )
     with controls[1]:
-        st.toggle("Regime-aware", True, key="regime_aware")
+        st.toggle(
+            "Tách riêng theo trạng thái thị trường",
+            True,
+            key="regime_aware",
+            help="Tìm tham số riêng cho lúc thị trường êm và lúc biến động mạnh.",
+        )
     with controls[2]:
         run_optimization = st.button(
-            "Run Optimization", type="primary", key="run_opt"
+            "Chạy dò tìm", type="primary", key="run_opt"
         )
 
     if run_optimization:
@@ -1234,7 +1250,8 @@ def tab_optimizer(config: dict) -> None:
         oos = pd.DataFrame({"row": np.arange(len(pnl)), "pnl": pnl})
         equity = oos["pnl"].cumsum()
         oos_metrics = {
-            "sharpe": float(pnl.mean() / pnl.std(ddof=1) * np.sqrt(len(pnl))),
+            "t_stat": float(pnl.mean() / pnl.std(ddof=1) * np.sqrt(len(pnl))),
+            "sharpe_annualised": None,
             "hit_rate": float((pnl > 0).mean()),
             "max_drawdown": float((equity - equity.cummax()).min()),
             "profit_factor": float(pnl[pnl > 0].sum() / -pnl[pnl < 0].sum()),
@@ -1295,22 +1312,35 @@ def tab_optimizer(config: dict) -> None:
     )
     st.plotly_chart(curve, width="stretch")
     c1, c2, c3, c4, c5 = st.columns(5)
-    kpi_card(c1, "OOS Sharpe", f"{float(oos_metrics.get('sharpe', 0)):.2f}", color=COLORS["accent_cyan"])
-    kpi_card(c2, "Hit Rate", f"{float(oos_metrics.get('hit_rate', 0))*100:.1f}%", color=COLORS["accent_green"])
-    kpi_card(c3, "Max Drawdown", f"{float(oos_metrics.get('max_drawdown', 0))*100:.2f}%", color=COLORS["accent_red"])
+    annualised = oos_metrics.get("sharpe_annualised")
+    kpi_card(
+        c1,
+        "Sharpe (quy đổi năm)",
+        "n/a" if annualised is None else f"{float(annualised):.2f}",
+        color=COLORS["accent_cyan"],
+    )
+    kpi_card(c2, "Tỷ lệ lệnh thắng", f"{float(oos_metrics.get('hit_rate', 0))*100:.1f}%", color=COLORS["accent_green"])
+    kpi_card(c3, "Sụt giảm sâu nhất", f"{float(oos_metrics.get('max_drawdown', 0))*100:.2f}%", color=COLORS["accent_red"])
     kpi_card(c4, "Profit Factor", f"{float(oos_metrics.get('profit_factor', 0)):.2f}", color=COLORS["accent_yellow"])
-    # Profit Factor/Sharpe can look impressive while resting on very few
-    # trades -- show the count alongside them so a viewer can judge
-    # reliability, instead of only seeing the headline ratios (this tab
-    # previously omitted n_trades even though tab_signal already shows it).
-    kpi_card(c5, "OOS Trades", f"{int(oos_metrics.get('n_trades', 0))}", color=COLORS["text_primary"])
+    # Profit Factor and Sharpe can look impressive while resting on very few
+    # round trips -- show the count alongside them so a viewer can judge
+    # reliability, instead of only seeing the headline ratios.
+    kpi_card(c5, "Số lệnh (vòng)", f"{int(oos_metrics.get('n_trades', 0))}", color=COLORS["text_primary"])
 
-    sharpe = float(oos_metrics.get("sharpe", 0.0))
+    t_stat = float(oos_metrics.get("t_stat", 0.0))
     profit_factor = float(oos_metrics.get("profit_factor", 0.0))
     n_trades = int(oos_metrics.get("n_trades", 0))
     n_observations = len(oos)
+    sharpe_text = (
+        "Sharpe quy đổi năm: chưa tính được (thiếu mốc thời gian)"
+        if annualised is None
+        else f"Sharpe quy đổi năm {float(annualised):.2f}"
+    )
     observations = [
-        f"Sharpe {sharpe:.2f}, Profit Factor {profit_factor:.2f}, trên {n_trades} lệnh / {n_observations} quan sát out-of-sample.",
+        f"{sharpe_text}; Profit Factor {profit_factor:.2f}; "
+        f"trên {n_trades} lệnh trọn vòng / {n_observations} quan sát out-of-sample.",
+        f"t-statistic {t_stat:.2f} — đây <b>không</b> phải Sharpe: nó lớn dần theo "
+        "cỡ mẫu, nên không so sánh được giữa các backtest dài ngắn khác nhau.",
     ]
     if profit_factor > 10.0:
         observations.append(
@@ -1328,7 +1358,7 @@ def tab_optimizer(config: dict) -> None:
             "trước khi tin tưởng các chỉ số này."
         )
         tone = "caution"
-    elif sharpe > 0 and profit_factor >= 1.0:
+    elif t_stat > 0 and profit_factor >= 1.0:
         recommendation = (
             "Các chỉ số out-of-sample đồng thuận tích cực — có thể tiếp tục theo dõi live-paper-trading "
             "trước khi phân bổ vốn thật."

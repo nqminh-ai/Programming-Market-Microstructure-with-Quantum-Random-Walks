@@ -39,45 +39,37 @@ class QRWStrategyOptimizer:
             dtype="object",
         )
 
-    @staticmethod
     def _metrics_for_thresholds(
+        self,
         frame: pd.DataFrame,
         theta_buy: float,
         theta_sell: float,
     ) -> dict[str, float | int]:
-        p_up = frame["p_up"].to_numpy(dtype=float)
-        p_down = frame["p_down"].to_numpy(dtype=float)
-        future = frame["ret_1step"].to_numpy(dtype=float)
-        buy = p_up > theta_buy
-        sell = (~buy) & (p_down > theta_sell)
-        position = np.where(buy, 1.0, np.where(sell, -1.0, 0.0))
-        pnl = position * future
-        traded = position != 0
-        trade_pnl = pnl[traded]
-        gross_profit = float(trade_pnl[trade_pnl > 0].sum())
-        gross_loss = float(-trade_pnl[trade_pnl < 0].sum())
-        cumulative = np.cumsum(pnl)
-        peak = np.maximum.accumulate(np.r_[0.0, cumulative])[1:]
-        drawdown = cumulative - peak
-        pnl_std = float(np.std(pnl, ddof=1)) if len(pnl) > 1 else 0.0
-        return {
-            "hit_rate": float(np.mean(trade_pnl > 0)) if len(trade_pnl) else 0.0,
-            "profit_factor": gross_profit / max(gross_loss, 1e-12),
-            "net_pnl": float(pnl.sum()),
-            "max_drawdown": float(drawdown.min(initial=0.0)),
-            "n_trades": int(traded.sum()),
-            "sharpe": float(np.mean(pnl) / pnl_std * np.sqrt(len(pnl))) if pnl_std > 0 else 0.0,
-        }
+        # Delegates to the signal engine rather than recomputing. The local
+        # copy this replaces had drifted in three ways: it charged no
+        # transaction cost at all (so the grid was optimised as if trading were
+        # free, which at 5bps against ~4e-7 tick moves inverts the answer), it
+        # counted bars-in-position as trades, and it reported a t-statistic
+        # under the name "sharpe".
+        engine = QRWSignalEngine(
+            theta_buy=theta_buy,
+            theta_sell=theta_sell,
+            transaction_cost=self.signal_engine.transaction_cost,
+        )
+        backtest = engine.backtest_from_probabilities(frame)
+        return engine.compute_signal_metrics(backtest)
 
     @staticmethod
     def _objective(metrics: dict[str, float | int], objective: str) -> float:
-        if objective == "sharpe":
-            return float(metrics["sharpe"])
+        if objective in {"sharpe", "t_stat"}:
+            # "sharpe" is kept as an accepted alias because callers and saved
+            # configs use it, but the quantity optimised is the t-statistic.
+            return float(metrics["t_stat"])
         if objective == "hit_rate":
             return float(metrics["hit_rate"])
         if objective == "profit_factor":
             return float(metrics["profit_factor"])
-        raise ValueError("objective must be sharpe, hit_rate, or profit_factor")
+        raise ValueError("objective must be sharpe/t_stat, hit_rate, or profit_factor")
 
     def grid_search(
         self,
@@ -122,7 +114,7 @@ class QRWStrategyOptimizer:
                 # variance of the maximum Sharpe under repeated trials. The
                 # 0.5/0.1 coefficients below are uncalibrated constants.
                 penalty = np.sqrt(np.log(n_candidates)) / max(np.sqrt(metrics["n_trades"]), 1.0)
-                if objective == "sharpe":
+                if objective in {"sharpe", "t_stat"}:
                     score = raw_score - penalty * 0.5
                 elif objective == "hit_rate":
                     score = raw_score - penalty * 0.1
@@ -161,7 +153,17 @@ class QRWStrategyOptimizer:
                     "theta_buy": fallback["theta_buy"],
                     "theta_sell": fallback["theta_sell"],
                     "score": fallback["score"],
-                    "metrics": {key: fallback[key] for key in ("hit_rate", "profit_factor", "net_pnl", "max_drawdown", "n_trades", "sharpe")},
+                    "metrics": {
+                        key: fallback[key]
+                        for key in (
+                            "hit_rate",
+                            "profit_factor",
+                            "net_pnl",
+                            "max_drawdown",
+                            "n_trades",
+                            "t_stat",
+                        )
+                    },
                     "constraint_relaxed": True,
                 }
             selected["n_evaluated"] = len(grid) ** 2

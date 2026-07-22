@@ -6,6 +6,39 @@ import numpy as np
 import pandas as pd
 
 
+SECONDS_PER_YEAR = 365.25 * 24 * 3600
+
+
+def _bars_per_year(timestamps: pd.Series) -> float | None:
+    """Infer how many bars fit in a year from observed spacing.
+
+    Returns ``None`` when the column cannot be interpreted as wall-clock time,
+    so callers report no Sharpe rather than a meaningless one. Uses the median
+    gap because tick spacing is heavy-tailed and a mean would be dominated by
+    overnight or outage gaps.
+    """
+    values = pd.to_numeric(timestamps, errors="coerce").to_numpy(dtype="float64")
+    values = values[np.isfinite(values)]
+    if values.size < 3:
+        return None
+    gaps = np.diff(np.sort(values))
+    gaps = gaps[gaps > 0]
+    if gaps.size == 0:
+        return None
+    median_gap = float(np.median(gaps))
+    span = float(values.max() - values.min())
+    # Binance feeds are nanoseconds; accept second/milli/micro/nano by picking
+    # the unit whose implied span is a plausible observation window.
+    for scale in (1.0, 1e3, 1e6, 1e9):
+        span_seconds = span / scale
+        if 60.0 <= span_seconds <= 10.0 * 365.25 * 24 * 3600:
+            gap_seconds = median_gap / scale
+            if gap_seconds <= 0:
+                return None
+            return SECONDS_PER_YEAR / gap_seconds
+    return None
+
+
 class QRWSignalEngine:
     """Translate directional probability mass into executable signals."""
 
@@ -221,25 +254,80 @@ class QRWSignalEngine:
         return decision
 
     @staticmethod
-    def compute_signal_metrics(backtest_df: pd.DataFrame) -> dict[str, float | int]:
+    def compute_signal_metrics(
+        backtest_df: pd.DataFrame,
+        *,
+        timestamp_column: str | None = "timestamp",
+    ) -> dict[str, float | int]:
+        """Summarise a backtest.
+
+        A *trade* is one round trip -- the position is opened, held for however
+        many bars, and closed. Counting every bar that happens to be in a
+        position instead inflates the count (969 demo bars produced 651 "trades"
+        against 19 real position changes) and makes hit rate and profit factor
+        per-bar statistics wearing per-trade names, so both are computed by
+        grouping bars into position episodes.
+
+        ``t_stat`` is ``mean/std*sqrt(n_bars)``. That is a t-statistic on the
+        mean, not a Sharpe ratio: it grows without bound as the sample
+        lengthens, which no Sharpe ratio may do. A real Sharpe annualises by
+        periods per year, which needs wall-clock spacing, so
+        ``sharpe_annualised`` is reported only when usable timestamps are
+        present and is ``None`` otherwise rather than being faked.
+        """
         if "signal" not in backtest_df.columns or "pnl" not in backtest_df.columns:
             raise ValueError("backtest_df must contain signal and pnl columns")
-        trades = backtest_df[backtest_df["signal"] != "HOLD"]
+
         pnl = backtest_df["pnl"].to_numpy(dtype=float)
-        trade_pnl = trades["pnl"].to_numpy(dtype=float)
-        gross_profit = float(trade_pnl[trade_pnl > 0].sum())
-        gross_loss = float(-trade_pnl[trade_pnl < 0].sum())
+        signal = backtest_df["signal"].to_numpy()
+        position = np.where(signal == "BUY", 1.0, np.where(signal == "SELL", -1.0, 0.0))
+        in_position = position != 0.0
+
+        # A new episode starts whenever the position changes to a non-flat one.
+        changed = np.r_[True, position[1:] != position[:-1]]
+        episode_id = np.cumsum(changed) - 1
+
+        episode_pnl: list[float] = []
+        episode_confidence: list[float] = []
+        confidence = (
+            backtest_df["confidence"].to_numpy(dtype=float)
+            if "confidence" in backtest_df.columns
+            else np.zeros(len(pnl))
+        )
+        for index in np.unique(episode_id[in_position]):
+            rows = episode_id == index
+            episode_pnl.append(float(pnl[rows].sum()))
+            episode_confidence.append(float(confidence[rows].mean()))
+        trade_pnl = np.asarray(episode_pnl, dtype=float)
+
+        gross_profit = float(trade_pnl[trade_pnl > 0].sum()) if trade_pnl.size else 0.0
+        gross_loss = float(-trade_pnl[trade_pnl < 0].sum()) if trade_pnl.size else 0.0
+
         cumulative = np.cumsum(pnl)
         running_peak = np.maximum.accumulate(np.r_[0.0, cumulative])[1:]
         drawdown = cumulative - running_peak
+
         pnl_std = float(np.std(pnl, ddof=1)) if len(pnl) > 1 else 0.0
-        sharpe = float(np.mean(pnl) / pnl_std * np.sqrt(len(pnl))) if pnl_std > 0 else 0.0
+        t_stat = float(np.mean(pnl) / pnl_std * np.sqrt(len(pnl))) if pnl_std > 0 else 0.0
+
+        sharpe_annualised = None
+        if pnl_std > 0 and timestamp_column and timestamp_column in backtest_df.columns:
+            bars_per_year = _bars_per_year(backtest_df[timestamp_column])
+            if bars_per_year is not None:
+                sharpe_annualised = float(
+                    np.mean(pnl) / pnl_std * np.sqrt(bars_per_year)
+                )
+
         return {
-            "hit_rate": float((trades["correct"] == "WIN").mean()) if len(trades) else 0.0,
+            "hit_rate": float((trade_pnl > 0).mean()) if trade_pnl.size else 0.0,
             "profit_factor": gross_profit / max(gross_loss, 1e-12),
             "net_pnl": float(pnl.sum()),
             "max_drawdown": float(drawdown.min(initial=0.0)),
-            "n_trades": int(len(trades)),
-            "avg_confidence": float(trades["confidence"].mean()) if len(trades) else 0.0,
-            "sharpe": sharpe,
+            "n_trades": int(trade_pnl.size),
+            "n_bars_in_position": int(in_position.sum()),
+            "avg_confidence": (
+                float(np.mean(episode_confidence)) if episode_confidence else 0.0
+            ),
+            "t_stat": t_stat,
+            "sharpe_annualised": sharpe_annualised,
         }

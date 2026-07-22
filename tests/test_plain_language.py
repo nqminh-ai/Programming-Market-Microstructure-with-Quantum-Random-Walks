@@ -40,17 +40,29 @@ def test_trading_tab_warns_it_is_not_investment_advice() -> None:
     assert "KHÔNG PHẢI KHUYẾN NGHỊ ĐẦU TƯ" in caveat
 
 
-def test_demo_disclaimer_names_the_misleading_metrics() -> None:
-    """Sharpe ~4.9 and profit factor ~265 come from a 1,000-row demo.
+def test_demo_disclaimer_states_the_strategy_loses_money() -> None:
+    """The corrected demo has profit factor 0.095 and an annualised Sharpe of -48.6.
 
-    Those are the two figures a lay reader is most likely to read as proof the
-    model makes money, so the disclaimer must call them out by value rather
-    than warning vaguely about "demo data".
+    A lay reader must be told the outcome directly, not left to infer it from a
+    ratio, so the disclaimer states the loss in words and by value.
     """
     body = " ".join(pl.DEMO_WARNING_BODY)
-    assert "1.000" in body
-    assert "4,9" in body
-    assert "265" in body
+    assert "LỖ" in body
+    assert "0,095" in body
+    assert "−4,2%" in body
+
+
+def test_demo_disclaimer_records_the_metric_bug_that_inflated_the_old_figures() -> None:
+    """The 4.9 / 265 figures were a measurement bug, and saying so is the point.
+
+    Silently swapping in corrected numbers would hide the most instructive part:
+    a broken backtest flatters itself, because errors in the favourable
+    direction rarely get audited.
+    """
+    body = " ".join(pl.DEMO_WARNING_BODY)
+    assert "4,9" in body and "265" in body
+    assert "651" in body and "19" in body
+    assert "phí giao dịch" in body.lower()
 
 
 def test_glossary_defines_the_terms_the_dashboard_actually_shows() -> None:

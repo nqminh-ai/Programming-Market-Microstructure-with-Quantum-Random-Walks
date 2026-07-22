@@ -67,7 +67,20 @@ def test_backtest_has_no_lookahead():
 def test_metrics_computed_with_expected_keys():
     backtest = QRWSignalEngine(0.52, 0.52).backtest_signals(market_frame())
     metrics = QRWSignalEngine.compute_signal_metrics(backtest)
-    assert {"hit_rate", "profit_factor", "net_pnl", "max_drawdown", "n_trades", "avg_confidence", "sharpe"} <= set(metrics)
+    assert {
+        "hit_rate",
+        "profit_factor",
+        "net_pnl",
+        "max_drawdown",
+        "n_trades",
+        "n_bars_in_position",
+        "avg_confidence",
+        "t_stat",
+        "sharpe_annualised",
+    } <= set(metrics)
+    # "sharpe" was mean/std*sqrt(n_bars) -- a t-statistic that grows without
+    # bound with sample size. It must not come back under that name.
+    assert "sharpe" not in metrics
     assert metrics["n_trades"] > 0
 
 

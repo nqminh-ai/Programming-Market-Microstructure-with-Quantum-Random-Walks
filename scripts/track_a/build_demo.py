@@ -159,18 +159,18 @@ def _module_quality_gate(name: str, metrics: dict) -> str | None:
             return "violation_rate missing or out of [0, 1]"
         return None
     if name == "A3_signal":
-        for key in ("hit_rate", "profit_factor", "sharpe", "net_pnl"):
+        for key in ("hit_rate", "profit_factor", "t_stat", "net_pnl"):
             if not _finite(metrics.get(key)):
                 return f"{key} missing or non-finite"
         if metrics.get("n_trades", 0) <= 0:
-            return "no non-HOLD trades generated"
+            return "no completed round trips generated"
         return None
     if name == "A4_optimizer":
-        for key in ("sharpe", "hit_rate"):
+        for key in ("t_stat", "hit_rate"):
             if not _finite(metrics.get(key)):
                 return f"{key} missing or non-finite"
-        if metrics.get("sharpe") == 0.0 and metrics.get("hit_rate") == 0.0:
-            return "sharpe and hit_rate are both exactly zero"
+        if metrics.get("t_stat") == 0.0 and metrics.get("hit_rate") == 0.0:
+            return "t_stat and hit_rate are both exactly zero"
         if metrics.get("surface_rows", 0) <= 0:
             return "empty optimizer search surface"
         return None

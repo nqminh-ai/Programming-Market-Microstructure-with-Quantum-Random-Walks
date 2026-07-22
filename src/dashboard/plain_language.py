@@ -91,15 +91,21 @@ DEMO_WARNING_BODY = [
     "Bảng điều khiển này là **bản trình diễn kỹ thuật** — nó cho thấy mô hình có "
     "thể được lắp vào những công cụ nào, **không phải** bằng chứng là mô hình kiếm "
     "được tiền.",
-    "Số liệu demo được tính từ **1.000 dòng dữ liệu**. Đó là mẫu cực nhỏ. Với mẫu "
-    "nhỏ như vậy, các chỉ số như Sharpe hay Profit Factor có thể trông rất đẹp "
-    "hoàn toàn do **ngẫu nhiên**.",
-    "Cụ thể: bạn sẽ thấy Sharpe khoảng **4,9** và Profit Factor khoảng **265**. "
-    "Trong ngành, những con số đó ở quy mô thật gần như chắc chắn là dấu hiệu của "
-    "lỗi hoặc quá khớp dữ liệu — **không phải** thành tích. Chúng tôi để nguyên và "
-    "nói thẳng thay vì giấu đi.",
-    "Kết luận khoa học thật của dự án nằm ở tab **Kết quả nghiên cứu**, và nó là "
-    "một kết luận **phủ định**.",
+    "**Chiến lược demo này đang LỖ.** Profit Factor **0,095** (dưới 1 nghĩa là "
+    "lỗ), lợi nhuận ròng **−4,2%**, Sharpe quy đổi năm **−48,6**. Chúng tôi hiển "
+    "thị đúng như vậy thay vì giấu đi.",
+    "Trước ngày 22/07/2026 bảng này từng hiện Sharpe **4,9** và Profit Factor "
+    "**265** — trông như một chiến lược sinh lời. Đó là do **lỗi đo lường**: mã "
+    "đếm mỗi *dòng dữ liệu đang giữ vị thế* thành một lệnh (651 thay vì 19), gọi "
+    "một đại lượng thống kê khác là 'Sharpe', và phần dò tham số **quên trừ phí "
+    "giao dịch**. Sửa xong thì dấu đảo ngược.",
+    "Bài học đáng nhớ hơn cả con số: **một backtest có lỗi luôn có xu hướng trông "
+    "đẹp hơn sự thật**, vì lỗi làm đẹp thì ít ai đi tìm, còn lỗi làm xấu thì bị "
+    "phát hiện ngay.",
+    "Số liệu demo chỉ dựa trên **500 dòng dữ liệu** và **34 lệnh**. Dù dấu có "
+    "dương đi nữa thì mẫu này cũng quá nhỏ để kết luận bất cứ điều gì.",
+    "Kết luận khoa học thật của dự án nằm ở tab **Bắt đầu ở đây**, và nó là một "
+    "kết luận **phủ định**.",
 ]
 
 
@@ -199,13 +205,24 @@ GLOSSARY: list[tuple[str, str]] = [
     ("Tick",
      "Một giao dịch đơn lẻ. Bitcoin có thể có hàng triệu tick mỗi ngày."),
     ("Sharpe",
-     "Lợi nhuận thu được trên mỗi đơn vị rủi ro chấp nhận. Quỹ đầu tư giỏi ở đời "
-     "thực thường đạt 1–2. Thấy 4,9 trên mẫu 1.000 dòng thì phải nghi ngờ, "
-     "không phải ăn mừng."),
+     "Lợi nhuận thu được trên mỗi đơn vị rủi ro chấp nhận, đã quy đổi về mức "
+     "một năm. Quỹ đầu tư giỏi ở đời thực thường đạt 1–2. Âm nghĩa là lỗ."),
+    ("t-statistic",
+     "**Không phải Sharpe**, dù dễ bị nhầm. Nó đo mức chắc chắn rằng lợi nhuận "
+     "trung bình khác 0, và **tăng lên khi bạn có nhiều dữ liệu hơn** — nên "
+     "không so sánh được giữa hai backtest dài ngắn khác nhau. Sharpe thật thì "
+     "không có tính chất đó. Bảng này từng hiển thị t-statistic dưới tên Sharpe."),
     ("Profit Factor",
-     "Tổng tiền thắng chia tổng tiền thua. Trên 1 là có lãi. Thấy 265 nghĩa là "
-     "gần như không có lệnh thua nào — điều bất khả thi ở thị trường thật, và là "
-     "dấu hiệu mẫu quá nhỏ."),
+     "Tổng tiền thắng chia tổng tiền thua. Trên 1 là lãi, dưới 1 là lỗ. "
+     "Chiến lược demo hiện đạt 0,095 — tức thua gấp hơn 10 lần thắng."),
+    ("Lệnh (round trip)",
+     "Một lần mở vị thế rồi đóng lại — dù giữ qua bao nhiêu giao dịch đi nữa vẫn "
+     "tính là **một** lệnh. Đếm nhầm mỗi khoảnh khắc đang giữ vị thế thành một "
+     "lệnh sẽ thổi phồng số lệnh lên hàng chục lần và làm sai mọi tỷ lệ tính theo "
+     "lệnh."),
+    ("Phí giao dịch",
+     "Khoản sàn thu mỗi lần mua/bán, ở đây là 0,05% mỗi chiều. Nghe nhỏ nhưng "
+     "với chiến lược giao dịch dày, nó thường lớn hơn cả lợi nhuận gộp."),
     ("Drawdown",
      "Mức sụt giảm sâu nhất từ đỉnh xuống đáy. Cho biết bạn phải chịu đau đến đâu."),
     ("Brier score",

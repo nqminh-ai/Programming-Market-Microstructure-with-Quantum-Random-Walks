@@ -57,7 +57,7 @@ def test_signal_gate_fails_on_zero_trades():
     metrics = {
         "hit_rate": 0.5,
         "profit_factor": 1.2,
-        "sharpe": 0.3,
+        "t_stat": 0.3,
         "net_pnl": 0.01,
         "n_trades": 0,
     }
@@ -68,20 +68,20 @@ def test_signal_gate_passes_with_trades_and_finite_metrics():
     metrics = {
         "hit_rate": 0.5,
         "profit_factor": 1.2,
-        "sharpe": 0.3,
+        "t_stat": 0.3,
         "net_pnl": 0.01,
         "n_trades": 4,
     }
     assert _module_quality_gate("A3_signal", metrics) is None
 
 
-def test_optimizer_gate_fails_when_sharpe_and_hit_rate_both_zero():
-    metrics = {"sharpe": 0.0, "hit_rate": 0.0, "surface_rows": 100}
+def test_optimizer_gate_fails_when_t_stat_and_hit_rate_both_zero():
+    metrics = {"t_stat": 0.0, "hit_rate": 0.0, "surface_rows": 100}
     assert _module_quality_gate("A4_optimizer", metrics) is not None
 
 
 def test_optimizer_gate_passes_on_nonzero_metrics():
-    metrics = {"sharpe": 0.4, "hit_rate": 0.55, "surface_rows": 100}
+    metrics = {"t_stat": 0.4, "hit_rate": 0.55, "surface_rows": 100}
     assert _module_quality_gate("A4_optimizer", metrics) is None
 
 
