@@ -1,0 +1,42 @@
+{
+  "kind": "full_dataset_directional_confirmation",
+  "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
+  "generated_utc": "2026-07-22T05:51:18.342312+00:00",
+  "git_commit": "db945c0ea44f41c911ff5213dc2b137e79a93701",
+  "python": "3.14.5",
+  "label": "BTCUSDT_full",
+  "feature_path": "D:\\Project made by me\\AI_Quantum\\Quantum 1\\data\\assets\\btcusdt\\features\\features_BTCUSDT_multiday.parquet",
+  "rows": 32439057,
+  "in_memory_mb": 1070.5,
+  "quantum_improved": true,
+  "alpha_phase": -1.2192157707422243e-05,
+  "gamma": 0.01,
+  "tick_size": 0.009999999995,
+  "stale_prefix_edge_reference": 0.049889,
+  "fold_results": [
+    {
+      "folds": 3,
+      "a_full_brier": 0.08777106045563264,
+      "affine_brier": 0.10086225082754796,
+      "edge_qrw_minus_affine": -0.013091190371915334,
+      "confidence_interval_95": [
+        -0.013320452009533948,
+        -0.012867589459472969
+      ],
+      "qrw_wins": true,
+      "events": 3540565
+    },
+    {
+      "folds": 5,
+      "a_full_brier": 0.08776972587270519,
+      "affine_brier": 0.10054120498736598,
+      "edge_qrw_minus_affine": -0.01277147911466077,
+      "confidence_interval_95": [
+        -0.013002873003648035,
+        -0.012538960998040883
+      ],
+      "qrw_wins": true,
+      "events": 3540563
+    }
+  ]
+}

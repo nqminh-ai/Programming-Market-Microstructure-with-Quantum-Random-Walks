@@ -299,12 +299,18 @@ lệ.
 3. Artifact Phase 3–6 chính thức chưa được tái tạo hoàn chỉnh dưới protocol v4.
 4. Dữ liệu cross-asset chưa được đánh giá theo toàn bộ ngày có sẵn.
 5. Chưa thể đưa ra kết luận confirmatory hoặc production-readiness.
-6. Walk-forward audit sau khi vá lỗi fit/predict mismatch (§5) mới chạy được
-   trên subset 3 ngày gần nhất, chưa chạy được trên toàn bộ 10 ngày gốc vì
-   `rolling_stability()`/`walk_forward_evaluation()` copy dataframe lặp lại
-   theo từng block, vượt quá RAM khả dụng trên máy hiện tại (~4,4 GB free cho
-   dataset ~32,4 triệu tick). Cần tối ưu bộ nhớ của hai hàm này hoặc chạy trên
-   máy có nhiều RAM hơn để có con số thay thế chính xác cho +0,049889 cũ.
+6. ~~Walk-forward audit sau vá chưa chạy được trên toàn bộ 10 ngày gốc vì
+   giới hạn bộ nhớ.~~ **ĐÃ GIẢI QUYẾT (Phase 4):** dùng loader tiết kiệm bộ nhớ
+   (chỉ 7 cột cần thiết + downcast float32) toàn bộ **32.439.057 tick chỉ chiếm
+   1.070 MB**, chạy trọn walk-forward directional trên full dataset gốc trong
+   ~3,8 GB RAM. Con số thay thế cho +0,049889 cũ: post-fix edge QRW−affine =
+   **−0,013091** (folds=3) và **−0,012771** (folds=5) — QRW thắng affine, ổn
+   định, khớp kết quả subset 4M. Nói cách khác, trên **cùng** full dataset,
+   việc vá bug `calibrate_bias` (Phase 2) lật verdict từ +0,05 (thua) sang
+   −0,013 (thắng); alpha_phase = −1,2×10⁻⁵ (pha vẫn ≈ 0). Xem
+   [full_dataset_confirmation.md](../reports/research/full_dataset_confirmation.md).
+   Lưu ý: điều này chỉ củng cố so sánh vs affine ở full scale; §5c vẫn cho thấy
+   QRW thua baseline mạnh.
 
 ## 9. Kết luận
 
