@@ -6,6 +6,7 @@ Usage
 """
 
 import argparse
+import re
 from pathlib import Path
 import sys
 import pyarrow.parquet as pq
@@ -22,8 +23,17 @@ def main():
     # No year restriction: a hardcoded "2026-*" pattern would silently skip
     # files once the symbol/year changed without any warning.
     pattern = f"features_{args.symbol}_*.parquet"
-    files = sorted(args.input_dir.glob(pattern))
-    print(f"Matched {len(files)} file(s) in {args.input_dir} for pattern {pattern!r}.")
+    matched = sorted(args.input_dir.glob(pattern))
+    # Only per-day files may be combined. The glob also matches previously
+    # written aggregates living in the same directory -- features_X_multiday
+    # and features_X_recent_subset -- and folding those back in silently
+    # duplicates every row they already contain.
+    dated = re.compile(rf"^features_{re.escape(args.symbol)}_\d{{4}}-\d{{2}}-\d{{2}}\.parquet$")
+    files = [path for path in matched if dated.match(path.name)]
+    skipped = [path.name for path in matched if not dated.match(path.name)]
+    print(f"Matched {len(matched)} file(s) in {args.input_dir} for pattern {pattern!r}.")
+    if skipped:
+        print(f"Skipping {len(skipped)} non-daily file(s): {', '.join(skipped)}")
     # Only take the last `days` files to keep memory usage reasonable
     if len(files) > args.days:
         files = files[-args.days:]

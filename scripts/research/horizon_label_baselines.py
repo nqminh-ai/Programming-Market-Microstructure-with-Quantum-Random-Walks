@@ -28,6 +28,7 @@ label is new, so nothing here is a confirmatory result.
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 import platform
 import subprocess
@@ -37,6 +38,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 import pyarrow.parquet as pq
 from scipy.special import expit
 
@@ -84,13 +86,59 @@ def _git_commit() -> str:
         return "unknown"
 
 
+# Downcast targets. price stays float64: log returns over long horizons need the
+# precision, and float32 on a ~60,000 price loses the tick-scale differences the
+# label depends on. The rest are features whose float32 range is ample.
+DOWNCAST = {
+    "obi": "float32",
+    "trade_intensity": "float32",
+    "tick_direction": "float32",
+    "mid_price": "float32",
+}
+
+
 def _load(path: Path, max_rows: int) -> pd.DataFrame:
-    names = set(pq.ParquetFile(path).schema.names)
+    """Load only the needed columns and downcast.
+
+    A 31-day feature store is ~115M rows; read naively at float64 that is over
+    7GB and the process is killed on a 16GB machine.
+    """
+    handle = pq.ParquetFile(path)
+    names = set(handle.schema.names)
     columns = [column for column in NEEDED_COLUMNS if column in names]
-    frame = pd.read_parquet(path, columns=columns)
-    if max_rows and len(frame) > max_rows:
-        frame = frame.iloc[:max_rows]
-    return frame.sort_values("timestamp", kind="stable").reset_index(drop=True)
+
+    # Read one column at a time and release each Arrow buffer as soon as it has
+    # been converted. Reading the whole table and calling to_pandas holds the
+    # Arrow copy and the pandas copy at once, which on a 113M-row store is
+    # ~8GB and gets the process killed. Column-wise, the peak is the finished
+    # arrays plus one column.
+    data: dict[str, np.ndarray] = {}
+    for name in columns:
+        column = pq.read_table(path, columns=[name]).column(0)
+        dtype = DOWNCAST.get(name)
+        if dtype is not None:
+            column = column.cast(pa.type_for_alias(dtype))
+        values = column.to_numpy(zero_copy_only=False)
+        del column
+        if max_rows and len(values) > max_rows:
+            values = values[:max_rows]
+        if name == "segment_id":
+            try:
+                values = values.astype(np.int32, copy=False)
+            except (ValueError, OverflowError, TypeError):
+                pass
+        elif name == "obi_valid":
+            values = values.astype(bool, copy=False)
+        data[name] = values
+        gc.collect()
+
+    frame = pd.DataFrame(data, copy=False)
+    del data
+    gc.collect()
+    if not frame["timestamp"].is_monotonic_increasing:
+        frame = frame.sort_values("timestamp", kind="stable").reset_index(drop=True)
+        gc.collect()
+    return frame
 
 
 def build_horizon_events(frame: pd.DataFrame, horizon: int) -> dict[str, np.ndarray]:
