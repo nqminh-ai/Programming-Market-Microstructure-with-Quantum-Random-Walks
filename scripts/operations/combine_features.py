@@ -43,26 +43,51 @@ def main():
         sys.exit(1)
 
     print(f"Found {len(files)} files to combine (last {args.days} days).")
-    
+
+    expected_rows = sum(pq.ParquetFile(f).metadata.num_rows for f in files)
+    print(f"Expecting {expected_rows:,} rows.")
+
+    # Write to a temporary name and only rename on success. A killed run
+    # otherwise leaves a partial file at the final path whose footer was never
+    # written: it is the right size and the right name, and every reader fails
+    # on it later with a message about magic bytes rather than about the run
+    # that produced it. Being killed here is not hypothetical -- combining
+    # while the feature pipeline was running exhausted memory and did exactly
+    # this at file 32 of 69.
+    staging = args.output.with_suffix(args.output.suffix + ".partial")
+    if staging.exists():
+        staging.unlink()
+
     # Use ParquetWriter to append without loading everything into memory
-    first_file = pq.ParquetFile(files[0])
-    schema = first_file.schema_arrow
-    
-    writer = pq.ParquetWriter(args.output, schema, compression="snappy")
-    
+    schema = pq.ParquetFile(files[0]).schema_arrow
+
     total_rows = 0
     try:
-        for f in files:
-            if f.name == args.output.name:
-                continue
-            print(f"Streaming {f.name}...")
-            pf = pq.ParquetFile(f)
-            for batch in pf.iter_batches(batch_size=1_000_000):
-                writer.write_batch(batch)
-                total_rows += batch.num_rows
-    finally:
-        writer.close()
-        
+        with pq.ParquetWriter(staging, schema, compression="snappy") as writer:
+            for f in files:
+                print(f"Streaming {f.name}...")
+                pf = pq.ParquetFile(f)
+                for batch in pf.iter_batches(batch_size=1_000_000):
+                    writer.write_batch(batch)
+                    total_rows += batch.num_rows
+    except BaseException:
+        staging.unlink(missing_ok=True)
+        raise
+
+    if total_rows != expected_rows:
+        staging.unlink(missing_ok=True)
+        print(f"Row mismatch: wrote {total_rows:,}, expected {expected_rows:,}.")
+        sys.exit(1)
+
+    # Re-open the finished file so a truncated footer is caught here rather
+    # than by whatever reads the store next.
+    written = pq.ParquetFile(staging).metadata.num_rows
+    if written != expected_rows:
+        staging.unlink(missing_ok=True)
+        print(f"Verification failed: file holds {written:,} rows, expected {expected_rows:,}.")
+        sys.exit(1)
+
+    staging.replace(args.output)
     print(f"Total rows written: {total_rows:,}")
     print(f"Written to {args.output}")
     print("Done!")
