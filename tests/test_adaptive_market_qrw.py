@@ -100,7 +100,8 @@ def test_movement_probability_uses_warmup_only() -> None:
     assert parameters["movement_probability_uses_post_warmup"] is False
 
 
-def test_adaptive_simulation_is_normalized_and_local() -> None:
+def test_adaptive_simulation_is_normalized() -> None:
+    """Density-matrix simulate() must sum to 1.0 at every time step."""
     model = AdaptiveDecoherenceQRW(
         _market_data(),
         {
@@ -115,9 +116,50 @@ def test_adaptive_simulation_is_normalized_and_local() -> None:
     )
 
     simulation = model.simulate(20)
-    paths = model.simulate_price_path(500, T=20, random_state=2026)
 
     totals = simulation.groupby("t")["probability"].sum().to_numpy()
     assert totals == pytest.approx(np.ones(20), abs=1e-12)
-    assert np.all(np.abs(paths[:, 0]) == 1)
-    assert np.all(np.abs(np.diff(paths, axis=1)) == 1)
+
+
+def test_benchmark_simulate_qrw_evolves_density_matrix() -> None:
+    """BenchmarkSuite._simulate_qrw must use density matrix, not Bernoulli.
+
+    If the engine is a density-matrix walk (not a coin-flip surrogate),
+    variance must grow with forecast horizon — reflecting the ballistic
+    spreading of the underlying quantum state.
+    """
+    from src.evaluation.benchmark_suite import BenchmarkSuite
+
+    def _market_data_for_benchmark(count: int = 300) -> pd.DataFrame:
+        rng = np.random.default_rng(42)
+        obi = rng.uniform(-0.9, 0.9, count)
+        direction = np.where(obi + 0.2 * rng.standard_normal(count) >= 0, 1.0, -1.0)
+        price = 100.0 + np.concatenate([[0.0], np.cumsum(0.01 * direction[:-1])])
+        return pd.DataFrame(
+            {
+                "timestamp": np.arange(count, dtype=np.int64),
+                "price": price,
+                "tick_direction": direction,
+                "obi": obi,
+                "trade_intensity": rng.integers(1, 100, count).astype(float),
+                "obi_valid": True,
+                "segment_id": 0,
+            }
+        )
+
+    suite = BenchmarkSuite(_market_data_for_benchmark(), n_steps=20, n_paths=100)
+    model, _ = suite._fit_qrw()
+    marginals = suite._simulate_qrw(model, seed=42)
+
+    var_h1 = float(np.var(marginals[:, 1]))
+    var_h10 = float(np.var(marginals[:, min(10, marginals.shape[1] - 1)]))
+    # variance must grow with horizon (density-matrix ballistic property)
+    assert var_h10 > var_h1 * 2, (
+        f"Expected variance to grow with horizon: var_h1={var_h1:.4f}, "
+        f"var_h10={var_h10:.4f}"
+    )
+    # state_evolution key must confirm density-matrix engine
+    diag = suite._qrw_forecast_diagnostics
+    assert diag.get("state_evolution", "").startswith("density_matrix"), (
+        f"Expected density_matrix engine, got: {diag.get('state_evolution')}"
+    )

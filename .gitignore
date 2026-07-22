@@ -8,6 +8,7 @@ __pycache__/
 .test-cache/
 .test-tmp/
 .test-tmp-*/
+data/.pytest_tmp*/
 reports/.pytest-tmp*/
 .coverage
 htmlcov/
@@ -23,7 +24,26 @@ data/features/*
 data/raw_*/
 data/processed_*/
 data/features_*/
+data/assets/*/raw/
+data/assets/*/processed/
+data/assets/*/features/
+data/assets/*/live/
 !data/README.md
+
+# Generated research outputs
+figures/
+results/*
+!results/archive/
+!results/archive/**
+docs/final_report.pdf
+docs/presentation_slides.pdf
+
+# Local credentials and optional vendor SDKs
+SSI Fast Connect API/
+**/Key API SSI Dashboard.txt
+
+# Local per-user Claude Code settings (keep shared settings.json tracked)
+.claude/settings.local.json
 
 # Temp files
 *.tmp

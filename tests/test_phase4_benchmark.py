@@ -75,6 +75,13 @@ def test_benchmark_suite_writes_complete_reproducible_outputs(tmp_path) -> None:
     assert garch.exists()
     assert diagnostics.exists()
     assert set(suite.simulated_paths) == set(results["model"])
+    assert set(suite.rolling_one_step_losses) == set(results["model"])
+    assert all(
+        losses.shape == (50,)
+        and np.isfinite(losses).all()
+        and np.all(losses >= 0.0)
+        for losses in suite.rolling_one_step_losses.values()
+    )
     assert all(
         paths.shape == (300, 51)
         for paths in suite.simulated_paths.values()
@@ -92,6 +99,11 @@ def test_benchmark_suite_writes_complete_reproducible_outputs(tmp_path) -> None:
         "fixed_origin_marginals"
     )
     assert stored["path_dependent_metrics_include_qrw"] is False
+    assert stored["dm_forecast_alignment"] == "rolling_origin_one_step"
+    assert stored["dm_timestamp_alignment"] == (
+        "strictly_increasing_common_timestamp_index"
+    )
+    assert len(suite.rolling_one_step_timestamps) == suite.n_steps
     assert set(suite.model_comparison["information_criterion_scope"]) == {
         "within_likelihood_type_only"
     }

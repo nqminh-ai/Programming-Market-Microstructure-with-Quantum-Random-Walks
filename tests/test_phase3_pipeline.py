@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scripts.phase3_pipeline import (
+from scripts.pipelines.phase3_pipeline import (
     benchmark_paths,
     chronological_train_holdout_split,
 )

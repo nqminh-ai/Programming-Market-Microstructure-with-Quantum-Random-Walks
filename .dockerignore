@@ -1,0 +1,15 @@
+.git
+.agents
+.pytest_cache
+.pytest-tmp*
+.test-cache
+.test-tmp*
+__pycache__
+*.pyc
+data
+reports/archive
+results/archive
+notebooks
+docs/*.pdf
+SSI Fast Connect API
+**/Key API SSI Dashboard.txt

@@ -1,0 +1,16 @@
+model1,model2,dm_statistic,dm_pvalue,mean_loss_differential,observations,loss_type,forecast_alignment,timestamp_alignment,model1_better,dm_pvalue_bh
+QRW Adaptive,CRW Simple,8.046298639813653,8.53356088281503e-16,0.0007372623879443078,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,False,1.2800341324222545e-15
+QRW Adaptive,CRW Biased,7.435392766727645,1.0425771429434668e-13,0.0005490370286376371,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,False,1.3032214286793334e-13
+QRW Adaptive,CRW Correlated,-3.6172661498618788,0.00029773111631046747,-0.0001517681538340791,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,True,0.00034353590343515477
+QRW Adaptive,"GARCH(1,1)",0.2603516160636218,0.7945925610632462,2.3855168547015636e-05,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,False,0.7945925610632462
+QRW Adaptive,GBM,-9.280377137235755,1.688797306639244e-20,-0.0034636480054662873,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,True,3.406759836799528e-20
+CRW Simple,CRW Biased,-9.260155887564249,2.0413395990634402e-20,-0.00018822535930667071,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,True,3.406759836799528e-20
+CRW Simple,CRW Correlated,-9.26015588756425,2.0413395990634252e-20,-0.0008890305417783869,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,True,3.406759836799528e-20
+CRW Simple,"GARCH(1,1)",-3907.4922675093403,0.0,-0.0007134072193972922,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,True,0.0
+CRW Simple,GBM,-9.260043952390525,2.0434807637053957e-20,-0.004200910393410595,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,True,3.406759836799528e-20
+CRW Biased,CRW Correlated,-9.260155887564247,2.0413395990634694e-20,-0.0007008051824717161,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,True,3.406759836799528e-20
+CRW Biased,"GARCH(1,1)",-25.838803344719505,3.251019271150038e-147,-0.0005251818600906214,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,True,2.4382644533625286e-146
+CRW Biased,GBM,-9.260038701834926,2.0435812540567855e-20,-0.004012685034103925,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,True,3.406759836799528e-20
+CRW Correlated,"GARCH(1,1)",1.8293153249542196,0.06735238418583532,0.00017562332238109472,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,False,0.07216326877053784
+CRW Correlated,GBM,-9.260013905233942,2.0440559020797166e-20,-0.003311879851632208,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,True,3.406759836799528e-20
+"GARCH(1,1)",GBM,-7.687502153238556,1.5003532199378984e-14,-0.0034875031740133028,30,absolute_price_error,rolling_origin_one_step,strictly_increasing_common_timestamp_index,True,2.0459362090062252e-14

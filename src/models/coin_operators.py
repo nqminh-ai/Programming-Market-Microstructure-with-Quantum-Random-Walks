@@ -101,6 +101,43 @@ def obi_expected_step(
     )
 
 
+def su2_market_coin(
+    obi: float,
+    direction: float,
+    *,
+    bias: float = 0.0,
+    alpha_obi: float = 1.0,
+    alpha_direction: float = 0.0,
+    alpha_phase: float = 0.0,
+    window: int = 1,
+) -> np.ndarray:
+    """Return a full SU(2) coin parameterized by market features."""
+    if not all(np.isfinite(v) for v in (obi, direction, bias, alpha_obi,
+                                         alpha_direction, alpha_phase)):
+        raise ValueError("all su2_market_coin inputs must be finite")
+
+    bounded_obi = float(np.clip(obi, -1.0, 1.0))
+    bounded_direction = float(np.clip(direction, -1.0, 1.0))
+
+    # theta: mixing angle from market signal (small rotations around identity)
+    # Scaled by window so that accumulating over the window doesn't wrap around
+    signal = bias + alpha_obi * bounded_obi + alpha_direction * bounded_direction
+    theta = float(0.5 * np.arctan(signal)) / window
+
+    # phi: relative phase from direction momentum (this breaks commutativity!)
+    phi = (alpha_phase * bounded_direction) / window
+
+    cos_t = np.cos(theta)
+    sin_t = np.sin(theta)
+    return np.array(
+        [
+            [cos_t, -np.exp(1.0j * phi) * sin_t],
+            [np.exp(-1.0j * phi) * sin_t, cos_t],
+        ],
+        dtype=np.complex128,
+    )
+
+
 def dephasing_channel(rho: np.ndarray, gamma: float) -> np.ndarray:
     """Apply basis dephasing to a density matrix.
 

@@ -9,10 +9,10 @@ end_date: "2026-06-12"
 tick_granularity: event
 
 paths:
-  raw: data/raw_eth
-  processed: data/processed_eth
-  features: data/features_eth
-  reports: reports/eth
+  raw: data/assets/ethusdt/raw
+  processed: data/assets/ethusdt/processed
+  features: data/assets/ethusdt/features
+  reports: reports/assets/ethusdt
 
 order_book:
   depth: 20

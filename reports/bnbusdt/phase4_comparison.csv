@@ -1,0 +1,7 @@
+model,aic,bic,log_likelihood,parameter_count,observations,empirical_volatility,model_volatility,likelihood_type,aic_rank_within_likelihood,bic_rank_within_likelihood,information_criterion_scope
+QRW Adaptive,1088.7098700492388,1117.8296646083552,-538.3549350246194,6,947,5.9798710462946e-06,8.824829799263667e-06,directional_bernoulli,1.0,1.0,within_likelihood_type_only
+CRW Simple,1312.8207599805364,1312.8207599805364,-656.4103799902682,0,947,5.9798710462946e-06,5.769419667652733e-06,directional_bernoulli,3.0,3.0,within_likelihood_type_only
+CRW Biased,1314.3550407088803,1319.2083398020663,-656.1775203544402,1,947,5.9798710462946e-06,6.749702772679413e-06,directional_bernoulli,4.0,4.0,within_likelihood_type_only
+CRW Correlated,1290.2638094024076,1299.9704075887796,-643.1319047012038,2,947,5.9798710462946e-06,6.902888631821223e-06,directional_bernoulli,2.0,2.0,within_likelihood_type_only
+"GARCH(1,1)",-127645.9646889798,-127619.16729670919,63826.9823444899,4,5999,5.9798710462946e-06,5.176372494334875e-06,continuous_gaussian,1.0,1.0,within_likelihood_type_only
+GBM,-127272.85990828986,-127259.46121215455,63638.42995414493,2,5999,5.9798710462946e-06,5.386557124497558e-06,continuous_gaussian,2.0,2.0,within_likelihood_type_only

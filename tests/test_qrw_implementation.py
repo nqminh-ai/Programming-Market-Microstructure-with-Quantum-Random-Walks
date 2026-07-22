@@ -31,6 +31,10 @@ def test_unitarity_preserved() -> None:
         walk.step_with_decoherence(0.15)
         assert walk.trace() == pytest.approx(1.0, abs=1e-12)
         assert np.max(np.abs(walk.rho - walk.rho.conj().T)) < 1e-12
+        assert np.linalg.eigvalsh(walk.rho).min() >= -1e-12
+        probability = walk.get_probability()
+        assert probability.min() >= -1e-12
+        assert probability.sum() == pytest.approx(1.0, abs=1e-12)
 
 
 def test_decoherence_classical_limit() -> None:

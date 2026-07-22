@@ -220,10 +220,10 @@
   3. **OBI series:** từ LOB data — dùng làm bias parameter cho coin operator
   4. **Autocorrelation of tick direction** `ρ_k = Corr(d_t, d_{t-k})` cho k = 1..20
   5. **Volume-weighted mid price** (VWMP) và deviation từ mid price
-- Lưu feature matrix: `data/features/features_{symbol}_{date}.parquet`
+- Lưu feature matrix: `data/assets/<symbol>/features/features_{symbol}_{date}.parquet`
 - Thống kê mô tả: `reports/feature_stats_{date}.csv` (mean, std, min, max, skewness, kurtosis)
 
-**Deliverable:** `src/data/feature_engineer.py` + `data/features/*.parquet`
+**Deliverable:** `src/data/feature_engineer.py` + `data/assets/<symbol>/features/*.parquet`
 
 **[→ Phụ thuộc vào Task 2.3, 2.4]**
 
@@ -697,15 +697,15 @@
 **Các bước:**
 
 - Dùng Plotly Dash hoặc Streamlit: `pip install streamlit plotly`
-- Tạo `src/dashboard/app.py`:
+- Tạo `src/dashboard/research_dashboard.py`:
   - Sidebar controls: slider cho `gamma` (decoherence), `alpha` (OBI sensitivity), `coin_type` dropdown, `n_steps` slider
   - Real-time plot: probability distribution `P(x,t)` sau n_steps
   - Panel 2: variance scaling plot cập nhật theo parameters
   - Panel 3: comparison table với current QRW config vs baselines
-- Chạy: `streamlit run src/dashboard/app.py`
+- Chạy: `streamlit run src/dashboard/research_dashboard.py`
 - Capture screenshot: `figures/dashboard_screenshot.png`
 
-**Deliverable:** `src/dashboard/app.py` + `figures/dashboard_screenshot.png`
+**Deliverable:** `src/dashboard/research_dashboard.py` + `figures/dashboard_screenshot.png`
 
 **[→ Phụ thuộc vào Task 3.4, 6.1]**
 

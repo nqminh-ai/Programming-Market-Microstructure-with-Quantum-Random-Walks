@@ -9,10 +9,10 @@ end_date: "2026-06-12"
 tick_granularity: event
 
 paths:
-  raw: data/raw
-  processed: data/processed
-  features: data/features
-  reports: reports
+  raw: data/assets/btcusdt/raw
+  processed: data/assets/btcusdt/processed
+  features: data/assets/btcusdt/features
+  reports: reports/assets/btcusdt
 
 order_book:
   depth: 20

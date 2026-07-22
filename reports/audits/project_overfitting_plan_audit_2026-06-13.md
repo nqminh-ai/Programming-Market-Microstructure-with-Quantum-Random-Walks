@@ -77,7 +77,7 @@ hay không (`src/data/tick_processor.py:55-100`).
 Checkpoint Phase 2 gọi bước này là causal
 (`reports/phase2_checkpoint.md:11-12`). Validator chỉ kiểm tra metadata string
 `trailing_with_one_tick_confirmation`
-(`scripts/phase2_pipeline.py:318-331`, `488-507`), không kiểm tra information
+(`scripts/pipelines/phase2_pipeline.py:318-331`, `488-507`), không kiểm tra information
 availability thực tế.
 
 **Ảnh hưởng:** việc row `t` có tồn tại trong dữ liệu processed phụ thuộc row
@@ -106,7 +106,7 @@ Bernoulli độc lập `+1/-1` từ probability này
 Exact density simulation có tồn tại và giữ state qua thời gian
 (`src/models/adaptive_market_qrw.py:401-421`), nhưng không phải cơ chế được chấm
 predictive edge. Benchmark 1,000 paths x 1,000 steps cũng đo Bernoulli sampler,
-không đo 1,000 exact density paths (`scripts/phase3_pipeline.py:95-138`).
+không đo 1,000 exact density paths (`scripts/pipelines/phase3_pipeline.py:95-138`).
 
 Raw logistic có cùng năm input nhưng không có intensity-dependent shrinkage.
 Pairwise logistic 21 terms là nonlinear stress test gần hơn và đang thắng.

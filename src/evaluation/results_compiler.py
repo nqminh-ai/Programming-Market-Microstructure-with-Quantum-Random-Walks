@@ -54,6 +54,7 @@ class ResultsCompiler:
             "direction_brier_score",
             "direction_log_loss",
             "interval_90_covered",
+            "interval_90_width",
         }
         missing_columns = sorted(required_columns.difference(marginal.columns))
         if missing_columns:
@@ -70,6 +71,7 @@ class ResultsCompiler:
                 mean_direction_brier_score=("direction_brier_score", "mean"),
                 mean_direction_log_loss=("direction_log_loss", "mean"),
                 coverage_90=("interval_90_covered", "mean"),
+                mean_interval_90_width=("interval_90_width", "mean"),
             )
             .reset_index()
         )

@@ -58,6 +58,9 @@ def test_statistical_suite_writes_all_categories_and_figures(tmp_path) -> None:
         empirical,
         paths,
         rolling_one_step_losses=_aligned_losses(empirical, paths),
+        rolling_one_step_timestamps=np.arange(
+            next(iter(paths.values())).shape[1] - 1
+        ),
         bootstrap_iterations=60,
         max_lag=10,
         random_seed=2026,
@@ -78,7 +81,10 @@ def test_statistical_suite_writes_all_categories_and_figures(tmp_path) -> None:
     }
     marginal = results["marginal_scores"]
     assert len(marginal) == 2 * 6
-    assert marginal[["crps", "direction_log_loss"]].notna().all().all()
+    assert marginal[
+        ["crps", "direction_log_loss", "interval_90_width"]
+    ].notna().all().all()
+    assert (marginal["interval_90_width"] >= 0.0).all()
     assert not {"ks_statistic", "ks_pvalue"}.intersection(marginal.columns)
     scaling = results["variance_scaling"]
     assert set(scaling["model"]) == {
@@ -130,6 +136,9 @@ def test_results_compiler_ranks_every_simulated_model(tmp_path) -> None:
         empirical,
         paths,
         rolling_one_step_losses=_aligned_losses(empirical, paths),
+        rolling_one_step_timestamps=np.arange(
+            next(iter(paths.values())).shape[1] - 1
+        ),
         bootstrap_iterations=50,
         max_lag=10,
         random_seed=7,
@@ -152,6 +161,7 @@ def test_results_compiler_ranks_every_simulated_model(tmp_path) -> None:
         ResultsCompiler.SELECTION_RULE
     }
     assert comparison.select_dtypes(include=[np.number]).notna().all().all()
+    assert "mean_interval_90_width" in comparison.columns
     assert scorecard["overall_rank"].min() == 1.0
     assert (tmp_path / "comparison.csv").exists()
     assert (tmp_path / "scorecard.csv").exists()

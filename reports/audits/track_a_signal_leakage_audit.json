@@ -1,0 +1,9 @@
+{
+  "module": "signal",
+  "source": "data\\processed\\tick_processed_BTCUSDT_2026-06-12.parquet",
+  "rows": 1000,
+  "mutation_cutoff": 700,
+  "audited_signal_rows": 670,
+  "future_mutation_changed_past": false,
+  "status": "PASS"
+}

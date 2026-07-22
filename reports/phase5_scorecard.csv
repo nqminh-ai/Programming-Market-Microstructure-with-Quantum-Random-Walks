@@ -1,0 +1,7 @@
+model,mean_marginal_crps,mean_direction_log_loss,mean_direction_brier_score,coverage_90,overall_rank,direction_tiebreak_rank,selection_rule
+CRW Biased,7.530162596454973e-08,0.27419743762505683,0.06285,1.0,1.0,1.0,primary=mean_marginal_crps; tiebreak=mean_direction_log_loss; diagnostics_not_ranked
+QRW Adaptive,8.348256974660383e-08,0.3108545616822359,0.081075,1.0,2.0,2.0,primary=mean_marginal_crps; tiebreak=mean_direction_log_loss; diagnostics_not_ranked
+CRW Correlated,8.38124774821802e-08,0.31946899936207873,0.08855,1.0,3.0,3.0,primary=mean_marginal_crps; tiebreak=mean_direction_log_loss; diagnostics_not_ranked
+CRW Simple,1.0311605758453487e-07,0.3559180733093977,0.10142500000000002,0.75,4.0,4.0,primary=mean_marginal_crps; tiebreak=mean_direction_log_loss; diagnostics_not_ranked
+GBM,1.7086094609294281e-06,0.7013234371645223,0.253875,1.0,5.0,6.0,primary=mean_marginal_crps; tiebreak=mean_direction_log_loss; diagnostics_not_ranked
+"GARCH(1,1)",2.290764716717057e-06,0.640820247490222,0.22392499999999999,1.0,6.0,5.0,primary=mean_marginal_crps; tiebreak=mean_direction_log_loss; diagnostics_not_ranked

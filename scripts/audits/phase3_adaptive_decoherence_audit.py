@@ -385,7 +385,11 @@ def write_markdown(path: Path, audit: dict[str, Any]) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--feature-dir", type=Path, default=Path("data/features"))
+    parser.add_argument(
+        "--feature-dir",
+        type=Path,
+        default=Path("data/assets/btcusdt/features"),
+    )
     parser.add_argument("--fit-stride", type=int, default=20)
     parser.add_argument("--evaluation-stride", type=int, default=1)
     parser.add_argument("--block-size", type=int, default=1024)

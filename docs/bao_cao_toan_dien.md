@@ -431,7 +431,7 @@ Binance archives / WebSocket
  OBI/proxy, VWAP, autocorrelation
             |
             v
-      data/features
+      data/assets/<symbol>/features
             |
             +-----------------------------+
             |                             |
@@ -607,9 +607,9 @@ Thay đổi file này làm thay đổi cách pipeline dữ liệu hoạt động
 
 | Thư mục/file | Ý nghĩa |
 |---|---|
-| `data/raw/` | Dữ liệu gốc, không qua làm sạch |
-| `data/processed/` | Tick đã chuẩn hóa, loại duplicate/outlier, thêm segment |
-| `data/features/` | Ma trận feature dùng cho model |
+| `data/assets/<symbol>/raw/` | Dữ liệu gốc, không qua làm sạch |
+| `data/assets/<symbol>/processed/` | Tick đã chuẩn hóa, loại duplicate/outlier, thêm segment |
+| `data/assets/<symbol>/features/` | Ma trận feature dùng cho model |
 | `data/README.md` | Hướng dẫn nguồn dữ liệu, proxy OBI và rebuild |
 
 Quy mô hiện tại:
@@ -621,10 +621,10 @@ Quy mô hiện tại:
 Pattern file:
 
 ```text
-data/raw/tick_BTCUSDT_<date>.csv.gz
-data/raw/lob_BTCUSDT_<date>.h5
-data/processed/tick_processed_BTCUSDT_<date>.parquet
-data/features/features_BTCUSDT_<date>.parquet
+data/assets/btcusdt/raw/tick_BTCUSDT_<date>.csv.gz
+data/assets/btcusdt/raw/lob_BTCUSDT_<date>.h5
+data/assets/btcusdt/processed/tick_processed_BTCUSDT_<date>.parquet
+data/assets/btcusdt/features/features_BTCUSDT_<date>.parquet
 ```
 
 ### 8.4. `notes/`
@@ -946,7 +946,7 @@ Chức năng:
 
 ### 8.12. `src/dashboard/`
 
-#### `src/dashboard/app.py`
+#### `src/dashboard/research_dashboard.py`
 
 Dashboard Streamlit exploratory:
 
@@ -962,7 +962,7 @@ Dashboard không thay đổi kết luận thống kê và không tự chạy l�
 
 ### 8.13. `scripts/`
 
-#### `scripts/phase2_pipeline.py`
+#### `scripts/pipelines/phase2_pipeline.py`
 
 CLI cho:
 
@@ -976,12 +976,12 @@ test
 checkpoint
 ```
 
-#### `scripts/phase3_pipeline.py`
+#### `scripts/pipelines/phase3_pipeline.py`
 
 Calibration QRW, exact simulation, local-path performance benchmark và lưu
 `calibrated_params.json`.
 
-#### `scripts/phase3_overfitting_audit.py`
+#### `scripts/audits/phase3_overfitting_audit.py`
 
 Audit một cửa sổ:
 
@@ -993,27 +993,27 @@ Audit một cửa sổ:
 - rolling stability;
 - walk-forward evaluation.
 
-#### `scripts/phase3_multiday_edge_audit.py`
+#### `scripts/audits/phase3_multiday_edge_audit.py`
 
 Audit edge nhiều ngày đối với cấu trúc QRW cố định. Các output pre-fix cũ đã
 được archive; nếu chạy lại phải dùng protocol và dữ liệu hiện hành.
 
-#### `scripts/phase3_adaptive_decoherence_audit.py`
+#### `scripts/audits/phase3_adaptive_decoherence_audit.py`
 
 Audit biến thể adaptive-decoherence và so với logistic baseline, gồm raw và
 pairwise design.
 
-#### `scripts/phase4_pipeline.py`
+#### `scripts/pipelines/phase4_pipeline.py`
 
 Chạy `BenchmarkSuite`, lưu benchmark/model comparison/GARCH diagnostics và
 Phase 4 checkpoint.
 
-#### `scripts/phase5_pipeline.py`
+#### `scripts/pipelines/phase5_pipeline.py`
 
 Chạy benchmark, toàn bộ statistical tests, compile scorecard, tạo figure Phase
 5 và checkpoint.
 
-#### `scripts/phase6_pipeline.py`
+#### `scripts/pipelines/phase6_pipeline.py`
 
 Chạy deliverable cuối:
 
@@ -1590,7 +1590,7 @@ Preview trình bày:
 - top model và QRW rank;
 - guardrail về phạm vi một cửa sổ.
 
-Đây là ảnh tĩnh cho report. Dashboard thật trong `src/dashboard/app.py` cho phép
+Đây là ảnh tĩnh cho report. Dashboard nghiên cứu trong `src/dashboard/research_dashboard.py` cho phép
 thay gamma, coin và steps để xem density-matrix QRW.
 
 ### 13.9. `reports/theory_verification.png`
@@ -1772,7 +1772,7 @@ Kỳ vọng hiện tại:
 ### 16.3. Kiểm tra Phase 2
 
 ```text
-python scripts/phase2_pipeline.py checkpoint
+python -m scripts.pipelines.phase2_pipeline checkpoint
 ```
 
 Lệnh có thể trả exit code 1 do tiêu chí cleaning `<0.5%` đang FAIL, dù các kiểm
@@ -1781,39 +1781,39 @@ tra causality và unit test PASS.
 ### 16.4. Rebuild dữ liệu lịch sử
 
 ```text
-python scripts/phase2_pipeline.py process
-python scripts/phase2_pipeline.py features --obi-source trade_imbalance
-python scripts/phase2_pipeline.py checkpoint
+python -m scripts.pipelines.phase2_pipeline process
+python -m scripts.pipelines.phase2_pipeline features --obi-source trade_imbalance
+python -m scripts.pipelines.phase2_pipeline checkpoint
 ```
 
 ### 16.5. Chạy calibration Phase 3
 
 ```powershell
-python scripts/phase3_pipeline.py --feature-path data/features/features_BTCUSDT_2026-06-12.parquet
+python -m scripts.pipelines.phase3_pipeline --feature-path data/assets/btcusdt/features/features_BTCUSDT_2026-06-12.parquet
 ```
 
 ### 16.6. Chạy audit overfitting
 
 ```powershell
-python scripts/phase3_overfitting_audit.py --feature-path data/features/features_BTCUSDT_2026-06-12.parquet
+python -m scripts.audits.phase3_overfitting_audit --feature-path data/assets/btcusdt/features/features_BTCUSDT_2026-06-12.parquet
 ```
 
 ### 16.7. Chạy benchmark
 
 ```powershell
-python scripts/phase4_pipeline.py --feature-path data/features/features_BTCUSDT_2026-06-12.parquet
+python -m scripts.pipelines.phase4_pipeline --feature-path data/assets/btcusdt/features/features_BTCUSDT_2026-06-12.parquet
 ```
 
 ### 16.8. Chạy statistical tests
 
 ```powershell
-python scripts/phase5_pipeline.py --feature-path data/features/features_BTCUSDT_2026-06-12.parquet
+python -m scripts.pipelines.phase5_pipeline --feature-path data/assets/btcusdt/features/features_BTCUSDT_2026-06-12.parquet
 ```
 
 ### 16.9. Tạo deliverable cuối
 
 ```powershell
-python scripts/phase6_pipeline.py --feature-path data/features/features_BTCUSDT_2026-06-12.parquet
+python -m scripts.pipelines.phase6_pipeline --feature-path data/assets/btcusdt/features/features_BTCUSDT_2026-06-12.parquet
 ```
 
 ### 16.10. Chạy dashboard
@@ -1823,7 +1823,7 @@ Sau khi cài:
 
 ```text
 pip install streamlit
-streamlit run src/dashboard/app.py
+streamlit run src/dashboard/research_dashboard.py
 ```
 
 ### 16.11. Dùng Makefile

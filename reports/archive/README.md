@@ -6,3 +6,7 @@ They were invalidated because their June 1-7 inputs used the former
 future-aware outlier cleaner, and the June 5-7 holdout had already been
 repeatedly inspected. Do not use their metrics or confidence intervals as
 current evidence.
+
+Files under `invalidated_pre_v4_2026-07-06/` are checkpoints and audit outputs
+created before the v4 provenance protocol. They remain available only for
+traceability and must not be cited as current evidence.

@@ -18,6 +18,12 @@ GENERATED_PREFIXES = (
     "reports/",
     "results/",
 )
+GENERATED_PATHS = {
+    "docs/final_report.md",
+    "docs/final_report.pdf",
+    "docs/presentation_slides.md",
+    "docs/presentation_slides.pdf",
+}
 
 
 def sha256_file(path: str | Path) -> str:
@@ -64,7 +70,11 @@ def release_dirty_paths(repo_root: str | Path) -> list[str]:
     dirty: list[str] = []
     for line in completed.stdout.splitlines():
         path = _status_path(line)
-        if not path or path.startswith(GENERATED_PREFIXES):
+        if (
+            not path
+            or path in GENERATED_PATHS
+            or path.startswith(GENERATED_PREFIXES)
+        ):
             continue
         dirty.append(path)
     return sorted(dirty)
@@ -134,6 +144,42 @@ def validate_provenance(
     if mismatches:
         raise ValueError("artifact provenance mismatch:\n- " + "\n- ".join(mismatches))
     return expected
+
+
+def validate_diagnostic_set(
+    diagnostics: Iterable[str | Path],
+    feature_path: str | Path,
+    *,
+    protocol_version: str,
+    repo_root: str | Path,
+    expected_commit: str | None = None,
+) -> dict[str, str]:
+    """Require every upstream diagnostic to carry identical provenance."""
+    paths = [Path(path) for path in diagnostics]
+    if not paths:
+        raise ValueError("at least one diagnostic artifact is required")
+    common: dict[str, str] | None = None
+    for path in paths:
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        provenance = payload.get("provenance", {})
+        validated = validate_provenance(
+            provenance,
+            feature_path,
+            protocol_version=protocol_version,
+            repo_root=repo_root,
+            expected_commit=expected_commit,
+        )
+        if common is None:
+            common = validated
+        elif validated != common:
+            raise ValueError(
+                f"diagnostic provenance differs from release set: {path}"
+            )
+    if common is None:
+        raise RuntimeError("diagnostic validation produced no provenance")
+    return common
 
 
 def build_sha256_manifest(

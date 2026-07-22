@@ -1,101 +1,86 @@
-# QRW Market Microstructure
+# AI Quantum — QRW cho vi cấu trúc thị trường
 
-Research code for quantum-random-walk market microstructure experiments.
+Dự án nghiên cứu thăm dò quantum random walk (QRW) density-matrix và các
+baseline cổ điển trên dữ liệu giao dịch tần suất cao.
 
-## Current Status
+## Kết luận hiện tại
 
-- Phase 1 theory and Phase 2/3 engineering prototypes are implemented.
-- Phase 4 classical baselines and the common benchmark suite are implemented.
-- Phase 5 statistical validation and scorecard are implemented.
-- Phase 6 figures, report, slides, and artifact checks are implemented.
-- All 61 automated tests pass.
-- Causality, forecast leakage, zero-move calibration, bootstrap, timestamp,
-  scorecard, and dashboard issues were fixed by June 14, 2026.
-- The current live audit is mixed: QRW wins the final holdout but loses the
-  pooled walk-forward comparison against the fair affine baseline.
-- Historical June 1-7 derived artifacts were rebuilt with the causal pipeline
-  and remain development-only.
-- Phase 5 is an engineering pass on one June 12, 2026 window; its results
-  remain exploratory and do not establish QRW superiority.
-- Phase 2 still reports a data-quality threshold miss because cleaning removes
-  1.127277% of raw rows versus the roadmap limit of 0.5%.
+Ablation/so-sánh Phase 1–3 ([reports/research/](reports/research/)) cho thấy
+**không có bằng chứng cho bất kỳ lợi thế dự báo nào của QRW**: (1) cơ chế "giao
+thoa lượng tử" (pha `alpha_phase`) đóng góp **bằng 0** trên cả ba asset; (2)
+thành phần windowing thắng baseline affine yếu nhưng **thua** các baseline cổ
+điển mạnh (OrderFlow AR(5), Logistic+Pairwise) trên cả ba asset — trên ETH xếp
+chót 7/7. Fold-fragility từng thấy trên BTC là một bug trong `calibrate_bias`,
+đã sửa ở Phase 2. OBI hiện là trade-flow proxy, không phải L2 LOB. Xem
+[báo cáo cuối](docs/final_report.md) §5b–5c.
 
-See:
+Xem [báo cáo cuối](docs/final_report.md) và
+[trạng thái artifact](reports/ARTIFACT_STATUS.md).
 
-- `docs/ke_hoach_QRW_market_microstructure.md`
-- `reports/checkpoints/phase3_checkpoint.md`
-- `reports/checkpoints/phase5_checkpoint.md`
-- `reports/checkpoints/phase6_checkpoint.md`
+## Cài đặt
 
-The June 13 audit files remain available as historical remediation snapshots.
+Yêu cầu CPython 3.14 và môi trường ảo riêng.
 
-## Structure
-
-```text
-config/                  Runtime configuration (data_config.yaml)
-data/
-├── raw/                 Compressed tick CSVs and LOB snapshots
-├── processed/           Cleaned Parquet files
-└── features/            Feature matrices for modeling
-docs/
-├── theory/              QRW formalism, QRW-vs-CRW, market mapping notes
-├── ke_hoach_*.md        Master project plan
-├── bao_cao_toan_dien.md Full report (Vietnamese)
-├── final_report.*       Summary report + PDF
-└── presentation_slides  Slides source + PDF
-figures/                 Generated statistical comparison figures (DPI=300)
-notebooks/               Theory verification notebooks
-reports/
-├── checkpoints/         Phase 1-6 checkpoint reports and diagnostics
-├── data_quality/        Per-day data quality reports
-├── feature_metadata/    Per-day feature metadata and statistics
-├── audits/              Overfitting audits and remediation logs
-└── archive/             Invalidated outputs (audit history only)
-results/
-├── *.csv / *.json       Current model parameters and comparison tables
-└── archive/             Invalidated results (audit history only)
-scripts/
-├── phase*_pipeline.py   Reproducible pipeline entry points
-└── audits/              Standalone overfitting audit scripts
-src/
-├── models/              QRW core, adaptive QRW, classical RW, GARCH, GBM
-├── data/                Tick download, processing, feature engineering
-├── evaluation/          Benchmark suite and statistical tests
-├── visualization/       Plot suite
-├── reporting/           Report builder
-└── dashboard/           Streamlit interactive dashboard
-tests/                   61 automated tests
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --requirement requirements.lock
 ```
 
-Invalidated outputs are retained under `reports/archive/` and
-`results/archive/` for audit history, not for active conclusions.
+`requirements.txt` và `requirements.lock` đều dùng exact pins. Không dùng file
+credential trong repository; cấu hình bí mật qua biến môi trường hoặc private
+file nằm ngoài Git.
 
-## Installation
+## Kiểm thử
 
-```text
-pip install -r requirements.txt
+```powershell
+python -m pytest tests/ -v
 ```
 
-## Verification
+## Cấu trúc dự án
 
 ```text
-python -m pytest
-python scripts/phase2_pipeline.py checkpoint
-python scripts/audits/phase3_overfitting_audit.py
-python scripts/phase4_pipeline.py
-python scripts/phase5_pipeline.py
+config/                          cấu hình theo tài sản
+data/assets/<symbol>/            raw, processed và features
+docs/                            báo cáo, kế hoạch và ghi chú lý thuyết
+scripts/pipelines/               pipeline Phase 2–6
+scripts/operations/              thu thập, rebuild và đóng băng release
+scripts/audits/                  kiểm toán chống overfit/leakage
+scripts/research/                thí nghiệm mở rộng
+src/                             thư viện ứng dụng
+tests/                           kiểm thử tự động
+reports/assets/<symbol>/         metadata/chất lượng dữ liệu canonical
+reports/archive/                 báo cáo đã vô hiệu hóa, chỉ để truy vết
+results/archive/                 kết quả đã vô hiệu hóa, chỉ để truy vết
 ```
 
-## Run Phase 6
+Ba symbol chuẩn là `btcusdt`, `ethusdt`, `bnbusdt`.
 
-```text
-python scripts/phase6_pipeline.py
+## Chạy pipeline
+
+```powershell
+python -m scripts.pipelines.phase3_pipeline --feature-path data/assets/btcusdt/features/features_BTCUSDT_<date>.parquet
+python -m scripts.audits.phase3_overfitting_audit --feature-path data/assets/btcusdt/features/features_BTCUSDT_<date>.parquet
+python -m scripts.pipelines.phase4_pipeline --feature-path data/assets/btcusdt/features/features_BTCUSDT_<date>.parquet
+python -m scripts.pipelines.phase5_pipeline --feature-path data/assets/btcusdt/features/features_BTCUSDT_<date>.parquet
+python -m scripts.pipelines.phase6_pipeline --feature-path data/assets/btcusdt/features/features_BTCUSDT_<date>.parquet
 ```
 
-## Rebuild Historical Derived Data
+Run chính thức yêu cầu source tree sạch. Pipeline hard-fail nếu protocol,
+commit, feature path hoặc SHA-256 không khớp. Phase 6 tạo
+`reports/release_manifest.json` cho input/output chính thức.
 
-```text
-python scripts/phase2_pipeline.py process
-python scripts/phase2_pipeline.py features --obi-source trade_imbalance
-python scripts/phase2_pipeline.py checkpoint
-```
+## Quy tắc thống kê
+
+- QRW chỉ được đánh giá như fixed-origin marginals.
+- Primary endpoint: mean marginal CRPS.
+- Tie-break: directional log loss.
+- ACF/tail: chỉ model có trajectory thật.
+- Diebold–Mariano: rolling-origin one-step losses căn chỉnh timestamp.
+- AIC/BIC: chỉ so sánh trong cùng likelihood family.
+
+## Nghiên cứu confirmatory tiếp theo
+
+Pre-registration nằm tại [docs/data_collection_todo.md](docs/data_collection_todo.md):
+tối thiểu 20 ngày UTC tương lai cho mỗi tài sản, trade/L2 LOB đồng bộ và không
+mở nhãn holdout trước khi đóng băng protocol.

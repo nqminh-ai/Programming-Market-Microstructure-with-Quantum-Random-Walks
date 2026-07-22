@@ -9,10 +9,10 @@ end_date: "2026-06-12"
 tick_granularity: event
 
 paths:
-  raw: data/raw_bnb
-  processed: data/processed_bnb
-  features: data/features_bnb
-  reports: reports/bnb
+  raw: data/assets/bnbusdt/raw
+  processed: data/assets/bnbusdt/processed
+  features: data/assets/bnbusdt/features
+  reports: reports/assets/bnbusdt
 
 order_book:
   depth: 20

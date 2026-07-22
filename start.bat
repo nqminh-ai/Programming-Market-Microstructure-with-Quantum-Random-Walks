@@ -16,6 +16,6 @@ IF EXIST "venv\Scripts\activate.bat" (
 )
 
 echo [Info] Launching Streamlit App...
-python -m streamlit run src/dashboard/app.py
+python -m streamlit run src/dashboard/platform.py
 
 pause
