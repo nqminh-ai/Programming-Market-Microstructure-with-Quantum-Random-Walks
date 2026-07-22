@@ -23,6 +23,9 @@ Câu trả lời là **không** — và chúng tôi chứng minh điều đó b�
 4. **Sắc thái duy nhất:** ở endpoint chính đăng-ký-trước (marginal CRPS), QRW
    thua *ít dứt khoát hơn* — dẫn đầu trên ETH, nhưng chỉ hạng 3/6 trên BTC và
    4/6 trên BNB. Không nhất quán, và **vẫn không đến từ pha**.
+5. **Và kể cả nếu có dự báo tốt cũng chưa giao dịch được:** ở horizon dự án dùng,
+   ngưỡng hoà vốn **vượt 100%** — dự đoán đúng hoàn hảo vẫn lỗ vì phí giao dịch
+   lớn hơn biên độ giá.
 
 > **Giá trị của dự án không nằm ở "QRW thắng", mà ở chỗ nó chỉ ra chính xác
 > *tại sao* các tuyên bố ưu thế lượng tử trên dữ liệu tài chính thường không
@@ -39,6 +42,8 @@ Câu trả lời là **không** — và chúng tôi chứng minh điều đó b�
 | Chọn hyperparameter đánh giá cho đẹp | Kết quả không tái lập | Quét fold 2–8, báo cáo **toàn bộ** |
 | fit/predict lệch công thức | Số đo vô nghĩa nhưng trông hợp lý | Đây chính là bug đã tìm ra (§3.2) |
 | Chạy mẫu nhỏ rồi ngoại suy | Kết luận không bền | Chạy lại trên **toàn bộ** 32,4M tick |
+| Đo độ chính xác rồi coi như đã kiếm được tiền | Bỏ qua phí giao dịch — cái thường lớn hơn cả biên lợi nhuận | Tính ngưỡng hoà vốn từ phí **đo được**, không giả định (§3.6) |
+| Nhãn dự báo chồng lấp nhau | Khoảng tin cậy hẹp một cách sai lệch | Cửa sổ **không chồng lấp**, chấp nhận mất cỡ mẫu (§3.6) |
 
 ---
 
@@ -125,6 +130,43 @@ này **cũng không đến từ pha**.
 
 📄 [`marginal_crps_*.md`](../reports/research/)
 
+### 3.6 Có giao dịch được không? Kỹ năng và tiền ở hai đầu đối lập
+
+Các phần trên hỏi "mô hình nào dự báo tốt hơn". Phần này hỏi câu quan trọng hơn
+với người ngoài ngành: **dự báo tốt hơn thì có kiếm được tiền không?**
+
+Với horizon `h`, một cược hướng đúng `p` phần trăm thu về `(2p−1)·E|biến động|`
+trước phí. Ở horizon dự án đang dùng — **1 tick** — biến động trung bình chỉ
+bằng 0,0005 (BTC) lần chi phí một vòng giao dịch:
+
+> **Ngưỡng hoà vốn vượt 100%. Một mô hình dự đoán đúng *hoàn hảo* vẫn lỗ.**
+
+Đây là giới hạn của *horizon*, không phải của mô hình — không kỹ thuật nào cứu
+được. Chúng tôi đổi nhãn sang lợi suất qua `h` tick và chạy lại trên các cửa sổ
+**không chồng lấp**:
+
+| Horizon | BTC | Lớp đa số | Lãi ròng/lệnh |
+|---|---:|---:|---:|
+| 1.000 (~49 giây) | **65,7%** | 51,2% | **−2,56 bps** |
+| 50.000 (~41 phút) | 55,7% | 55,7% *(không hơn hằng số)* | vẫn âm |
+
+**Order flow có sức dự báo thật** — 65,7% là con số đáng kể. Nhưng ở horizon đó
+giá chưa dịch đủ để trả phí; kéo dài ra tới khi biên độ đủ lớn thì kỹ năng biến
+mất. **Không horizon nào, trên bất kỳ tài sản nào, đạt hoà vốn.**
+
+Con số 65,7% được **kiểm tra chứ không báo cáo thẳng**: nó truy về `tick_direction`
+(autocorr 0,965) và tương quan sụp từ +0,329 xuống +0,011 ở cửa sổ tương lai kế
+tiếp — dấu hiệu của tác động order flow thật, chứ nếu là rò rỉ dữ liệu thì sẽ
+duy trì.
+
+Phần này cũng phát hiện **ba lỗi đo lường** khiến chiến lược demo trông có lãi:
+số lệnh bị thổi phồng 15–34×, một t-statistic bị gọi nhầm là "Sharpe", và bộ dò
+tham số **quên trừ phí giao dịch**. Sửa xong, profit factor 265 → **0,095**, lãi
+ròng +0,04% → **−4,2%**.
+
+📄 [`horizon_feasibility_*.md`](../reports/research/) ·
+[`horizon_edge_*.md`](../reports/research/)
+
 ---
 
 ## 4. Đóng góp kỹ thuật đáng giữ lại
@@ -200,6 +242,8 @@ tiêu cực **đáng tin**: chúng tôi không hạ chuẩn đối thủ.
 | 3 | Dữ liệu trải trên khoảng thời gian ngắn | Đã chạy full 32,4M tick, nhưng bề rộng *thời gian* vẫn hạn chế |
 | 4 | Windowing CRPS trong-file mỏng hơn chuẩn day-cluster | Đã ghi rõ trong §5d báo cáo cuối |
 | 5 | Model không mô hình hoá volatility | Giải thích trực tiếp thất bại ở window biến động cao (§3.5) |
+| 6 | Phân tích giao dịch **chưa có adverse selection** | Khi spread thu được lớn hơn phí, công thức hoà vốn kết luận có lãi ở *mọi* độ chính xác — đó là ảo giác. Cần L2 thật để mô hình hoá hàng đợi lệnh (#1) |
+| 7 | Khử chồng lấp làm cỡ mẫu tụt còn **86–9.695 cửa sổ** | Khoảng tin cậy rộng; §3.6 không phải kết luận dứt khoát |
 
 Không hạn chế nào ở trên được phát hiện bởi người ngoài — tất cả do chính pipeline
 kiểm toán của dự án nêu ra.
@@ -209,12 +253,14 @@ kiểm toán của dự án nêu ra.
 ## 6. Tái lập
 
 ```powershell
-python -m pytest tests/ -v          # 212 test
+python -m pytest tests/ -v          # 244 test
 
 python -m scripts.research.alpha_phase_ablation            # §3.1, §3.2
 python -m scripts.research.strong_baseline_comparison      # §3.3
 python -m scripts.research.full_dataset_confirmation       # §3.4
 python -m scripts.research.marginal_crps_comparison        # §3.5
+python -m scripts.research.horizon_feasibility             # §3.6
+python -m scripts.research.horizon_label_baselines         # §3.6
 python -m scripts.research.heavy_tail_unitary_evaluation   # §4.1
 
 python -m scripts.operations.collect_confirmatory --status # §4.2
@@ -231,15 +277,29 @@ Lịch sử commit của chuỗi nghiên cứu này:
 | `a2d16f1` | Endpoint CRPS |
 | `33d8add` | Lévy unitary shift |
 | `040f6bb` | Runner thu L2 LOB confirmatory |
+| `3a53212` | **Sửa 3 lỗi đo lường** khiến chiến lược demo trông có lãi |
+| `6d49274` | Khả thi giao dịch theo horizon |
+| `412d6f5` | Nhãn theo horizon — kỹ năng có thật nhưng không sinh lời |
 
 ---
 
 ## 7. Điều chúng tôi muốn hội đồng đánh giá
 
 Dự án này **không** trình bày một model lượng tử thắng thị trường. Nó trình bày
-một quy trình đủ chặt để **phát hiện rằng model của chính mình không thắng** —
-gồm việc tự tìm ra và công bố một bug đã tạo ra con số đẹp hơn sự thật gần **4
-lần**, và việc chấp nhận thua một hồi quy tuyến tính 5 hệ số.
+một quy trình đủ chặt để **phát hiện rằng model của chính mình không thắng**.
+
+Cụ thể, dự án đã **ba lần tự bác bỏ chính mình**, và mỗi lần đều công bố thay vì
+giấu đi:
+
+1. Một bug `calibrate_bias` từng tạo ra con số đẹp hơn sự thật gần **4 lần**
+   (+0,0499 so với −0,0131 thật).
+2. Một artifact BNB không tái lập được; chạy lại đúng cách cho kết quả **xấu
+   hơn** cho model (hạng 2/6 → 4/6).
+3. Ba lỗi đo lường khiến chiến lược demo trông có lãi; sửa xong nó **lỗ 4,2%**.
+
+Và dự án chấp nhận thua một hồi quy tuyến tính 5 hệ số, rồi còn đi thêm một bước
+nữa để chứng minh rằng **ngay cả khi có dự báo tốt cũng chưa giao dịch được** —
+vì ở horizon đang dùng, phí giao dịch lớn hơn biên độ giá tới hơn hai nghìn lần.
 
 Trong một lĩnh vực mà kết quả dương tính không tái lập được là vấn đề hệ thống,
-chúng tôi cho rằng đó mới là đóng góp có giá trị.
+chúng tôi cho rằng khả năng tự bác bỏ mới là đóng góp có giá trị.

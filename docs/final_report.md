@@ -325,6 +325,74 @@ chỉ gói gọn 1 ngày UTC); (c) exploratory. Diễn giải trung thực: CRPS
 QRW **thua ít dứt khoát nhất**, không phải chiều QRW thắng — và phần không thua
 đó vẫn không đến từ pha lượng tử (pha vẫn = 0).
 
+## 5e. Khả thi giao dịch: kỹ năng và lợi nhuận ở hai đầu đối lập (exploratory)
+
+Phase 1–5 hỏi "mô hình nào dự báo tốt hơn". Phần này hỏi câu khác hẳn: **có dự
+báo tốt hơn thì có giao dịch được không?** Đây là câu hỏi biến dự án từ nghiên
+cứu định lượng thành quant trading, và câu trả lời là **chưa**.
+
+### Ba lỗi đo lường phải sửa trước
+
+Bộ chỉ số backtest có ba lỗi, và **không lỗi nào chỉ ảnh hưởng hiển thị**:
+`n_trades` đếm mỗi *bar đang giữ vị thế* thành một lệnh (thổi phồng 15–34 lần);
+`sharpe` thực chất là `mean/std·√n_bars`, tức một **t-statistic** tăng vô hạn
+theo cỡ mẫu; và bản sao công thức trong `optimizer.py` **không trừ phí giao
+dịch**. Vì optimizer tối ưu theo `sharpe` và lọc theo `min_trades`, cả ba đang
+lái việc **chọn tham số**. Sau khi sửa, grid search chọn khác (θ_buy 0,62 →
+0,68) và dấu của chiến lược đảo: profit factor 265 → **0,095**, lãi ròng +0,04%
+→ **−4,2%**, Sharpe quy đổi năm **−48,6**. Giữ nguyên backtest và chỉ đổi công
+thức cũng tái hiện đúng sự đảo chiều đó, nên đây là lỗi **đo lường**, không phải
+dữ liệu.
+
+### Horizon 1 tick là bất khả thi về mặt toán học
+
+Với horizon `h`, một cược hướng có tỉ lệ đúng `p` thu về `(2p−1)·E|r_h|` trước
+phí, nên hoà vốn đòi `p > 0,5 + chi_phí/(2·E|r_h|)`. Ở horizon dự án đang dùng —
+**1 tick** — biến động trung bình chỉ bằng 0,0005 (BTC), 0,0010 (ETH) và 0,0022
+(BNB) lần một vòng taker, tức ngưỡng hoà vốn **vượt 100%**: một mô hình dự đoán
+đúng *hoàn hảo* vẫn lỗ. Đây là giới hạn của **horizon**, không phải của mô hình,
+và không kỹ thuật mô hình hoá nào cứu được.
+
+Half-spread được **đo từ dữ liệu** (0,20–0,67 bps) chứ không giả định, và nó nhỏ
+hơn phí sàn nhiều — nên **phí mới là đòn bẩy chính**. Đặt lệnh chờ (maker
+2bps/chiều) trở nên khả thi từ ~41 phút (BTC), ~25 phút (ETH), ~13 phút (BNB).
+Script: [horizon_feasibility.py](../scripts/research/horizon_feasibility.py).
+
+### Có kỹ năng thật, nhưng không ở nơi có tiền
+
+Đổi nhãn sang **dấu lợi suất qua `h` tick**, chạy lại bộ baseline causal đã đăng
+ký trên các cửa sổ **không chồng lấp** (anchor cách nhau đúng `h` tick, nên
+không nhãn nào chia sẻ tương lai với nhãn khác):
+
+| Horizon | BTC | ETH | BNB | Lãi ròng/lệnh (maker 2bps) |
+|---|---:|---:|---:|---:|
+| 1.000 (~49s) | **65,7%** | 58,8% | 54,0% | −2,56 / −0,62 / −1,57 bps |
+| 10.000 | 53,9% | 60,5% | 49,2% *(thua hằng số)* | vẫn âm |
+| 50.000 | 55,7% *(= hằng số)* | thiếu mẫu | 51,9% | vẫn âm |
+
+**Order flow có sức dự báo thật** — BTC đạt 65,7% so với lớp đa số 51,2%. Nhưng
+ở horizon đó giá chưa dịch đủ để trả phí. Kéo horizon ra tới khi biên độ đủ lớn
+thì **kỹ năng biến mất**: BTC ở h=50.000 và BNB ở h=10.000 không mô hình nào
+thắng nổi một hằng số. **Không horizon nào trên bất kỳ asset nào đạt hoà vốn**,
+kể cả ở mức phí maker.
+
+Con số 65,7% được **kiểm tra chứ không báo cáo thẳng**: ablation từng feature
+truy ra `tick_direction` (tương quan +0,356 với lợi suất tương lai), một biến có
+autocorr **0,965 ở lag 1** — đúng hiện tượng long-memory of order flow. Đối
+chiếu với các cửa sổ tương lai **rời nhau** cho thấy tương quan sụp từ +0,329
+xuống +0,011 ngay ở cửa sổ kế tiếp, tức tác động flow ngắn hạn **thật**; rò rỉ
+thì sẽ duy trì qua mọi cửa sổ. Script:
+[horizon_label_baselines.py](../scripts/research/horizon_label_baselines.py).
+
+### Hạn chế của chính phần này
+
+Khử chồng lấp làm cỡ mẫu tụt còn **86–9.695 cửa sổ**, nên khoảng tin cậy rất
+rộng và không kết luận nào ở đây là dứt khoát. Phân tích cũng **chưa có số hạng
+adverse selection**: khi spread thu được lớn hơn phí, công thức hoà vốn kết luận
+có lãi ở *mọi* độ chính xác — đó là ảo giác, vì lệnh chờ có xu hướng được khớp
+đúng lúc thị trường đi ngược lại. Muốn dùng kịch bản maker phải mô hình hoá hàng
+đợi lệnh bằng **L2 thật** (§8 hạn chế #1).
+
 ## 6. AIC/BIC và scorecard
 
 AIC/BIC chỉ được xếp hạng trong cùng họ likelihood:
@@ -441,7 +509,11 @@ downcast, 1.070 MB), edge post-fix = −0,013 (thắng affine, thay số cũ
 +0,049889). Tổng hợp: **chưa có bằng chứng cho một lợi thế dự báo bền vững của QRW, và cơ
 chế lượng tử cụ thể (pha) đóng góp bằng 0**; ở directional một logistic tự hồi quy
 đơn giản (OrderFlow AR) đánh bại QRW ở mọi asset, còn ở phân phối (CRPS) QRW chỉ
-dẫn đầu trên một trong ba asset. Các hạn chế còn lại: dữ liệu hoạt động vẫn
+dẫn đầu trên một trong ba asset. **(6)** §5e đi thêm một bước và hỏi liệu bất kỳ
+dự báo nào ở đây có **giao dịch được** không: không. Horizon 1 tick mà dự án dùng
+có ngưỡng hoà vốn **vượt 100%** — dự đoán đúng hoàn hảo vẫn lỗ. Order flow có kỹ
+năng thật ở horizon ngắn (BTC 65,7%) nhưng giá chưa dịch đủ để trả phí, còn ở
+horizon dài đủ trả phí thì kỹ năng biến mất. Các hạn chế còn lại: dữ liệu hoạt động vẫn
 ngắn và OBI chưa phải L2 order-book imbalance thật; toàn bộ là exploratory.
 
 Kết luận khoa học cuối cùng chỉ nên được đưa ra sau khi: protocol được đóng
