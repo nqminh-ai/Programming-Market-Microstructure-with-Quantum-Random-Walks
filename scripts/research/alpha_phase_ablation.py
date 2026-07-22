@@ -63,6 +63,7 @@ from scripts.audits.phase3_overfitting_audit import (
     moving_block_bootstrap_mean,
     moving_events,
 )
+from src.evaluation.provenance import canonical_repo_path, sha256_file
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -462,7 +463,8 @@ def main() -> None:
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": _git_commit(),
         "python": platform.python_version(),
-        "feature_path": str(feature_path),
+        "feature_path": canonical_repo_path(feature_path, ROOT),
+        "feature_sha256": sha256_file(feature_path),
         "rows": int(len(frame)),
         "folds": int(args.folds),
         "bootstrap_samples": int(args.bootstrap_samples),

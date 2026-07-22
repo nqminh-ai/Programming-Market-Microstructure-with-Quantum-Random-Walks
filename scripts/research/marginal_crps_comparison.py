@@ -34,6 +34,7 @@ import numpy as np
 import pandas as pd
 
 from scripts.research.full_dataset_confirmation import _load_frame_efficient
+from src.evaluation.provenance import canonical_repo_path, sha256_file
 from src.evaluation.benchmark_suite import BenchmarkSuite
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -181,7 +182,8 @@ def main() -> None:
         "python": platform.python_version(),
         "protocol_version": BenchmarkSuite.PROTOCOL_VERSION,
         "label": args.label,
-        "feature_path": str(feature_path),
+        "feature_path": canonical_repo_path(feature_path, ROOT),
+        "feature_sha256": sha256_file(feature_path),
         "rows": int(len(frame)),
         "windows": len(per_window),
         "n_steps": args.n_steps,

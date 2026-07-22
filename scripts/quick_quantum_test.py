@@ -65,7 +65,10 @@ def quick_test(args: argparse.Namespace) -> None:
         "quantum_calibration_seed": args.seed,
     }
     model = MarketQRW(train_df, config)
-    params = model.calibrate("test_params.json")
+    # Generated output belongs under results/, not the repository root.
+    parameter_path = ROOT / "results" / "quick_quantum_params.json"
+    parameter_path.parent.mkdir(parents=True, exist_ok=True)
+    params = model.calibrate(parameter_path)
     print(f"Calibration took {time.time() - start_time:.1f}s")
     print("Learned Params:")
     print(f"  alpha_obi: {params.get('alpha_obi')}")

@@ -45,6 +45,10 @@ SSI Fast Connect API/
 # Local per-user Claude Code settings (keep shared settings.json tracked)
 .claude/settings.local.json
 
+# Scratch artifacts that scripts used to drop in the repository root
+/test_params.json
+/test_*.parquet
+
 # Temp files
 *.tmp
 *.bak

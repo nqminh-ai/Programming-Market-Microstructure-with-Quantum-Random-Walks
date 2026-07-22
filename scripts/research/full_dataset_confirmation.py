@@ -35,6 +35,7 @@ from scripts.audits.phase3_overfitting_audit import (
     fit_model,
     moving_block_bootstrap_mean,
 )
+from src.evaluation.provenance import canonical_repo_path, sha256_file
 from scripts.research.alpha_phase_ablation import paired_edge, run_affine, run_config
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -179,7 +180,8 @@ def main() -> None:
         "git_commit": _git_commit(),
         "python": platform.python_version(),
         "label": args.label,
-        "feature_path": str(feature_path),
+        "feature_path": canonical_repo_path(feature_path, ROOT),
+        "feature_sha256": sha256_file(feature_path),
         "rows": int(len(frame)),
         "in_memory_mb": round(mem_mb, 1),
         "quantum_improved": bool(structural["quantum_improved"]),

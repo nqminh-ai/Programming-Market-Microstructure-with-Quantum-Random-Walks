@@ -40,6 +40,7 @@ import numpy as np
 import pandas as pd
 
 from scripts.research.full_dataset_confirmation import _load_frame_efficient
+from src.evaluation.provenance import canonical_repo_path, sha256_file
 from src.models.heavy_tail_unitary import LevyUnitaryQRW
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -261,7 +262,8 @@ def main() -> None:
         "git_commit": _git_commit(),
         "python": platform.python_version(),
         "label": args.label,
-        "feature_path": str(feature_path),
+        "feature_path": canonical_repo_path(feature_path, ROOT),
+        "feature_sha256": sha256_file(feature_path),
         "rows": int(len(frame)),
         "tick_size": tick_size,
         "horizon": args.horizon,

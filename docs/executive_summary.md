@@ -164,10 +164,17 @@ kiểm chứng được **không cần mạng**.
 
 ### 4.3 Kỷ luật provenance fail-closed
 
-Mọi artifact ghi protocol version, git commit đầy đủ, SHA-256 từng input/output,
-dependency lock và seed. Trường nào không khớp thì pipeline **hard-fail** thay vì
-xuất kết quả. Chính kỷ luật này giúp phát hiện rằng con số +0,049889 không tái
-lập được.
+Artifact của **pipeline** (Phase 2–6) ghi protocol version, git commit đầy đủ,
+canonical feature path, SHA-256 từng input/output, dependency lock và seed;
+trường nào không khớp thì pipeline **hard-fail** thay vì xuất kết quả. Chính kỷ
+luật này giúp phát hiện rằng con số +0,049889 không tái lập được.
+
+**Đính chính (rà soát 2026-07-22):** các script nghiên cứu Phase 1–6 mà chúng
+tôi viết thêm ban đầu **không** ghi `feature_sha256` — chúng chỉ ghi git commit
+và đường dẫn. 16 file JSON trong `reports/research/` sinh trước ngày này vì vậy
+thiếu trường đó. Đã sửa cả năm script để ghi SHA-256 và canonical path; các
+artifact cũ **không** được backfill hash về sau (làm vậy chính là thứ kỷ luật
+này tồn tại để ngăn) — chúng giữ nguyên và được đánh dấu là thiếu trường.
 
 ### 4.4 Bộ baseline cổ điển mạnh, dùng lại được
 
