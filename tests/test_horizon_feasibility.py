@@ -81,3 +81,48 @@ def test_verdict_states_that_clearing_costs_is_not_sufficient() -> None:
     analysis = hf.analyse(_frame(20_000), horizons=(1, 1_000))
     verdict = hf.build_verdict(analysis, "TEST")
     assert "cần, không đủ" in verdict
+
+
+def test_expected_move_is_unchanged_by_the_chunk_size() -> None:
+    """Chunking bounds memory on a 200M-row store; it must not move the number."""
+    frame = _frame(20_000)
+    frame.loc[9_000:, "segment_id"] = 1
+    frame.loc[13_000, "price"] = np.nan
+
+    whole, pairs = hf.expected_absolute_move(frame, 100, chunk=len(frame))
+    split, split_pairs = hf.expected_absolute_move(frame, 100, chunk=1_000)
+    uneven, uneven_pairs = hf.expected_absolute_move(frame, 100, chunk=3_333)
+
+    assert pairs == split_pairs == uneven_pairs > 0
+    assert split == pytest.approx(whole, rel=1e-12)
+    assert uneven == pytest.approx(whole, rel=1e-12)
+
+
+def test_expected_move_never_pairs_across_a_segment_break() -> None:
+    """A pair spanning a data gap is not a price move that could be traded."""
+    frame = _frame(1_000)
+    frame.loc[500:, "segment_id"] = 1
+
+    _, pairs = hf.expected_absolute_move(frame, 100, chunk=64)
+
+    # Anchors 400..499 would reach into segment 1 and must be excluded.
+    assert pairs == 800
+
+
+def test_loading_a_capped_frame_reads_only_what_the_cap_needs(tmp_path) -> None:
+    """Reading the file and then slicing materialises every row to keep a few."""
+    import pyarrow.parquet as pq
+
+    path = tmp_path / "features_BTCUSDT_69d.parquet"
+    pq.write_table(
+        pa_table := __import__("pyarrow").Table.from_pandas(_frame(50_000)),
+        path,
+        row_group_size=1_000,
+    )
+    assert pa_table.num_rows == 50_000
+
+    frame = hf._load(path, max_rows=2_500)
+
+    assert len(frame) == 2_500
+    assert frame["timestamp"].is_monotonic_increasing
+    assert list(frame.columns) == [c for c in hf.NEEDED_COLUMNS]

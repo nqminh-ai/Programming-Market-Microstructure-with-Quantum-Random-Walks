@@ -36,12 +36,14 @@ import argparse
 import json
 import platform
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 import pyarrow.parquet as pq
 
 from src.data.common import timestamps_to_nanoseconds
@@ -103,13 +105,34 @@ def _git_commit() -> str:
 
 
 def _load(path: Path, max_rows: int) -> pd.DataFrame:
-    names = set(pq.ParquetFile(path).schema.names)
+    handle = pq.ParquetFile(path)
+    names = set(handle.schema.names)
     columns = [column for column in NEEDED_COLUMNS if column in names]
-    frame = pd.read_parquet(path, columns=columns)
-    if max_rows and len(frame) > max_rows:
+    total = handle.metadata.num_rows
+
+    if max_rows and total > max_rows:
+        # Read only the row groups the cap can reach. Reading the file and then
+        # slicing means materialising all 227M rows of a 69-day store to keep
+        # four million of them.
+        blocks = []
+        rows = 0
+        for index in range(handle.metadata.num_row_groups):
+            blocks.append(handle.read_row_group(index, columns=columns))
+            rows += blocks[-1].num_rows
+            if rows >= max_rows:
+                break
+        frame = pa.concat_tables(blocks).to_pandas()
+        del blocks
         frame = frame.iloc[:max_rows]
-    frame = frame.sort_values("timestamp", kind="stable").reset_index(drop=True)
-    return frame
+    else:
+        frame = pd.read_parquet(path, columns=columns)
+
+    # Sorting unconditionally copies the whole frame, which at this size is the
+    # difference between fitting in memory and not. The stores are written in
+    # date order from per-day files, so the check almost always passes.
+    if not frame["timestamp"].is_monotonic_increasing:
+        frame = frame.sort_values("timestamp", kind="stable")
+    return frame.reset_index(drop=True)
 
 
 def measure_half_spread(frame: pd.DataFrame, chunk: int = 10_000_000) -> float | None:
@@ -154,33 +177,64 @@ def seconds_per_tick(frame: pd.DataFrame) -> float | None:
     plausible 6-year span if misread as microseconds, which silently turned
     41 minutes into 28 days here.
     """
+    column = frame["timestamp"]
+    if len(column) < 2:
+        return None
     try:
-        nanoseconds = timestamps_to_nanoseconds(frame["timestamp"]).to_numpy(dtype="int64")
+        # Only the two extremes are needed. Converting the whole column costs
+        # several full-length copies inside the helper -- 1.7GB apiece on a
+        # 69-day store, which is where this used to die. Unit detection keys off
+        # the largest magnitude, and that is always one of the extremes, so the
+        # inferred unit is identical either way.
+        values = column.to_numpy()
+        endpoints = column.iloc[[int(np.argmin(values)), int(np.argmax(values))]]
+        nanoseconds = timestamps_to_nanoseconds(endpoints).to_numpy(dtype="int64")
     except (ValueError, TypeError, OverflowError):
         return None
-    if nanoseconds.size < 2:
-        return None
-    span_seconds = float(nanoseconds.max() - nanoseconds.min()) / 1e9
+    span_seconds = float(nanoseconds[1] - nanoseconds[0]) / 1e9
     if span_seconds <= 0:
         return None
     # n points span n-1 intervals.
-    return span_seconds / (nanoseconds.size - 1)
+    return span_seconds / (len(column) - 1)
 
 
-def expected_absolute_move(frame: pd.DataFrame, horizon: int) -> tuple[float, int]:
-    """Mean ``|log(P_{t+h} / P_t)|`` over pairs inside one contiguous segment."""
-    price = frame["price"].to_numpy(dtype=float)
-    if horizon >= len(price):
+def expected_absolute_move(
+    frame: pd.DataFrame, horizon: int, chunk: int = 10_000_000
+) -> tuple[float, int]:
+    """Mean ``|log(P_{t+h} / P_t)|`` over pairs inside one contiguous segment.
+
+    Accumulated in chunks. Taken whole, the masked division and its logarithm
+    are four float64 arrays the length of the frame held at once -- 6.3GB on a
+    69-day store, which is where this used to die. The mean is unchanged: it is
+    the running sum over the running count, across the same pairs.
+    """
+    price_column = frame["price"].to_numpy()
+    rows = len(price_column)
+    if horizon >= rows:
         return float("nan"), 0
-    start, end = price[:-horizon], price[horizon:]
-    usable = np.isfinite(start) & np.isfinite(end) & (start > 0) & (end > 0)
-    if "segment_id" in frame.columns:
-        segment = frame["segment_id"].to_numpy()
-        usable &= segment[:-horizon] == segment[horizon:]
-    if not usable.any():
+    segment_column = (
+        frame["segment_id"].to_numpy() if "segment_id" in frame.columns else None
+    )
+
+    move_sum = 0.0
+    count = 0
+    for begin in range(0, rows - horizon, chunk):
+        stop = min(begin + chunk, rows - horizon)
+        start = price_column[begin:stop].astype(np.float64, copy=False)
+        end = price_column[begin + horizon : stop + horizon].astype(np.float64, copy=False)
+        usable = np.isfinite(start) & np.isfinite(end) & (start > 0) & (end > 0)
+        if segment_column is not None:
+            usable &= (
+                segment_column[begin:stop] == segment_column[begin + horizon : stop + horizon]
+            )
+        if not usable.any():
+            continue
+        move_sum += float(np.abs(np.log(end[usable] / start[usable])).sum())
+        count += int(usable.sum())
+
+    if count == 0:
         return float("nan"), 0
-    moves = np.abs(np.log(end[usable] / start[usable]))
-    return float(moves.mean()), int(usable.sum())
+    return move_sum / count, count
 
 
 def round_trip_cost(scenario: dict[str, Any], half_spread: float | None) -> float:
@@ -408,6 +462,13 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    # A Windows console defaults to cp1252 and cannot encode the Vietnamese
+    # progress lines, which otherwise kills the run on its first print after
+    # the load has already been paid for.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
     args = parse_args()
     feature_path = (ROOT / args.feature_path).resolve()
     if not feature_path.exists():

@@ -204,6 +204,54 @@ def test_obi_change_is_zero_at_the_first_row_and_across_a_segment_break() -> Non
     assert obi_change[2:] == pytest.approx(step)
 
 
+def test_clearing_breakeven_by_eye_is_not_reported_as_clearing_it() -> None:
+    """A point estimate above a threshold is not evidence of being above it.
+
+    On the 69-day BNB store the best model at h=50,000 scored 53.6% against a
+    52.3% break-even -- but on 323 non-overlapping windows, which puts p at
+    0.35 with an interval that still covers a coin flip.
+    """
+    analysis = hlb.analyse(_frame(drift_from_flow=3e-6), (200,), 0.70)
+    row = analysis["horizons"][0]
+
+    for name, significant in row["clears_breakeven_significant"].items():
+        if not significant:
+            continue
+        assert row["clears_breakeven"][name], "significant but not above the threshold"
+        assert row["clears_breakeven_p_value"][name] < 0.05
+
+    low, high = row["best_accuracy_ci95"]
+    assert low <= row["best_accuracy"] <= high
+
+
+def test_a_borderline_result_is_named_in_the_verdict_not_dropped() -> None:
+    """Silently omitting it invites rediscovery in the table as a finding."""
+    analysis = hlb.analyse(_frame(drift_from_flow=3e-6), (200,), 0.70)
+    row = analysis["horizons"][0]
+    row["clears_breakeven"]["maker_futures_2bps"] = True
+    row["clears_breakeven_significant"]["maker_futures_2bps"] = False
+    row["clears_breakeven_p_value"]["maker_futures_2bps"] = 0.35
+
+    verdict = hlb.build_verdict(analysis)
+
+    assert "Không horizon nào vượt ngưỡng hoà vốn" in verdict
+    assert "không qua được kiểm định" in verdict.replace("**", "")
+    assert "p=0.350" in verdict
+
+
+def test_a_significant_result_is_reported_as_one() -> None:
+    analysis = hlb.analyse(_frame(drift_from_flow=3e-6), (200,), 0.70)
+    row = analysis["horizons"][0]
+    row["clears_breakeven"]["maker_futures_2bps"] = True
+    row["clears_breakeven_significant"]["maker_futures_2bps"] = True
+    row["clears_breakeven_p_value"]["maker_futures_2bps"] = 0.01
+
+    verdict = hlb.build_verdict(analysis)
+
+    assert "có ý nghĩa" in verdict
+    assert "p=0.010" in verdict
+
+
 def test_half_spread_is_unchanged_by_the_chunk_size() -> None:
     """Chunking exists only to bound memory; it must not move the estimate."""
     frame = _frame(20_000)

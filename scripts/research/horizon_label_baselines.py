@@ -32,6 +32,7 @@ import gc
 import json
 import platform
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -41,8 +42,8 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from scipy.special import expit
+from scipy.stats import binomtest
 
-from src.data.common import timestamps_to_nanoseconds
 from src.evaluation.directional_baselines import (
     FEATURE_NAMES,
     _fit_logistic,
@@ -54,6 +55,7 @@ from scripts.research.horizon_feasibility import (
     breakeven_accuracy,
     measure_half_spread,
     round_trip_cost,
+    seconds_per_tick as measure_seconds_per_tick,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -305,13 +307,11 @@ def analyse(
         name: round_trip_cost(scenario, half_spread)
         for name, scenario in FEE_SCENARIOS.items()
     }
-    try:
-        nanoseconds = timestamps_to_nanoseconds(frame["timestamp"]).to_numpy(dtype="int64")
-        seconds_per_tick = (
-            float(nanoseconds.max() - nanoseconds.min()) / 1e9 / max(len(frame) - 1, 1)
-        )
-    except (ValueError, TypeError, OverflowError):
-        seconds_per_tick = None
+    # Shared with the feasibility study rather than recomputed: that copy is
+    # endpoint-based, so it does not convert the whole timestamp column, and a
+    # second implementation of the same thing is a second chance to get the
+    # unit inference wrong -- which has already happened once here.
+    seconds_per_tick = measure_seconds_per_tick(frame)
 
     rows: list[dict[str, Any]] = []
     for horizon in horizons:
@@ -336,6 +336,33 @@ def analyse(
             name: (2.0 * best_accuracy - 1.0) * expected_move - cost
             for name, cost in costs.items()
         }
+        # A point estimate above a threshold is not evidence of being above it.
+        # De-overlapping leaves a few hundred windows at the long horizons, and
+        # at n=323 an accuracy of 53.6% against a 52.3% break-even carries
+        # p=0.35 -- its interval also covers a coin flip. Reporting that as
+        # "clears break-even" is precisely the overstatement this study exists
+        # to avoid, so the comparison is accompanied by a one-sided binomial
+        # test and the verdict speaks only of results that survive it.
+        n_test = int(scored["n_test"])
+        successes = int(round(best_accuracy * n_test))
+        interval = binomtest(successes, n_test).proportion_ci(0.95, method="wilson")
+        clears = {
+            name: bool(best_accuracy > threshold)
+            for name, threshold in thresholds.items()
+        }
+        clears_significantly = {}
+        p_values = {}
+        for name, threshold in thresholds.items():
+            if threshold is None or not np.isfinite(threshold) or not 0.0 < threshold < 1.0:
+                clears_significantly[name] = False
+                p_values[name] = None
+                continue
+            p_value = float(
+                binomtest(successes, n_test, threshold, alternative="greater").pvalue
+            )
+            p_values[name] = p_value
+            clears_significantly[name] = bool(clears[name] and p_value < 0.05)
+
         rows.append(
             {
                 "horizon_ticks": int(horizon),
@@ -345,13 +372,13 @@ def analyse(
                 "net_edge_per_trade": net_edge,
                 "best_model": best_name,
                 "best_accuracy": best_accuracy,
+                "best_accuracy_ci95": [float(interval.low), float(interval.high)],
                 "beats_majority": bool(
                     best_accuracy > scored["majority_class_rate"] + 1e-12
                 ),
-                "clears_breakeven": {
-                    name: bool(best_accuracy > threshold)
-                    for name, threshold in thresholds.items()
-                },
+                "clears_breakeven": clears,
+                "clears_breakeven_p_value": p_values,
+                "clears_breakeven_significant": clears_significantly,
                 **scored,
             }
         )
@@ -385,7 +412,16 @@ def build_verdict(analysis: dict[str, Any]) -> str:
     tradable = [
         row
         for row in scored
+        if row["clears_breakeven_significant"].get("maker_futures_2bps")
+    ]
+    # Above the threshold by eye but not by test: worth naming, because leaving
+    # it out of the verdict entirely invites someone to rediscover it in the
+    # table and read it as a finding.
+    borderline = [
+        row
+        for row in scored
         if row["clears_breakeven"].get("maker_futures_2bps")
+        and not row["clears_breakeven_significant"].get("maker_futures_2bps")
     ]
     beat_majority = [row for row in scored if row["beats_majority"]]
     parts = [
@@ -407,13 +443,31 @@ def build_verdict(analysis: dict[str, Any]) -> str:
         )
     if tradable:
         best = max(tradable, key=lambda row: row["best_accuracy"])
+        p_value = best["clears_breakeven_p_value"]["maker_futures_2bps"]
         parts.append(
-            f"**{len(tradable)} horizon vượt ngưỡng hoà vốn maker 2bps**, tốt nhất là "
-            f"h={best['horizon_ticks']:,} ({_format_seconds(best['seconds'])})."
+            f"**{len(tradable)} horizon vượt ngưỡng hoà vốn maker 2bps có ý nghĩa "
+            f"thống kê**, tốt nhất là h={best['horizon_ticks']:,} "
+            f"({_format_seconds(best['seconds'])}, p={p_value:.3f})."
         )
     else:
         parts.append(
-            "**Không horizon nào đạt ngưỡng hoà vốn** kể cả ở mức phí maker 2bps."
+            "**Không horizon nào vượt ngưỡng hoà vốn** kể cả ở mức phí maker 2bps."
+        )
+    if borderline:
+        worst = min(
+            borderline,
+            key=lambda row: row["clears_breakeven_p_value"]["maker_futures_2bps"],
+        )
+        low, high = worst["best_accuracy_ci95"]
+        parts.append(
+            f"Có {len(borderline)} horizon *nhìn* như vượt ngưỡng nhưng **không "
+            f"qua được kiểm định**: h={worst['horizon_ticks']:,} đạt "
+            f"{worst['best_accuracy'] * 100:.1f}% so với ngưỡng "
+            f"{worst['breakeven_accuracy']['maker_futures_2bps'] * 100:.1f}% trên "
+            f"{worst['n_test']:,} cửa sổ, p="
+            f"{worst['clears_breakeven_p_value']['maker_futures_2bps']:.3f}, khoảng "
+            f"tin cậy 95% [{low * 100:.1f}%, {high * 100:.1f}%] — vẫn chứa cả mức "
+            f"tung đồng xu. Chênh lệch đó không phân biệt được với nhiễu."
         )
     # The shape of the result matters more than any single number: skill and
     # payoff sit at opposite ends of the horizon range.
@@ -452,24 +506,34 @@ def render_markdown(audit: dict[str, Any]) -> str:
         "## Độ chính xác đạt được so với ngưỡng cần có",
         "",
         "| Horizon | Thời gian | Cửa sổ (train/test) | Lớp đa số | Mô hình tốt nhất | "
-        "Độ chính xác | Ngưỡng maker 2bps | Lãi ròng/lệnh | Đạt? |",
-        "|---:|---:|---:|---:|---|---:|---:|---:|:--:|",
+        "Độ chính xác | KTC 95% | Ngưỡng maker 2bps | Lãi ròng/lệnh | Đạt? |",
+        "|---:|---:|---:|---:|---|---:|---:|---:|---:|:--:|",
     ]
     for row in analysis["horizons"]:
         if "skipped" in row:
             lines.append(
-                f"| {row['horizon_ticks']:,} | — | không đủ mẫu | — | — | — | — | — | — |"
+                f"| {row['horizon_ticks']:,} | — | không đủ mẫu | — | — | — | — | — | — | — |"
             )
             continue
         threshold = row["breakeven_accuracy"]["maker_futures_2bps"]
         threshold_text = "—" if threshold >= 1.0 else f"{threshold * 100:.1f}%"
-        clears = "✅" if row["clears_breakeven"]["maker_futures_2bps"] else "✘"
+        # A tick here means the point estimate cleared the threshold *and* a
+        # one-sided binomial test says the sample can tell the two apart.
+        if row["clears_breakeven_significant"]["maker_futures_2bps"]:
+            clears = "✅"
+        elif row["clears_breakeven"]["maker_futures_2bps"]:
+            p_value = row["clears_breakeven_p_value"]["maker_futures_2bps"]
+            clears = f"⚠ p={p_value:.2f}"
+        else:
+            clears = "✘"
         net = row["net_edge_per_trade"]["maker_futures_2bps"]
+        low, high = row["best_accuracy_ci95"]
         lines.append(
             f"| {row['horizon_ticks']:,} | {_format_seconds(row['seconds'])} | "
             f"{row['n_train']}/{row['n_test']} | "
             f"{row['majority_class_rate'] * 100:.1f}% | {row['best_model']} | "
-            f"{row['best_accuracy'] * 100:.1f}% | {threshold_text} | "
+            f"{row['best_accuracy'] * 100:.1f}% | "
+            f"[{low * 100:.1f}, {high * 100:.1f}]% | {threshold_text} | "
             f"{net * 1e4:+.2f} bps | {clears} |"
         )
 
@@ -510,6 +574,14 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    # The progress lines are Vietnamese, and a Windows console defaults to
+    # cp1252, which cannot encode them. Without this the run dies on its first
+    # print -- after the several minutes it takes to load a 200M-row store, and
+    # with a traceback about a codec rather than anything to do with the study.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
     args = parse_args()
     feature_path = (ROOT / args.feature_path).resolve()
     if not feature_path.exists():
