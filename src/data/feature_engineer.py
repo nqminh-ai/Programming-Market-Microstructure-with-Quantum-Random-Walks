@@ -90,6 +90,14 @@ class FeatureEngineer:
             raise ValueError(f"processed ticks are missing columns: {missing}")
 
         features = ticks.copy()
+        # `day` rides along from the raw file rather than being engineered here,
+        # and only one of the two acquisition paths writes it: the bulk parquet
+        # collector declares it in its output schema, the csv.gz downloader does
+        # not. Passing it through therefore makes the feature schema depend on
+        # how the day happened to be fetched, and combining a store built from
+        # both fails on a schema mismatch. It carries nothing the timestamp does
+        # not already say.
+        features = features.drop(columns=["day"], errors="ignore")
         features["timestamp"] = timestamps_to_nanoseconds(features["timestamp"]).to_numpy()
         if not features["timestamp"].is_monotonic_increasing:
             features = features.sort_values("timestamp", kind="stable")

@@ -47,6 +47,32 @@ def main():
     expected_rows = sum(pq.ParquetFile(f).metadata.num_rows for f in files)
     print(f"Expecting {expected_rows:,} rows.")
 
+    # Check every schema up front. Writing first and letting pyarrow object on
+    # the offending batch means the run dies part-way -- it died at file 32 of
+    # 69 -- and reports the mismatch as two truncated schema dumps that do not
+    # name the file or the column. Days built from different acquisition paths
+    # really do differ, so this is a routine failure, not a corrupt-file one.
+    reference = pq.ParquetFile(files[0]).schema_arrow
+    for path in files[1:]:
+        schema = pq.ParquetFile(path).schema_arrow
+        if schema.equals(reference):
+            continue
+        extra = sorted(set(schema.names) - set(reference.names))
+        absent = sorted(set(reference.names) - set(schema.names))
+        retyped = sorted(
+            f"{name}: {reference.field(name).type} vs {schema.field(name).type}"
+            for name in set(schema.names) & set(reference.names)
+            if reference.field(name).type != schema.field(name).type
+        )
+        print(f"Schema mismatch: {path.name} does not match {files[0].name}.")
+        if extra:
+            print(f"  only in {path.name}: {', '.join(extra)}")
+        if absent:
+            print(f"  missing from {path.name}: {', '.join(absent)}")
+        if retyped:
+            print(f"  differing types: {'; '.join(retyped)}")
+        sys.exit(1)
+
     # Write to a temporary name and only rename on success. A killed run
     # otherwise leaves a partial file at the final path whose footer was never
     # written: it is the right size and the right name, and every reader fails

@@ -98,6 +98,48 @@ def test_a_stale_partial_from_an_earlier_kill_is_discarded(tmp_path) -> None:
     assert pq.read_table(output).num_rows == 10
 
 
+def test_a_differing_schema_is_named_before_any_writing_starts(tmp_path) -> None:
+    """Days fetched by different acquisition paths really do differ.
+
+    The bulk parquet collector writes a `day` column and the csv.gz downloader
+    does not, so a store spanning both used to die at file 32 of 69 with two
+    truncated schema dumps that named neither the file nor the column.
+    """
+    _day(tmp_path, "BTCUSDT", "2026-05-13", 10)
+    pq.write_table(
+        pa.table(
+            {
+                "timestamp": list(range(5)),
+                "price": [1.0] * 5,
+                "day": ["2026-05-14"] * 5,
+            }
+        ),
+        tmp_path / "features_BTCUSDT_2026-05-14.parquet",
+    )
+    output = tmp_path / "features_BTCUSDT_combined.parquet"
+
+    result = _run(tmp_path, output)
+
+    assert result.returncode == 1
+    assert "features_BTCUSDT_2026-05-14.parquet" in result.stdout
+    assert "day" in result.stdout
+    assert not output.exists(), "nothing may be written when the inputs disagree"
+
+
+def test_a_differing_column_type_is_reported(tmp_path) -> None:
+    _day(tmp_path, "BTCUSDT", "2026-05-13", 10)
+    pq.write_table(
+        pa.table({"timestamp": list(range(5)), "price": [1] * 5}),  # int, not float
+        tmp_path / "features_BTCUSDT_2026-05-14.parquet",
+    )
+
+    result = _run(tmp_path, tmp_path / "out.parquet")
+
+    assert result.returncode == 1
+    assert "differing types" in result.stdout
+    assert "price" in result.stdout
+
+
 def test_no_daily_files_is_an_error(tmp_path) -> None:
     pq.write_table(
         pa.table({"timestamp": [1], "price": [1.0]}),

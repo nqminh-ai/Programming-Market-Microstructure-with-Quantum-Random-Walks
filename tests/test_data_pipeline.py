@@ -263,6 +263,27 @@ def test_tick_direction_does_not_cross_gap_segments() -> None:
     assert features["tick_direction"].tolist() == [1, 1, 1, -1, -1, -1]
 
 
+def test_feature_schema_does_not_depend_on_how_the_day_was_fetched(
+    processed_ticks: pd.DataFrame,
+) -> None:
+    """The bulk parquet collector writes a `day` column; the csv.gz path does not.
+
+    Letting it through made the feature schema a record of the acquisition
+    route, and combining days fetched both ways failed on a schema mismatch
+    part-way through the write.
+    """
+    engineer = FeatureEngineer()
+    without_day, _ = engineer.engineer(processed_ticks)
+
+    with_day = processed_ticks.copy()
+    with_day["day"] = "2026-05-13"
+    from_parquet_path, _ = engineer.engineer(with_day)
+
+    assert "day" not in from_parquet_path.columns
+    assert list(from_parquet_path.columns) == list(without_day.columns)
+    pd.testing.assert_frame_equal(from_parquet_path, without_day)
+
+
 def test_production_features_require_lob(processed_ticks: pd.DataFrame) -> None:
     with pytest.raises(ValueError, match="LOB data is required"):
         FeatureEngineer().engineer(processed_ticks, require_lob=True)
