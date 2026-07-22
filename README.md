@@ -10,8 +10,8 @@ Ablation/so-sánh Phase 1–5 ([reports/research/](reports/research/)) cho thấ
 bằng 0**: (1) pha `alpha_phase` = 0 trên cả ba asset; (2) ở chiều directional,
 windowing thắng affine yếu nhưng **thua** baseline cổ điển mạnh (OrderFlow
 AR(5), Logistic+Pairwise) trên cả ba asset — ETH xếp chót 7/7; (3) ở endpoint
-chính đăng-ký-trước là marginal CRPS, QRW **cạnh tranh** với GARCH/GBM (hạng 1
-trên ETH, 2 trên BNB, 3 trên BTC) — không thua rõ nhưng cũng không vượt trội.
+chính đăng-ký-trước là marginal CRPS, QRW **không đồng đều** (hạng 1 trên ETH,
+3 trên BTC, 4 trên BNB) — thua ít dứt khoát hơn nhưng không hề vượt trội.
 Fold-fragility trên BTC là bug `calibrate_bias` đã sửa (Phase 2); full 32M dataset
 gốc đã chạy được (Phase 4). OBI vẫn là trade-flow proxy, không phải L2 LOB. Xem
 [báo cáo cuối](docs/final_report.md) §5b–5d.

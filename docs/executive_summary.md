@@ -20,9 +20,9 @@ Câu trả lời là **không** — và chúng tôi chứng minh điều đó b�
    nghĩa thống kê** các baseline cổ điển mạnh trên cả ba tài sản.
 3. **Một "lợi thế" từng công bố (+0,049889) là bug**, đã truy ra nguyên nhân,
    sửa, và thay bằng con số tái lập được (−0,013091 trên toàn bộ 32,4 triệu tick).
-4. **Ngoại lệ duy nhất:** ở endpoint chính đăng-ký-trước (marginal CRPS), QRW
-   *cạnh tranh* với GARCH/GBM — nhưng vẫn không nhất quán, và **vẫn không đến từ
-   pha**.
+4. **Sắc thái duy nhất:** ở endpoint chính đăng-ký-trước (marginal CRPS), QRW
+   thua *ít dứt khoát hơn* — dẫn đầu trên ETH, nhưng chỉ hạng 3/6 trên BTC và
+   4/6 trên BNB. Không nhất quán, và **vẫn không đến từ pha**.
 
 > **Giá trị của dự án không nằm ở "QRW thắng", mà ở chỗ nó chỉ ra chính xác
 > *tại sao* các tuyên bố ưu thế lượng tử trên dữ liệu tài chính thường không
@@ -101,7 +101,7 @@ xuống float32 (32.439.057 dòng, 1070 MB RAM).
 
 📄 [`full_dataset_confirmation.md`](../reports/research/full_dataset_confirmation.md)
 
-### 3.5 Ngoại lệ trung thực: endpoint CRPS
+### 3.5 Sắc thái trung thực: endpoint CRPS
 
 Ở endpoint **chính đăng-ký-trước** (mean fixed-origin marginal CRPS), bức tranh
 khác — và chúng tôi báo cáo nó dù nó không ủng hộ kết luận chung:
@@ -109,12 +109,19 @@ khác — và chúng tôi báo cáo nó dù nó không ủng hộ kết luận c
 | Tài sản | Hạng QRW | Model tốt nhất | Window QRW thắng |
 |---|:--:|---|:--:|
 | ETHUSDT | **1/6** | QRW Adaptive | 3/5 |
-| BNBUSDT | 2/6 | GARCH(1,1) | 3/5 |
 | BTCUSDT | 3/6 | GBM | 0/5 |
+| BNBUSDT | 4/6 | CRW Correlated | 1/5 |
 
-Đây là chiều **duy nhất** QRW không thua dứt khoát. Nhưng: nó thắng ở window
-biến động **thấp** và thua đậm ở window biến động **cao** — vì model không mô
-hình hoá volatility. Và §3.1 đã cho thấy phần thắng này **cũng không đến từ pha**.
+Đây là chiều QRW thua **ít dứt khoát nhất** — không phải chiều QRW thắng. Nó
+dẫn đầu trên đúng một trong ba tài sản, và thua đậm ở các window biến động
+**cao** vì model không mô hình hoá volatility. §3.1 đã cho thấy phần không thua
+này **cũng không đến từ pha**.
+
+> **Số BNB đã đổi (rà soát 2026-07-22).** Bản trước ghi BNB hạng 2/6. Rà soát
+> repo phát hiện artifact đó trỏ vào một file trong thư mục tạm của phiên làm
+> việc, **đã không còn tồn tại** — input không tái lập được. Đã dựng lại dữ liệu
+> BNB (31,5 triệu dòng) **bên trong repo**, chạy lại, và kết quả **xấu hơn cho
+> QRW**: 4/6 thay vì 2/6. Chúng tôi báo số mới.
 
 📄 [`marginal_crps_*.md`](../reports/research/)
 
