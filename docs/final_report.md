@@ -2,13 +2,13 @@
 
 ## Trạng thái khoa học
 
-**Kết luận hiện tại (cập nhật sau ablation Phase 1–2): cơ chế "giao thoa lượng
-tử" (tham số pha `alpha_phase`) đóng góp BẰNG 0 trên cả ba asset. Windowed-QRW
-thắng baseline affine ổn định trên 2/3 asset (BTC, BNB) nhưng thua trên ETH —
-đây là hiệu ứng windowing/decoherence phụ thuộc asset, KHÔNG tổng quát và
-KHÔNG phải từ cơ chế lượng tử.** Một nghiên cứu ablation cô lập
-([reports/research/alpha_phase_ablation.md](../reports/research/alpha_phase_ablation.md),
-gắn nhãn exploratory) chỉ ra:
+**Kết luận hiện tại (cập nhật sau Phase 1–3): KHÔNG có bằng chứng cho bất kỳ
+lợi thế dự báo nào của QRW. (1) Cơ chế "giao thoa lượng tử" (pha `alpha_phase`)
+đóng góp BẰNG 0 trên cả ba asset. (2) Thành phần windowing/decoherence cổ điển
+thắng baseline affine yếu nhưng THUA có ý nghĩa thống kê các baseline cổ điển
+mạnh (OrderFlow AR(5), Logistic+Pairwise) trên CẢ BA asset — trên ETH thậm chí
+xếp chót 7/7.** Ba nghiên cứu ablation/so-sánh (gắn nhãn exploratory,
+[reports/research/](../reports/research/)) chỉ ra:
 
 - **Pha lượng tử đóng góp 0.** Bỏ pha (`alpha_phase=0`, refit) cho Brier giống
   hệt model pha-tự-do tới ≥5 chữ số trên cả ba asset (chênh lệch ~10⁻⁷–10⁻⁵,
@@ -22,11 +22,15 @@ gắn nhãn exploratory) chỉ ra:
   dương báo cáo trước đây (−0,007383, BTC 3 fold) từng đảo dấu thành thua ở
   fold ≥ 5; Phase 2 truy ra nguyên nhân (fit/predict inconsistency trong
   `calibrate_bias`) và sửa, sau đó edge ổn định ~−0,013 ở mọi fold. Xem §5b.
+- **Windowing thua baseline mạnh (Phase 3).** Khi so với bộ baseline
+  pre-registered (OrderFlow AR(5), Logistic+Pairwise, Hawkes…) dùng đúng cùng
+  feature causal, windowed-QRW thua có ý nghĩa thống kê trên cả ba asset (BTC
+  hạng 4/7, ETH 7/7, BNB 4/7). OrderFlow AR(5) thắng QRW ở mọi asset. Lợi thế
+  vs affine ở §5b không sống sót. Xem §5c.
 
 Các caveat cũ vẫn giữ nguyên: dữ liệu hoạt động ngắn, OBI là proxy trade-flow,
-chưa chạy trên toàn bộ dataset gốc, và lợi thế windowing chưa được kiểm định
-với các baseline mạnh hơn affine (logistic+interactions, Hawkes) theo
-pre-registration.
+chưa chạy trên toàn bộ dataset gốc, và toàn bộ Phase 1–3 là exploratory (chưa
+đóng băng protocol/pre-registration confirmatory).
 
 Báo cáo Phase 4/5 cũ dùng protocol v2 đã bị vô hiệu hóa. Mã nguồn hiện dùng
 `fixed_origin_marginal_density_matrix_ar1_obi_v4`; vì vậy mọi bảng điểm, biểu
@@ -231,6 +235,42 @@ dùng (dispatch trên `quantum_improved`), có test regression bảo vệ. Bản
 giải:** đây là sửa một lỗi kỹ thuật làm verdict ổn định, KHÔNG phải bằng chứng
 mới cho cơ chế lượng tử — đóng góp của pha vẫn bằng 0 sau khi vá.
 
+## 5c. So sánh với baseline MẠNH (Phase 3, exploratory)
+
+Affine (chỉ OBI + tick direction) là baseline yếu. Câu hỏi quyết định: lợi thế
+windowing của QRW ở §5b có sống sót trước bộ baseline mạnh trong
+pre-registration không? Tôi tái dùng module có sẵn
+[directional_baselines](../src/evaluation/directional_baselines.py): Logistic
+L2 (5 feature), Logistic L2 + Pairwise, Nonlinear calibrated, **OrderFlow
+AR(5)**, Marked Hawkes logit, và QRW directional-link (xấp xỉ logistic). Fit
+trên chronological train/validation (50/25), chấm trên test disjoint (25%). Mọi
+model dùng **cùng event set** (`directional_events` lọc y hệt `market_events`)
+và **cùng feature causal**, nên so sánh Brier là paired và block-bootstrap.
+Script: [strong_baseline_comparison.py](../scripts/research/strong_baseline_comparison.py).
+
+Test-set Brier (thấp = tốt), mỗi asset ~4 triệu tick:
+
+| Asset | Windowed-QRW | Hạng | Baseline mạnh nhất | Brier tốt nhất | edge QRW−best (KI 95%) |
+|---|---:|:--:|---|---:|---|
+| BTC | 0,1019 | 4/7 | Logistic L2 + Pairwise | 0,0496 | +0,052 [+0,051; +0,054] |
+| ETH | 0,1001 | **7/7** | OrderFlow AR(5) | 0,0657 | +0,034 [+0,033; +0,036] |
+| BNB | 0,1767 | 4/7 | OrderFlow AR(5) | 0,1466 | +0,030 [+0,029; +0,031] |
+
+Trên **cả ba asset**, windowed-QRW **thua có ý nghĩa thống kê** baseline mạnh
+nhất (KI 95% hoàn toàn dương). OrderFlow AR(5) — một logistic đơn giản trên
+hướng tick trễ — thắng QRW ở cả ba; trên ETH windowed-QRW **xếp chót 7/7**.
+Xem report chi tiết:
+[BTC](../reports/research/strong_baseline_BTCUSDT.md),
+[ETH](../reports/research/strong_baseline_ETHUSDT.md),
+[BNB](../reports/research/strong_baseline_BNBUSDT.md).
+
+**Kết luận Phase 3:** lợi thế "QRW thắng affine" (§5b) chỉ tồn tại vì affine cố
+tình yếu (không có momentum/lag). Khi đấu với model cổ điển cạnh tranh dùng
+đúng cùng feature causal, windowed-QRW **rút signal kém hơn và thua đậm**.
+Tổng hợp Phase 1–3: KHÔNG có bằng chứng cho bất kỳ lợi thế dự báo nào của QRW —
+dù là cơ chế "giao thoa lượng tử" (pha = 0) hay thành phần windowing cổ điển
+(thua OrderFlow AR trên mọi asset).
+
 ## 6. AIC/BIC và scorecard
 
 AIC/BIC chỉ được xếp hạng trong cùng họ likelihood:
@@ -275,16 +315,20 @@ chế "quantum refinement" (`alpha_phase`) mà `calibrate()` có thể chọn tr
 trước đó (QRW kém hơn baseline) được tính từ một pipeline chưa từng thực sự
 kiểm định cơ chế nó tuyên bố kiểm định.
 
-Sau khi vá, walk-forward audit ở protocol 3-fold từng cho kết quả dương với
-QRW. Nhưng ablation Phase 1 (§5b) đã **thu hẹp mạnh** kết luận đó: (1) lợi thế
-so với affine **không bền vững** — đảo dấu thành thua có ý nghĩa thống kê khi
-số fold ≥ 5, nên con số dương là artifact của lựa chọn 3-fold; (2) đóng góp
-của cơ chế giao thoa lượng tử (`alpha_phase`) đo được **bằng 0** — nơi QRW
-thắng, lợi thế đến hoàn toàn từ windowing/decoherence; (3) chưa chạy lại được
-trên toàn bộ 10 ngày dữ liệu gốc do giới hạn bộ nhớ (§8-6); (4) dữ liệu hoạt
-động vẫn ngắn và OBI chưa phải L2 order-book imbalance thật. Tổng hợp: **hiện
-chưa có bằng chứng cho một lợi thế dự báo bền vững của QRW, càng không phải từ
-cơ chế lượng tử.**
+Ba bước ablation/so-sánh (§5b–5c) đã làm rõ trọn vẹn: **(1)** đóng góp của cơ
+chế giao thoa lượng tử (`alpha_phase`) đo được **bằng 0** trên cả ba asset —
+bỏ pha cho kết quả giống hệt, ép pha lớn hơn làm xấu đi. **(2)** Fold-fragility
+từng thấy trên BTC (edge đảo dấu ở fold ≥ 5) là một **bug** fit/predict
+inconsistency trong `calibrate_bias`, đã sửa ở Phase 2; sau khi sửa,
+windowed-QRW thắng baseline **affine** ổn định trên BTC/BNB (thua ETH). **(3)**
+Nhưng lợi thế đó chỉ vì affine yếu: khi đấu với baseline cổ điển **mạnh**
+(OrderFlow AR(5), Logistic+Pairwise) dùng đúng cùng feature causal, windowed-QRW
+**thua có ý nghĩa thống kê trên cả ba asset** (ETH xếp chót 7/7). Tổng hợp:
+**chưa có bằng chứng cho bất kỳ lợi thế dự báo nào của QRW — dù là cơ chế
+lượng tử hay thành phần windowing cổ điển; một logistic tự hồi quy đơn giản
+(OrderFlow AR) đánh bại nó ở mọi asset.** Các hạn chế còn lại: chưa chạy trên
+toàn bộ 10 ngày gốc do giới hạn bộ nhớ (§8-6); dữ liệu hoạt động vẫn ngắn và
+OBI chưa phải L2 order-book imbalance thật.
 
 Kết luận khoa học cuối cùng chỉ nên được đưa ra sau khi: protocol được đóng
 băng, provenance khớp commit/data hash, walk-forward được chạy lại thành công

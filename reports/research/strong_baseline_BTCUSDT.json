@@ -1,0 +1,135 @@
+{
+  "kind": "strong_baseline_comparison",
+  "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
+  "generated_utc": "2026-07-22T02:58:03.776640+00:00",
+  "git_commit": "0a502fdb24786521c596a21332f4ec5d72a87736",
+  "python": "3.14.5",
+  "label": "BTCUSDT",
+  "feature_path": "D:\\Project made by me\\AI_Quantum\\Quantum 1\\data\\assets\\btcusdt\\features\\features_BTCUSDT_recent_subset.parquet",
+  "rows": 4000000,
+  "events": {
+    "train": 350727,
+    "validation": 166670,
+    "test": 170471
+  },
+  "split": {
+    "train_fraction": 0.5,
+    "validation_fraction": 0.25
+  },
+  "bootstrap_samples": 2000,
+  "block_size": 16,
+  "seed": 2026,
+  "scores": {
+    "QRW Directional Link": {
+      "brier": 0.08999765025453664,
+      "log_loss": 0.31722324058416773,
+      "accuracy": 0.8541922086454588
+    },
+    "Logistic L2 (5F)": {
+      "brier": 0.10969726178692632,
+      "log_loss": 0.364036278014986,
+      "accuracy": 0.8543388611552698
+    },
+    "Logistic L2 + Pairwise": {
+      "brier": 0.04964675655143747,
+      "log_loss": 0.21107404904796714,
+      "accuracy": 0.9431809515988057
+    },
+    "Nonlinear Calibrated": {
+      "brier": 0.1057407025930567,
+      "log_loss": 0.34624597934099505,
+      "accuracy": 0.8535176071003279
+    },
+    "OrderFlow AR(5)": {
+      "brier": 0.054654135295042205,
+      "log_loss": 0.21125201532881308,
+      "accuracy": 0.9348862856438925
+    },
+    "Marked Hawkes Logit": {
+      "brier": 0.10774971825546224,
+      "log_loss": 0.3576825578477697,
+      "accuracy": 0.8537111884132785
+    },
+    "Windowed-QRW (density matrix)": {
+      "brier": 0.10192346036437325,
+      "log_loss": 0.35327416216813606,
+      "accuracy": 0.8410169471640337
+    }
+  },
+  "best_baseline": "Logistic L2 + Pairwise",
+  "comparisons_qrw_minus_baseline": {
+    "QRW Directional Link": {
+      "events": 170471,
+      "block_size": 16,
+      "model_minus_comparison": 0.011925810109836604,
+      "confidence_interval_95": [
+        0.011165311690819739,
+        0.012727607974674222
+      ],
+      "probability_model_improves": 0.0,
+      "qrw_significantly_better": false,
+      "qrw_significantly_worse": true
+    },
+    "Logistic L2 (5F)": {
+      "events": 170471,
+      "block_size": 16,
+      "model_minus_comparison": -0.0077738014225530744,
+      "confidence_interval_95": [
+        -0.009177311158932538,
+        -0.0062533422570930355
+      ],
+      "probability_model_improves": 1.0,
+      "qrw_significantly_better": true,
+      "qrw_significantly_worse": false
+    },
+    "Logistic L2 + Pairwise": {
+      "events": 170471,
+      "block_size": 16,
+      "model_minus_comparison": 0.052276703812935775,
+      "confidence_interval_95": [
+        0.05057661159437605,
+        0.053980248178745215
+      ],
+      "probability_model_improves": 0.0,
+      "qrw_significantly_better": false,
+      "qrw_significantly_worse": true
+    },
+    "Nonlinear Calibrated": {
+      "events": 170471,
+      "block_size": 16,
+      "model_minus_comparison": -0.0038172422286834643,
+      "confidence_interval_95": [
+        -0.005007144986466959,
+        -0.00254820729002727
+      ],
+      "probability_model_improves": 1.0,
+      "qrw_significantly_better": true,
+      "qrw_significantly_worse": false
+    },
+    "OrderFlow AR(5)": {
+      "events": 170471,
+      "block_size": 16,
+      "model_minus_comparison": 0.04726932506933104,
+      "confidence_interval_95": [
+        0.04593205006545659,
+        0.048586355230826515
+      ],
+      "probability_model_improves": 0.0,
+      "qrw_significantly_better": false,
+      "qrw_significantly_worse": true
+    },
+    "Marked Hawkes Logit": {
+      "events": 170471,
+      "block_size": 16,
+      "model_minus_comparison": -0.005826257891088998,
+      "confidence_interval_95": [
+        -0.007353772945695923,
+        -0.004354722740886871
+      ],
+      "probability_model_improves": 1.0,
+      "qrw_significantly_better": true,
+      "qrw_significantly_worse": false
+    }
+  },
+  "verdict": "Windowed-QRW is significantly WORSE than the strongest baseline ('Logistic L2 + Pairwise') on BTCUSDT: the edge over affine does not survive a competitive classical model."
+}

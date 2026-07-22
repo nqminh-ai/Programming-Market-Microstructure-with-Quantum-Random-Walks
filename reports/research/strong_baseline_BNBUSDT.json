@@ -1,0 +1,135 @@
+{
+  "kind": "strong_baseline_comparison",
+  "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
+  "generated_utc": "2026-07-22T03:02:05.570689+00:00",
+  "git_commit": "0a502fdb24786521c596a21332f4ec5d72a87736",
+  "python": "3.14.5",
+  "label": "BNBUSDT",
+  "feature_path": "C:\\Users\\minh4\\AppData\\Local\\Temp\\claude\\d--Project-made-by-me-AI-Quantum-Quantum-1\\e077ece3-bd31-442d-8431-1d8a7ca5f266\\scratchpad\\bnb_combined.parquet",
+  "rows": 4000000,
+  "events": {
+    "train": 495055,
+    "validation": 227834,
+    "test": 203462
+  },
+  "split": {
+    "train_fraction": 0.5,
+    "validation_fraction": 0.25
+  },
+  "bootstrap_samples": 2000,
+  "block_size": 16,
+  "seed": 2026,
+  "scores": {
+    "QRW Directional Link": {
+      "brier": 0.1638514656996553,
+      "log_loss": 0.5017227314153136,
+      "accuracy": 0.7193529995773167
+    },
+    "Logistic L2 (5F)": {
+      "brier": 0.20012831912143889,
+      "log_loss": 0.5895206385382111,
+      "accuracy": 0.7193480846546284
+    },
+    "Logistic L2 + Pairwise": {
+      "brier": 0.1628038342271472,
+      "log_loss": 0.5008793140835509,
+      "accuracy": 0.7299495728932184
+    },
+    "Nonlinear Calibrated": {
+      "brier": 0.19293370779593708,
+      "log_loss": 0.5700323418144564,
+      "accuracy": 0.7285979691539453
+    },
+    "OrderFlow AR(5)": {
+      "brier": 0.14657754934166387,
+      "log_loss": 0.46268940749648146,
+      "accuracy": 0.8046809723683046
+    },
+    "Marked Hawkes Logit": {
+      "brier": 0.1937915555283764,
+      "log_loss": 0.5769496398148183,
+      "accuracy": 0.7177015855540593
+    },
+    "Windowed-QRW (density matrix)": {
+      "brier": 0.1766558525856273,
+      "log_loss": 0.5358773352159729,
+      "accuracy": 0.7436720370388574
+    }
+  },
+  "best_baseline": "OrderFlow AR(5)",
+  "comparisons_qrw_minus_baseline": {
+    "QRW Directional Link": {
+      "events": 203462,
+      "block_size": 16,
+      "model_minus_comparison": 0.012804386885971982,
+      "confidence_interval_95": [
+        0.011980086096141544,
+        0.013583498474011775
+      ],
+      "probability_model_improves": 0.0,
+      "qrw_significantly_better": false,
+      "qrw_significantly_worse": true
+    },
+    "Logistic L2 (5F)": {
+      "events": 203462,
+      "block_size": 16,
+      "model_minus_comparison": -0.023472466535811587,
+      "confidence_interval_95": [
+        -0.024893321769117627,
+        -0.022153501631907612
+      ],
+      "probability_model_improves": 1.0,
+      "qrw_significantly_better": true,
+      "qrw_significantly_worse": false
+    },
+    "Logistic L2 + Pairwise": {
+      "events": 203462,
+      "block_size": 16,
+      "model_minus_comparison": 0.013852018358480109,
+      "confidence_interval_95": [
+        0.01294532073322078,
+        0.014786402733784535
+      ],
+      "probability_model_improves": 0.0,
+      "qrw_significantly_better": false,
+      "qrw_significantly_worse": true
+    },
+    "Nonlinear Calibrated": {
+      "events": 203462,
+      "block_size": 16,
+      "model_minus_comparison": -0.016277855210309805,
+      "confidence_interval_95": [
+        -0.01749526726138999,
+        -0.01503704560409781
+      ],
+      "probability_model_improves": 1.0,
+      "qrw_significantly_better": true,
+      "qrw_significantly_worse": false
+    },
+    "OrderFlow AR(5)": {
+      "events": 203462,
+      "block_size": 16,
+      "model_minus_comparison": 0.030078303243963423,
+      "confidence_interval_95": [
+        0.029475574345069554,
+        0.030641217601994522
+      ],
+      "probability_model_improves": 0.0,
+      "qrw_significantly_better": false,
+      "qrw_significantly_worse": true
+    },
+    "Marked Hawkes Logit": {
+      "events": 203462,
+      "block_size": 16,
+      "model_minus_comparison": -0.01713570294274914,
+      "confidence_interval_95": [
+        -0.018381661905558223,
+        -0.01595341240334874
+      ],
+      "probability_model_improves": 1.0,
+      "qrw_significantly_better": true,
+      "qrw_significantly_worse": false
+    }
+  },
+  "verdict": "Windowed-QRW is significantly WORSE than the strongest baseline ('OrderFlow AR(5)') on BNBUSDT: the edge over affine does not survive a competitive classical model."
+}
