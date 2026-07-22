@@ -6,7 +6,13 @@ from pathlib import Path
 
 import yaml
 
-from src.data.paths import DATA_ROOT, asset_data_dir, asset_report_dir
+from src.data.paths import (
+    DATA_ROOT,
+    REPORT_KINDS,
+    asset_data_dir,
+    asset_report_dir,
+)
+from scripts.pipelines.phase2_pipeline import report_kind_dir, resolve_config_path
 from scripts.research.cross_asset_benchmark import build_cross_asset_scorecard
 
 
@@ -46,6 +52,37 @@ def test_every_asset_config_uses_canonical_data_layout() -> None:
             "features": f"data/assets/{key}/features",
             "reports": f"reports/assets/{key}",
         }
+
+
+def test_phase2_pipeline_writes_reports_to_the_canonical_kind_directories() -> None:
+    """The pipeline must agree with ``asset_report_dir`` for every report kind.
+
+    phase2_pipeline previously wrote (and globbed) these files flat in the asset
+    report root while ``src.data.paths`` declared the per-kind subdirectory
+    canonical, so BTCUSDT ended up with two divergent copies of every report.
+    """
+    expected = {
+        "data_config.yaml": "BTCUSDT",
+        "data_config_eth.yaml": "ETHUSDT",
+        "data_config_bnb.yaml": "BNBUSDT",
+    }
+    for filename, symbol in expected.items():
+        config = yaml.safe_load((ROOT / "config" / filename).read_text(encoding="utf-8"))
+        reports_dir = resolve_config_path(config, "reports")
+        for kind in REPORT_KINDS:
+            assert report_kind_dir(reports_dir, kind) == asset_report_dir(symbol, kind)
+
+
+def test_no_report_kind_files_remain_flat_in_an_asset_report_root() -> None:
+    """No ``<kind>_<SYMBOL>_<date>`` file may sit directly in the asset root."""
+    reports_root = ROOT / "reports" / "assets"
+    stray = [
+        path
+        for path in reports_root.glob("*/*")
+        if path.is_file()
+        and any(path.name.startswith(f"{kind}_") for kind in REPORT_KINDS)
+    ]
+    assert stray == [], f"flat report files must live under <asset>/<kind>/: {stray}"
 
 
 def test_path_helpers_match_release_layout() -> None:

@@ -22,6 +22,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.data.common import normalize_symbol  # noqa: E402
+from src.data.paths import REPORT_KINDS  # noqa: E402
 from src.data.feature_engineer import FeatureEngineer  # noqa: E402
 from src.data.live_market_collector import LiveMarketCollector  # noqa: E402
 from src.data.orderbook_collector import OrderBookCollector  # noqa: E402
@@ -55,6 +56,22 @@ def resolve_config_path(config: dict[str, Any], key: str) -> Path:
     if not value:
         raise ValueError(f"configuration is missing paths.{key}")
     path = ROOT / value
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def report_kind_dir(reports_dir: Path, kind: str) -> Path:
+    """Resolve the per-kind report directory under an asset's report root.
+
+    The canonical layout is ``reports/assets/<symbol>/<kind>/`` as declared by
+    ``src.data.paths.asset_report_dir``. This derives the directory from the
+    configured report root rather than from the symbol so that a config
+    pointing elsewhere (tests, ad-hoc runs) still works, while ``REPORT_KINDS``
+    is imported from that module so the two definitions cannot drift apart.
+    """
+    if kind not in REPORT_KINDS:
+        raise ValueError(f"kind must be one of {sorted(REPORT_KINDS)}")
+    path = reports_dir / kind
     path.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -194,7 +211,7 @@ def command_process(config: dict[str, Any], args: argparse.Namespace) -> None:
     for source in files:
         token = date_token(source)
         output = processed_dir / f"tick_processed_{symbol}_{token}.parquet"
-        report = reports_dir / f"data_quality_{symbol}_{token}.txt"
+        report = report_kind_dir(reports_dir, "data_quality") / f"data_quality_{symbol}_{token}.txt"
         processor.process_file(source, output, report)
     print(f"Processed {len(files)} daily files.")
 
@@ -260,9 +277,11 @@ def command_features(config: dict[str, Any], args: argparse.Namespace) -> None:
         engineer.engineer_files(
             source,
             feature_dir / f"features_{symbol}_{token}.parquet",
-            reports_dir / f"feature_stats_{symbol}_{token}.csv",
+            report_kind_dir(reports_dir, "feature_stats")
+            / f"feature_stats_{symbol}_{token}.csv",
             lob_path=lob_path if use_lob else None,
-            metadata_path=reports_dir / f"feature_metadata_{symbol}_{token}.json",
+            metadata_path=report_kind_dir(reports_dir, "feature_metadata")
+            / f"feature_metadata_{symbol}_{token}.json",
             require_lob=use_lob,
             obi_source=selected_source,
         )
@@ -337,7 +356,8 @@ def command_checkpoint(config: dict[str, Any], _: argparse.Namespace) -> None:
     quality_report_count = 0
     processing_is_causal = True
     reports_dir = resolve_config_path(config, "reports")
-    for path in reports_dir.glob(f"data_quality_{symbol}_*.txt"):
+    quality_dir = report_kind_dir(reports_dir, "data_quality")
+    for path in quality_dir.glob(f"data_quality_{symbol}_*.txt"):
         report = json.loads(path.read_text(encoding="utf-8"))
         quality_report_count += 1
         input_records += int(report["input_records"])
@@ -373,7 +393,10 @@ def command_checkpoint(config: dict[str, Any], _: argparse.Namespace) -> None:
     source_counts: dict[str, int] = {}
     for path in feature_files:
         token = date_token(path)
-        metadata_path = reports_dir / f"feature_metadata_{symbol}_{token}.json"
+        metadata_path = (
+            report_kind_dir(reports_dir, "feature_metadata")
+            / f"feature_metadata_{symbol}_{token}.json"
+        )
         if not metadata_path.exists():
             imbalance_metadata_complete = False
             continue
