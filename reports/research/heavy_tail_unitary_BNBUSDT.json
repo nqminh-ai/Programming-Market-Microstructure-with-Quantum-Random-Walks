@@ -1,0 +1,131 @@
+{
+  "kind": "heavy_tail_unitary_evaluation",
+  "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
+  "generated_utc": "2026-07-22T11:23:16.763604+00:00",
+  "git_commit": "a2d16f1fd9d00f4bd475e243e71a6cc85f593492",
+  "python": "3.14.5",
+  "label": "BNBUSDT",
+  "feature_path": "C:\\Users\\minh4\\AppData\\Local\\Temp\\claude\\d--Project-made-by-me-AI-Quantum-Quantum-1\\e077ece3-bd31-442d-8431-1d8a7ca5f266\\scratchpad\\bnb_combined.parquet",
+  "rows": 1000000,
+  "tick_size": 0.009999999999990905,
+  "horizon": 50,
+  "n_positions": 16001,
+  "empirical_samples": 200000,
+  "empirical": {
+    "robust_scale_q75_ticks": 13.000000000011369,
+    "tail_ratio_99": 2.692307692307961,
+    "tail_ratio_999": 4.000000000000875
+  },
+  "models": [
+    {
+      "alpha": 0.3,
+      "is_ordinary_walk": false,
+      "wraparound_mass": 5.8196366838454066e-05,
+      "wraparound_ok": false,
+      "robust_scale_q75_ticks": 9.015565554317718,
+      "tail_ratio_99": 11.396550323329533,
+      "tail_ratio_999": 75.34576911658024,
+      "log_gap_99": 1.4429120023621738,
+      "log_gap_999": 2.9357934126291605,
+      "shape_distance": 4.378705414991334
+    },
+    {
+      "alpha": 0.5,
+      "is_ordinary_walk": false,
+      "wraparound_mass": 5.443401530966145e-07,
+      "wraparound_ok": true,
+      "robust_scale_q75_ticks": 15.03840433811983,
+      "tail_ratio_99": 5.845977124708643,
+      "tail_ratio_999": 25.549766773667326,
+      "log_gap_99": 0.7753550496716638,
+      "log_gap_999": 1.854333827255743,
+      "shape_distance": 2.629688876927407
+    },
+    {
+      "alpha": 0.7,
+      "is_ordinary_walk": false,
+      "wraparound_mass": 6.878835386927329e-06,
+      "wraparound_ok": true,
+      "robust_scale_q75_ticks": 21.50000000000001,
+      "tail_ratio_99": 3.620778730102042,
+      "tail_ratio_999": 7.744186046511623,
+      "log_gap_99": 0.2962904174876876,
+      "log_gap_999": 0.6606480131667714,
+      "shape_distance": 0.9569384306544589
+    },
+    {
+      "alpha": 0.9,
+      "is_ordinary_walk": false,
+      "wraparound_mass": 4.695714854839846e-06,
+      "wraparound_ok": true,
+      "robust_scale_q75_ticks": 27.499999999999968,
+      "tail_ratio_99": 1.6181818181818208,
+      "tail_ratio_999": 3.1025792029111794,
+      "log_gap_99": 0.5090955195283062,
+      "log_gap_999": 0.2540605946108423,
+      "shape_distance": 0.7631561141391485
+    },
+    {
+      "alpha": 1.0,
+      "is_ordinary_walk": true,
+      "wraparound_mass": 2.1864768446503114e-29,
+      "wraparound_ok": true,
+      "robust_scale_q75_ticks": 33.5,
+      "tail_ratio_99": 1.1194029850746257,
+      "tail_ratio_999": 1.1477852547977527,
+      "log_gap_99": 0.8776032098826335,
+      "log_gap_999": 1.2484601410013942,
+      "shape_distance": 2.126063350884028
+    },
+    {
+      "alpha": 1.3,
+      "is_ordinary_walk": false,
+      "wraparound_mass": 2.675470476650574e-07,
+      "wraparound_ok": true,
+      "robust_scale_q75_ticks": 53.107861095541054,
+      "tail_ratio_99": 1.1673381472350477,
+      "tail_ratio_999": 1.2333390697502566,
+      "log_gap_99": 0.8356726349959428,
+      "log_gap_999": 1.1765691790000001,
+      "shape_distance": 2.012241813995943
+    },
+    {
+      "alpha": 1.6,
+      "is_ordinary_walk": false,
+      "wraparound_mass": 1.253676379784325e-05,
+      "wraparound_ok": false,
+      "robust_scale_q75_ticks": 78.50000000000023,
+      "tail_ratio_99": 1.5605095541401246,
+      "tail_ratio_999": 3.151301812574566,
+      "log_gap_99": 0.5453862988315596,
+      "log_gap_999": 0.23847871982348146,
+      "shape_distance": 0.7838650186550411
+    },
+    {
+      "alpha": 2.0,
+      "is_ordinary_walk": false,
+      "wraparound_mass": 7.08571177868839e-07,
+      "wraparound_ok": true,
+      "robust_scale_q75_ticks": 121.50000000000014,
+      "tail_ratio_99": 1.8065843621399174,
+      "tail_ratio_999": 1.8961531374641794,
+      "log_gap_99": 0.3989607342933541,
+      "log_gap_999": 0.7464671918441594,
+      "shape_distance": 1.1454279261375135
+    }
+  ],
+  "best_alpha": 0.9,
+  "ordinary_walk": {
+    "alpha": 1.0,
+    "is_ordinary_walk": true,
+    "wraparound_mass": 2.1864768446503114e-29,
+    "wraparound_ok": true,
+    "robust_scale_q75_ticks": 33.5,
+    "tail_ratio_99": 1.1194029850746257,
+    "tail_ratio_999": 1.1477852547977527,
+    "log_gap_99": 0.8776032098826335,
+    "log_gap_999": 1.2484601410013942,
+    "shape_distance": 2.126063350884028
+  },
+  "verdict": "The heavy-tailed unitary (alpha=0.9) matches the empirical tail shape better than the ordinary walk (shape distance 0.763 vs 2.126). The ordinary walk's marginal is bimodal/ballistic with q999/q75 = 1.15, against an empirical 4.00; the L\u00e9vy shift reaches 3.10."
+}

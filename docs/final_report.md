@@ -327,11 +327,52 @@ thế.
 
 ## 7. Mô hình heavy-tail
 
-Module heavy-tail hiện tại là bộ sinh bước nhảy Bernoulli/Pareto cổ điển. Nó
-không triển khai một heavy-tailed unitary shift và không chứng minh cải thiện
-tail index của QRW. Các tuyên bố về khoảng tail index `1,1–2,5`, bootstrap CI
-cải thiện hoặc DM bền vững đã bị rút lại vì chưa được hỗ trợ bởi protocol hợp
-lệ.
+**Tình trạng cũ (giữ nguyên phần rút lại):** `qrw_heavy_tail.py` là bộ sinh bước
+nhảy Bernoulli/Pareto **cổ điển** (chính file tự khai *"this is not a unitary
+heavy-tail QRW"*). Nó không triển khai heavy-tailed unitary shift, nên mọi tuyên
+bố cũ về tail index `1,1–2,5`, bootstrap CI cải thiện hay DM bền vững **vẫn bị
+rút lại**.
+
+**Đã bổ sung (Phase 6):** cơ chế còn thiếu nay đã có —
+[`src/models/heavy_tail_unitary.py`](../src/models/heavy_tail_unitary.py) cài
+một **Lévy shift unitary chính xác**. Trên vòng N vị trí, shift là chéo hoá
+trong không gian động lượng; tổng quát pha thành
+
+    φ_α(k) = sign(k)·|k|^α ,   k ∈ [−π, π)
+
+giữ mọi trị riêng trên đường tròn đơn vị ⟹ **unitary theo cấu trúc với mọi α**
+(không phải xấp xỉ). Hai tính chất then chốt, đều có test bảo vệ
+([test_heavy_tail_unitary.py](../tests/test_heavy_tail_unitary.py), 13 test):
+
+- **α = 1 tái tạo CHÍNH XÁC** shift lân-cận-gần-nhất ±1 — đây là tổng quát hoá
+  chặt của walk hiện có, không phải mô hình khác.
+- **α < 1** cho pha có điểm kỳ dị `|k|^α` tại k=0 ⟹ hệ số Fourier suy giảm lũy
+  thừa ⟹ biên độ nhảy `~|x|^{-(1+α)}` = **Lévy flight sinh bởi unitary**, chứ
+  không phải lấy mẫu nhảy cổ điển.
+
+**Đánh giá thực nghiệm** ([heavy_tail_unitary_evaluation.py](../scripts/research/heavy_tail_unitary_evaluation.py),
+horizon 50 tick, lattice 16.001). So sánh **hình dạng đuôi** bằng tỉ lệ quantile
+của |x − median| (scale-free). *Cố ý không dùng phương sai/kurtosis*: với Lévy
+α<2 mô men bậc hai **không tồn tại**, nên σ đo trên lattice hữu hạn chỉ phản ánh
+kích thước lattice chứ không phải phân phối.
+
+| Asset | Empirical q999/q75 | α khớp nhất | Lévy đạt | Walk chuẩn (α=1) đạt |
+|---|---:|:--:|---:|---:|
+| BTC | 5,07 | 0,7 | 7,74 | **1,15** |
+| ETH | 3,09 | 0,9 | **3,10** | **1,15** |
+| BNB | 4,00 | 0,9 | 3,10 | **1,15** |
+
+**Kết luận:** walk lượng tử thường **về bản chất không thể** tạo đuôi nặng —
+marginal của nó là bimodal/ballistic với giá đỡ compact, q999/q75 ≈ 1,15 so với
+3–5 của thị trường thật (sai lệch **định tính**). Lévy unitary shift khắc phục
+đúng khiếm khuyết này, với α ≈ 0,7–0,9 khớp cả ba asset (ETH gần như khớp hệt).
+
+**Giới hạn diễn giải — quan trọng:** đây là kiểm định **hình dạng phân phối**,
+KHÔNG phải kỹ năng dự báo. Một mô hình cổ điển đuôi nặng (Lévy-stable,
+Student-t) cũng khớp được đuôi như vậy; α còn là tham số **fit** khác nhau theo
+asset. Vì vậy kết quả này **đóng khoảng trống cơ chế** của §7 (giờ đã có một
+heavy-tail unitary hợp lệ, có test, tái lập được) nhưng **không** là bằng chứng
+cho ưu thế lượng tử, và không mâu thuẫn với kết luận §5c–5d.
 
 ## 8. Hạn chế chưa giải quyết
 
