@@ -793,17 +793,39 @@ class MarketQRW:
             raise ValueError("bias calibration requires at least 10 moving events")
 
         coherence = float(np.exp(-self.gamma))
+        # Fit the bias under the SAME formula prediction will use. When a
+        # quantum fit was selected, prediction goes through the windowed
+        # density-matrix formula (predict_right_probabilities -> quantum
+        # windowed), so optimising the bias under the classical closed form
+        # leaves the intercept tuned for a different model than the one scored
+        # -- a residual fit/predict inconsistency that made the walk-forward
+        # verdict drift as the fold count (and hence the number of bias
+        # updates) changed. Dispatch on quantum_improved here to keep the two
+        # consistent.
+        use_quantum = bool(self.quantum_improved)
 
         def objective(value: np.ndarray) -> float:
             bias = float(value[0])
-            probability = self._direction_probability(
-                predictor_obi,
-                bias=bias,
-                alpha=self.alpha_obi,
-                tick_direction=predictor_direction,
-                alpha_direction=self.alpha_direction,
-                coherence=coherence,
-            )
+            if use_quantum:
+                probability = self._quantum_windowed_probabilities(
+                    predictor_obi,
+                    predictor_direction,
+                    bias=bias,
+                    alpha_obi=self.alpha_obi,
+                    alpha_direction=self.alpha_direction,
+                    alpha_phase=self.alpha_phase,
+                    gamma=self.gamma,
+                    window=self.quantum_window,
+                )
+            else:
+                probability = self._direction_probability(
+                    predictor_obi,
+                    bias=bias,
+                    alpha=self.alpha_obi,
+                    tick_direction=predictor_direction,
+                    alpha_direction=self.alpha_direction,
+                    coherence=coherence,
+                )
             penalty = regularization * bias**2
             penalty += prior_strength * (bias - anchor) ** 2
             return self._log_loss(probability, target) + penalty

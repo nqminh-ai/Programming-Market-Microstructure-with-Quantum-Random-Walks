@@ -2,29 +2,31 @@
 
 ## Trạng thái khoa học
 
-**Kết luận hiện tại (cập nhật sau ablation Phase 1): KHÔNG có bằng chứng cho
-một lợi thế dự báo bền vững của QRW, và cơ chế "giao thoa lượng tử" (tham số
-pha `alpha_phase`) đóng góp bằng 0.** Một nghiên cứu ablation cô lập
+**Kết luận hiện tại (cập nhật sau ablation Phase 1–2): cơ chế "giao thoa lượng
+tử" (tham số pha `alpha_phase`) đóng góp BẰNG 0 trên cả ba asset. Windowed-QRW
+thắng baseline affine ổn định trên 2/3 asset (BTC, BNB) nhưng thua trên ETH —
+đây là hiệu ứng windowing/decoherence phụ thuộc asset, KHÔNG tổng quát và
+KHÔNG phải từ cơ chế lượng tử.** Một nghiên cứu ablation cô lập
 ([reports/research/alpha_phase_ablation.md](../reports/research/alpha_phase_ablation.md),
-gắn nhãn exploratory) chỉ ra hai điều:
+gắn nhãn exploratory) chỉ ra:
 
-- Lợi thế Brier của QRW so với baseline affine **không nhất quán và không bền
-  vững**: kiểm chứng cross-asset cho thấy QRW thắng ổn định trên BNB, thua ổn
-  định trên ETH, và trên BTC thì mong manh — thắng ở walk-forward 2–4 fold
-  nhưng **đảo dấu thành thua** ở 5–8 fold. Con số dương báo cáo trước đây
-  (−0,007383, BTC 3 fold) vừa **không tổng quát sang asset khác** vừa là
-  **artifact của lựa chọn số fold**.
-- Nơi QRW có vẻ thắng, lợi thế đến **hoàn toàn từ windowing/decoherence, không
-  phải từ pha**: model bỏ pha (`alpha_phase=0`, refit) cho Brier giống hệt
-  model pha-tự-do tới 6 chữ số; ép pha lớn hơn còn làm dự báo **xấu đi đơn
-  điệu**. Đóng góp biên của pha đo được là ~9×10⁻⁸ Brier (nhỏ hơn edge chính 5
-  bậc độ lớn) và mang dấu bất lợi.
+- **Pha lượng tử đóng góp 0.** Bỏ pha (`alpha_phase=0`, refit) cho Brier giống
+  hệt model pha-tự-do tới ≥5 chữ số trên cả ba asset (chênh lệch ~10⁻⁷–10⁻⁵,
+  dưới ngưỡng 10⁻⁴); ép pha lớn hơn làm dự báo **xấu đi đơn điệu**. Về lý
+  thuyết `alpha_phase=0` biến coin SU(2) thành phép quay SO(2) giao hoán, xoá
+  đúng hiệu ứng giao thoa — nên toggle nó cô lập chính xác cơ chế lượng tử.
+- **Lợi thế (nơi có) là windowing/decoherence cổ điển, không phải pha.** Trên
+  BTC/BNB model bỏ pha vẫn thắng affine y hệt model đầy đủ; trên ETH cả hai đều
+  thua. Không có asset nào mà pha tạo ra khác biệt.
+- **Fold-fragility từng thấy trên BTC là một bug, đã sửa (Phase 2).** Con số
+  dương báo cáo trước đây (−0,007383, BTC 3 fold) từng đảo dấu thành thua ở
+  fold ≥ 5; Phase 2 truy ra nguyên nhân (fit/predict inconsistency trong
+  `calibrate_bias`) và sửa, sau đó edge ổn định ~−0,013 ở mọi fold. Xem §5b.
 
-Kết luận trước đó ("QRW có lợi thế Brier có ý nghĩa thống kê") vì vậy bị **thu
-hẹp mạnh**: lợi thế đó chỉ tồn tại ở protocol 3-fold cụ thể, không bền vững, và
-không đến từ cơ chế lượng tử. Xem §5b để biết chi tiết. Các caveat cũ vẫn giữ
-nguyên: dữ liệu hoạt động ngắn, OBI là proxy trade-flow, chưa chạy trên toàn bộ
-dataset gốc.
+Các caveat cũ vẫn giữ nguyên: dữ liệu hoạt động ngắn, OBI là proxy trade-flow,
+chưa chạy trên toàn bộ dataset gốc, và lợi thế windowing chưa được kiểm định
+với các baseline mạnh hơn affine (logistic+interactions, Hawkes) theo
+pre-registration.
 
 Báo cáo Phase 4/5 cũ dùng protocol v2 đã bị vô hiệu hóa. Mã nguồn hiện dùng
 `fixed_origin_marginal_density_matrix_ar1_obi_v4`; vì vậy mọi bảng điểm, biểu
@@ -152,7 +154,7 @@ luận cuối.
 > dataset multi-day mới theo pre-registration — trước khi coi đây là kết luận
 > cuối.
 
-## 5b. Ablation cô lập alpha_phase (Phase 1, exploratory)
+## 5b. Ablation cô lập alpha_phase + sửa fold-fragility (Phase 1–2, exploratory)
 
 Để trả lời trực tiếp câu hỏi cốt lõi — cơ chế lượng tử có đóng góp không —
 một ablation cô lập được chạy trên đúng dataset đã tạo ra con số dương
@@ -179,43 +181,55 @@ giao thoa. Vì vậy toggle `alpha_phase` cô lập chính xác cơ chế lượ
 - Windowing không pha (B_refit − C_affine): **−0,012867** [−0,0138; −0,0119] —
   toàn bộ lợi thế của QRW đến từ đây, không phải từ pha.
 
-**Độ bền theo số fold (A_full vs affine):**
+**Độ bền theo số fold — trước (Phase 1) và sau khi vá (Phase 2):**
 
-| folds | QRW Brier | affine Brier | edge | QRW thắng? |
-|---:|---:|---:|---:|:--:|
-| 2 | 0,100419 | 0,113134 | −0,012716 | ✔ |
-| 3 | 0,100424 | 0,113292 | −0,012867 | ✔ |
-| 4 | 0,102915 | 0,113350 | −0,010435 | ✔ |
-| 5 | 0,142450 | 0,113378 | +0,029072 | ✘ |
-| 6 | 0,158408 | 0,113255 | +0,045152 | ✘ |
-| 8 | 0,177498 | 0,113242 | +0,064256 | ✘ |
+Phase 1 phát hiện edge đảo dấu theo số fold; Phase 2 truy được nguyên nhân là
+một fit/predict inconsistency trong `calibrate_bias` và sửa nó (xem dưới). Sau
+khi vá, edge trở nên **ổn định ở mọi fold**.
 
-QRW Brier suy thoái đơn điệu khi tăng fold; affine phẳng. Verdict "QRW thắng
-affine" đảo dấu ở fold ≥ 5 — không bền vững.
+| folds | edge trước vá | QRW thắng? | edge sau vá | QRW thắng? |
+|---:|---:|:--:|---:|:--:|
+| 2 | −0,012716 | ✔ | −0,012714 | ✔ |
+| 3 | −0,012867 | ✔ | −0,012868 | ✔ |
+| 4 | −0,010435 | ✔ | −0,012927 | ✔ |
+| 5 | **+0,029072** | ✘ | **−0,012953** | ✔ |
+| 6 | **+0,045152** | ✘ | **−0,012828** | ✔ |
+| 8 | **+0,064256** | ✘ | **−0,012813** | ✔ |
 
-**Cross-asset (ETH, BNB — mỗi asset ~4 triệu tick):** ablation được lặp lại
-([_ETHUSDT.md](../reports/research/alpha_phase_ablation_ETHUSDT.md),
-[_BNBUSDT.md](../reports/research/alpha_phase_ablation_BNBUSDT.md)).
+Trước vá, QRW Brier nổ từ 0,1004 (fold 2) lên 0,1775 (fold 8) — đảo verdict
+thành thua. Sau vá, QRW Brier phẳng ~0,10042 ở mọi fold và thắng affine ổn
+định ~−0,0128. Fold-fragility là **bug, không phải bản chất**.
 
-| Asset | Đóng góp pha (A−B_refit) | QRW vs affine (3-fold) | Ổn định theo fold |
+**Cross-asset (ETH, BNB — mỗi asset ~4 triệu tick), sau khi vá Phase 2:**
+ablation được lặp lại với `calibrate_bias` đã sửa
+([_ETHUSDT_postfix.md](../reports/research/alpha_phase_ablation_ETHUSDT_postfix.md),
+[_BNBUSDT_postfix.md](../reports/research/alpha_phase_ablation_BNBUSDT_postfix.md),
+[_BTC_postfix.md](../reports/research/alpha_phase_ablation_BTC_postfix.md)).
+
+| Asset | Đóng góp pha (A−B_refit) | QRW vs affine (mọi fold 2–8) | Ổn định theo fold |
 |---|---:|---:|---|
-| BTC | ~+9×10⁻⁸ (≈0) | −0,0129 (thắng) | Không — đảo dấu ở fold ≥ 5 |
-| ETH | ~+1×10⁻⁵ (≈0) | +0,0098 (**thua**) | Có (thua ổn định mọi fold) |
-| BNB | ~+1×10⁻⁶ (≈0) | −0,0111 (**thắng**) | Có (thắng ổn định mọi fold) |
+| BTC | +3×10⁻⁷ (≈0) | −0,0128 (**thắng**) | Có (sau vá; trước vá đảo dấu) |
+| ETH | −1×10⁻⁵ (≈0) | +0,0096 (**thua**) | Có |
+| BNB | +3×10⁻⁷ (≈0) | −0,0110 (**thắng**) | Có |
 
-Hai kết luận cross-asset: (a) **đóng góp của pha lượng tử ≈ 0 trên cả ba
-asset**, và trên cả ba phase sweep đều cho Brier xấu đi đơn điệu — đây là phát
-hiện vững; (b) việc windowed-QRW có thắng affine hay không **phụ thuộc asset**
-(BNB thắng, ETH thua, BTC mong manh theo fold), nên không tồn tại một lợi thế
-QRW tổng quát, và ngay cả thành phần windowing/decoherence cũng không nhất
-quán giữa các asset.
+Hai kết luận cross-asset: (a) **đóng góp của pha lượng tử ≈ 0 (dưới ngưỡng
+10⁻⁴ Brier) trên cả ba asset**, và phase sweep cho Brier xấu đi đơn điệu — đây
+là phát hiện **vững nhất** của Phase 1–2; (b) sau khi sửa fold-fragility,
+windowed-QRW **thắng affine ổn định trên BTC và BNB nhưng thua ổn định trên
+ETH** — một hiệu ứng windowing/decoherence **phụ thuộc asset**, KHÔNG phải từ
+giao thoa lượng tử và KHÔNG tồn tại như một lợi thế QRW tổng quát.
 
-**Nghi phạm nguyên nhân của fold-fragility trên BTC (đầu mối cho Phase 2):** `calibrate_bias()`
-([qrw_market_sim.py](../src/models/qrw_market_sim.py)) tối ưu bias dưới công
-thức **cổ điển** `_direction_probability`, nhưng bước predict dùng công thức
-**quantum windowed** — một fit/predict inconsistency còn sót (họ hàng của
-C1/C2). Càng nhiều fold, bias re-estimate dưới sai công thức càng lệch, khiến
-QRW suy thoái trong khi affine (nhất quán nội tại) ổn định. Cần verify và sửa.
+**Nguyên nhân đã xác nhận và sửa (Phase 2):** `calibrate_bias()`
+([qrw_market_sim.py](../src/models/qrw_market_sim.py)) trước đây tối ưu bias
+dưới công thức **cổ điển** `_direction_probability`, nhưng bước predict dùng
+công thức **quantum windowed** — một fit/predict inconsistency còn sót (họ hàng
+của C1/C2 mà bản vá C1 chưa xử lý). Càng nhiều fold, bias re-estimate dưới sai
+công thức càng lệch, khiến QRW suy thoái trong khi affine (nhất quán nội tại)
+ổn định. Phase 2 sửa `calibrate_bias` để dùng đúng công thức mà `predict` sẽ
+dùng (dispatch trên `quantum_improved`), có test regression bảo vệ. Bảng
+"trước/sau vá" ở trên xác nhận: fold-fragility biến mất hoàn toàn. **Lưu ý diễn
+giải:** đây là sửa một lỗi kỹ thuật làm verdict ổn định, KHÔNG phải bằng chứng
+mới cho cơ chế lượng tử — đóng góp của pha vẫn bằng 0 sau khi vá.
 
 ## 6. AIC/BIC và scorecard
 

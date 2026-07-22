@@ -484,15 +484,32 @@ def main() -> None:
     print(f"[ablation] wrote {md_out}")
 
 
+# Below this pooled-Brier magnitude a paired difference is treated as
+# practically zero regardless of large-N statistical significance: with
+# hundreds of thousands of events even a ~1e-7 systematic difference clears a
+# bootstrap CI, so significance alone would overstate the effect.
+PHASE_NEGLIGIBLE_BRIER = 1e-4
+
+
 def _verdict(comparisons: dict[str, Any]) -> str:
     phase = comparisons["A_full_vs_B_refit"]
     window = comparisons["B_refit_vs_C_affine"]
     total = comparisons["A_full_vs_C_affine"]
     lines = []
-    if phase["significant"] and phase["direction"] == "first_better":
+    phase_magnitude = abs(phase["model_minus_comparison"])
+    if phase_magnitude < PHASE_NEGLIGIBLE_BRIER:
+        lines.append(
+            "The phase (interference) term is **practically zero** "
+            f"({phase['model_minus_comparison']:+.2e} Brier, below the "
+            f"{PHASE_NEGLIGIBLE_BRIER:.0e} threshold): despite large-N "
+            "significance it is orders of magnitude smaller than the main edge, "
+            "so quantum interference does not drive the result."
+        )
+    elif phase["significant"] and phase["direction"] == "first_better":
         lines.append(
             "The phase (interference) term contributes a statistically "
-            "significant Brier improvement (A_full beats B_refit)."
+            "significant and non-negligible Brier improvement (A_full beats "
+            "B_refit)."
         )
     else:
         lines.append(

@@ -453,6 +453,65 @@ def test_bias_update_keeps_structural_parameters_fixed() -> None:
     assert np.isfinite(model.obi_bias)
 
 
+def test_bias_update_uses_quantum_objective_when_quantum_improved() -> None:
+    """calibrate_bias must optimise the bias under the same formula prediction
+    uses. When a quantum fit is selected, prediction goes through the windowed
+    density-matrix formula, so the chosen bias must be a local optimum of the
+    *quantum* objective -- not the classical closed form. Optimising the wrong
+    objective is the residual fit/predict inconsistency that made the
+    walk-forward verdict drift with the fold count.
+    """
+    data = _synthetic_market_data(120)
+    model = MarketQRW(
+        data,
+        {
+            "n_positions": 41,
+            "gamma_base": 0.05,
+            "alpha_obi": 0.6,
+            "alpha_direction": -0.4,
+            "obi_bias": 0.0,
+            "coin_type": "obi_adaptive",
+            "quantum_window": 5,
+        },
+    )
+    model.quantum_improved = True
+    model.alpha_phase = 0.8
+    model.gamma = 0.05
+
+    model.calibrate_bias(regularization=0.01)
+    chosen = model.obi_bias
+
+    price = data["price"].to_numpy(dtype=np.float64)
+    obi = data["obi"].to_numpy(dtype=np.float64)
+    direction = data["tick_direction"].to_numpy(dtype=np.float64)
+    delta = np.diff(price)
+    valid = np.isfinite(delta) & (np.abs(delta) > 1e-12)
+    predictor_obi = obi[:-1][valid]
+    predictor_direction = direction[:-1][valid]
+    target = (delta[valid] > 0.0).astype(np.float64)
+
+    def quantum_objective(bias: float) -> float:
+        probability = model._quantum_windowed_probabilities(
+            predictor_obi,
+            predictor_direction,
+            bias=bias,
+            alpha_obi=model.alpha_obi,
+            alpha_direction=model.alpha_direction,
+            alpha_phase=model.alpha_phase,
+            gamma=model.gamma,
+            window=model.quantum_window,
+        )
+        return model._log_loss(probability, target) + 0.01 * bias**2
+
+    # The chosen bias is a local optimum of the QUANTUM objective: nudging it
+    # in either direction must not lower that objective. Under the old code the
+    # bias minimised the classical objective instead, which is generally not a
+    # local optimum here, so this nudge test would fail.
+    base = quantum_objective(chosen)
+    assert quantum_objective(chosen + 0.2) >= base - 1e-6
+    assert quantum_objective(chosen - 0.2) >= base - 1e-6
+
+
 def test_two_stage_calibration_persists_fixed_structure(tmp_path) -> None:
     output = tmp_path / "two_stage.json"
     model = MarketQRW(
