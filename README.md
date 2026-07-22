@@ -5,14 +5,16 @@ baseline cổ điển trên dữ liệu giao dịch tần suất cao.
 
 ## Kết luận hiện tại
 
-Ablation/so-sánh Phase 1–3 ([reports/research/](reports/research/)) cho thấy
-**không có bằng chứng cho bất kỳ lợi thế dự báo nào của QRW**: (1) cơ chế "giao
-thoa lượng tử" (pha `alpha_phase`) đóng góp **bằng 0** trên cả ba asset; (2)
-thành phần windowing thắng baseline affine yếu nhưng **thua** các baseline cổ
-điển mạnh (OrderFlow AR(5), Logistic+Pairwise) trên cả ba asset — trên ETH xếp
-chót 7/7. Fold-fragility từng thấy trên BTC là một bug trong `calibrate_bias`,
-đã sửa ở Phase 2. OBI hiện là trade-flow proxy, không phải L2 LOB. Xem
-[báo cáo cuối](docs/final_report.md) §5b–5c.
+Ablation/so-sánh Phase 1–5 ([reports/research/](reports/research/)) cho thấy
+**không có lợi thế dự báo bền vững của QRW, và cơ chế lượng tử (pha) đóng góp
+bằng 0**: (1) pha `alpha_phase` = 0 trên cả ba asset; (2) ở chiều directional,
+windowing thắng affine yếu nhưng **thua** baseline cổ điển mạnh (OrderFlow
+AR(5), Logistic+Pairwise) trên cả ba asset — ETH xếp chót 7/7; (3) ở endpoint
+chính đăng-ký-trước là marginal CRPS, QRW **cạnh tranh** với GARCH/GBM (hạng 1
+trên ETH, 2 trên BNB, 3 trên BTC) — không thua rõ nhưng cũng không vượt trội.
+Fold-fragility trên BTC là bug `calibrate_bias` đã sửa (Phase 2); full 32M dataset
+gốc đã chạy được (Phase 4). OBI vẫn là trade-flow proxy, không phải L2 LOB. Xem
+[báo cáo cuối](docs/final_report.md) §5b–5d.
 
 Xem [báo cáo cuối](docs/final_report.md) và
 [trạng thái artifact](reports/ARTIFACT_STATUS.md).

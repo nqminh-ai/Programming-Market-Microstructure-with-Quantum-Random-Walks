@@ -1,0 +1,243 @@
+"""Does the QRW density-matrix marginal beat classical distributional models?
+
+Phases 1-4 covered the DIRECTIONAL endpoint (Brier / accuracy). The
+pre-registered PRIMARY endpoint is different: mean fixed-origin marginal CRPS
+(``docs/data_collection_todo.md``). This script closes that gap using the
+project's own ``BenchmarkSuite`` (protocol v4), which evolves the QRW density
+matrix into fixed-origin position marginals and scores them per horizon with
+CRPS against the realized holdout path, alongside CRW variants, GARCH(1,1) and
+GBM.
+
+A single forecast origin is fragile (Phase 2 taught us not to trust a single
+split), so this runs several non-overlapping windows, each with its own
+chronological train/holdout, and aggregates the per-model CRPS across windows.
+
+If GARCH/GBM beat the QRW marginal on CRPS as consistently as the strong
+directional baselines beat it on Brier (§5c), the QRW offers no advantage on the
+registered primary endpoint either.
+
+EXPLORATORY ONLY. Not a confirmatory run; do not relabel as confirmatory.
+"""
+
+from __future__ import annotations
+
+import argparse
+import gc
+import json
+import platform
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import pandas as pd
+
+from scripts.research.full_dataset_confirmation import _load_frame_efficient
+from src.evaluation.benchmark_suite import BenchmarkSuite
+
+ROOT = Path(__file__).resolve().parents[2]
+PRIMARY = "mean_marginal_crps"
+TIE_BREAK = "direction_log_loss"
+SECONDARY = "mean_marginal_absolute_error"
+METRICS = (PRIMARY, SECONDARY, TIE_BREAK)
+
+
+def _git_commit() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
+        ).strip()
+    except (subprocess.SubprocessError, OSError):
+        return "unknown"
+
+
+def _run_window(
+    window: pd.DataFrame,
+    *,
+    n_steps: int,
+    n_paths: int,
+    seed: int,
+) -> dict[str, dict[str, float]]:
+    """Return {model: {metric: value}} for one chronological window."""
+    suite = BenchmarkSuite(
+        window,
+        train_fraction=0.6,
+        n_steps=n_steps,
+        n_paths=n_paths,
+        random_seed=seed,
+    )
+    results = suite.run()
+    wanted = results[results["metric"].isin(METRICS)]
+    out: dict[str, dict[str, float]] = {}
+    for _, row in wanted.iterrows():
+        out.setdefault(str(row["model"]), {})[str(row["metric"])] = float(
+            row["value"]
+        )
+    return out
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--feature-path",
+        default="data/assets/btcusdt/features/features_BTCUSDT_recent_subset.parquet",
+    )
+    parser.add_argument("--label", default="BTCUSDT")
+    parser.add_argument("--max-rows", type=int, default=4000000)
+    parser.add_argument("--windows", type=int, default=5)
+    parser.add_argument("--n-steps", type=int, default=200)
+    parser.add_argument("--n-paths", type=int, default=2000)
+    parser.add_argument("--seed", type=int, default=2026)
+    parser.add_argument("--json-out", default="")
+    parser.add_argument("--md-out", default="")
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    feature_path = (ROOT / args.feature_path).resolve()
+    if not feature_path.exists():
+        raise FileNotFoundError(feature_path)
+    frame = _load_frame_efficient(feature_path, args.max_rows)
+    print(f"[crps] {args.label}: {len(frame):,} rows from {feature_path.name}")
+
+    boundaries = np.linspace(0, len(frame), args.windows + 1, dtype=int)
+    per_window: list[dict[str, Any]] = []
+    models: set[str] = set()
+    for w in range(args.windows):
+        window = frame.iloc[boundaries[w] : boundaries[w + 1]].copy()
+        print(f"[crps] window {w + 1}/{args.windows} ({len(window):,} rows)...")
+        try:
+            scores = _run_window(
+                window, n_steps=args.n_steps, n_paths=args.n_paths,
+                seed=args.seed + w,
+            )
+        except (ValueError, RuntimeError) as error:
+            print(f"[crps]   window {w} skipped: {error}")
+            continue
+        models.update(scores)
+        best = min(scores, key=lambda m: scores[m].get(PRIMARY, np.inf))
+        per_window.append({"window": w, "scores": scores, "best_crps_model": best})
+        print(
+            f"[crps]   best CRPS: {best} "
+            f"({scores[best][PRIMARY]:.4f}); "
+            f"QRW Adaptive={scores.get('QRW Adaptive', {}).get(PRIMARY, float('nan')):.4f}"
+        )
+        gc.collect()
+
+    if not per_window:
+        raise RuntimeError("no window produced a valid benchmark")
+
+    # Aggregate the primary endpoint across windows.
+    model_list = sorted(models)
+    aggregate: dict[str, dict[str, Any]] = {}
+    for model in model_list:
+        crps_values = [
+            row["scores"][model][PRIMARY]
+            for row in per_window
+            if model in row["scores"] and PRIMARY in row["scores"][model]
+        ]
+        if not crps_values:
+            continue
+        aggregate[model] = {
+            "mean_crps": float(np.mean(crps_values)),
+            "crps_per_window": [round(v, 6) for v in crps_values],
+            "windows_scored": len(crps_values),
+            "windows_best": sum(
+                1 for row in per_window if row["best_crps_model"] == model
+            ),
+        }
+
+    ranked = sorted(aggregate, key=lambda m: aggregate[m]["mean_crps"])
+    qrw = "QRW Adaptive"
+    best_overall = ranked[0]
+    qrw_best_count = aggregate.get(qrw, {}).get("windows_best", 0)
+    qrw_rank = ranked.index(qrw) + 1 if qrw in ranked else None
+
+    if qrw_best_count == 0:
+        verdict = (
+            f"On the registered primary endpoint (mean marginal CRPS), the QRW "
+            f"density-matrix marginal is NOT the best model in any of "
+            f"{len(per_window)} windows; '{best_overall}' wins overall. The QRW "
+            f"offers no advantage on the distributional endpoint."
+        )
+    elif qrw_best_count == len(per_window):
+        verdict = (
+            "The QRW marginal has the lowest mean marginal CRPS in every window."
+        )
+    else:
+        verdict = (
+            f"The QRW marginal wins the CRPS endpoint in {qrw_best_count}/"
+            f"{len(per_window)} windows; overall best is '{best_overall}'."
+        )
+    print(f"[crps] VERDICT: {verdict}")
+
+    audit = {
+        "kind": "marginal_crps_comparison",
+        "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "git_commit": _git_commit(),
+        "python": platform.python_version(),
+        "protocol_version": BenchmarkSuite.PROTOCOL_VERSION,
+        "label": args.label,
+        "feature_path": str(feature_path),
+        "rows": int(len(frame)),
+        "windows": len(per_window),
+        "n_steps": args.n_steps,
+        "n_paths": args.n_paths,
+        "seed": args.seed,
+        "primary_endpoint": PRIMARY,
+        "aggregate": aggregate,
+        "ranked_by_mean_crps": ranked,
+        "best_overall": best_overall,
+        "qrw_rank": qrw_rank,
+        "qrw_windows_best": qrw_best_count,
+        "per_window": per_window,
+        "verdict": verdict,
+    }
+    label = args.label
+    json_out = (ROOT / (args.json_out or f"reports/research/marginal_crps_{label}.json")).resolve()
+    md_out = (ROOT / (args.md_out or f"reports/research/marginal_crps_{label}.md")).resolve()
+    json_out.parent.mkdir(parents=True, exist_ok=True)
+    json_out.write_text(json.dumps(audit, indent=2), encoding="utf-8")
+    md_out.write_text(_render_markdown(audit), encoding="utf-8")
+    print(f"[crps] wrote {json_out}")
+    print(f"[crps] wrote {md_out}")
+
+
+def _render_markdown(audit: dict[str, Any]) -> str:
+    agg = audit["aggregate"]
+    ranked = audit["ranked_by_mean_crps"]
+    rows = [
+        f"# Marginal-CRPS comparison — {audit['label']}",
+        "",
+        f"**Status:** `{audit['status']}` — exploratory. Registered PRIMARY "
+        "endpoint: mean fixed-origin marginal CRPS.",
+        "",
+        f"- Protocol: `{audit['protocol_version']}`",
+        f"- Feature file: `{Path(audit['feature_path']).name}` "
+        f"({audit['rows']:,} rows)",
+        f"- Windows: {audit['windows']} non-overlapping chronological splits · "
+        f"n_steps={audit['n_steps']} · n_paths={audit['n_paths']}",
+        f"- Git commit: `{audit['git_commit']}` · Python {audit['python']}",
+        "",
+        "## Mean marginal CRPS across windows (lower = better)",
+        "",
+        "| Rank | Model | mean CRPS | windows best | per-window CRPS |",
+        "|---:|---|---:|---:|---|",
+    ]
+    for i, model in enumerate(ranked, 1):
+        a = agg[model]
+        mark = " **(QRW)**" if model == "QRW Adaptive" else ""
+        per = ", ".join(f"{v:.3f}" for v in a["crps_per_window"])
+        rows.append(
+            f"| {i} | {model}{mark} | {a['mean_crps']:.4f} | "
+            f"{a['windows_best']}/{audit['windows']} | {per} |"
+        )
+    rows += ["", "## Verdict", "", audit["verdict"], ""]
+    return "\n".join(rows)
+
+
+if __name__ == "__main__":
+    main()

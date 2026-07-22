@@ -2,13 +2,16 @@
 
 ## Trạng thái khoa học
 
-**Kết luận hiện tại (cập nhật sau Phase 1–3): KHÔNG có bằng chứng cho bất kỳ
-lợi thế dự báo nào của QRW. (1) Cơ chế "giao thoa lượng tử" (pha `alpha_phase`)
-đóng góp BẰNG 0 trên cả ba asset. (2) Thành phần windowing/decoherence cổ điển
-thắng baseline affine yếu nhưng THUA có ý nghĩa thống kê các baseline cổ điển
-mạnh (OrderFlow AR(5), Logistic+Pairwise) trên CẢ BA asset — trên ETH thậm chí
-xếp chót 7/7.** Ba nghiên cứu ablation/so-sánh (gắn nhãn exploratory,
-[reports/research/](../reports/research/)) chỉ ra:
+**Kết luận hiện tại (cập nhật sau Phase 1–5): KHÔNG có lợi thế dự báo BỀN VỮNG
+của QRW, và cơ chế lượng tử cụ thể (pha) đóng góp BẰNG 0. (1) Pha `alpha_phase`
+= 0 trên cả ba asset. (2) Ở endpoint DIRECTIONAL (Brier), windowing thắng
+baseline affine yếu nhưng THUA có ý nghĩa thống kê các baseline cổ điển mạnh
+(OrderFlow AR(5), Logistic+Pairwise) trên CẢ BA asset — ETH xếp chót 7/7. (3) Ở
+endpoint CHÍNH đăng-ký-trước là marginal CRPS, QRW CẠNH TRANH với GARCH/GBM
+(hạng 1 trên ETH, 2 trên BNB, 3 trên BTC) — không thua rõ như directional nhưng
+cũng không có lợi thế nhất quán, và không đến từ pha.** Năm nghiên cứu
+ablation/so-sánh (gắn nhãn exploratory, [reports/research/](../reports/research/))
+chỉ ra:
 
 - **Pha lượng tử đóng góp 0.** Bỏ pha (`alpha_phase=0`, refit) cho Brier giống
   hệt model pha-tự-do tới ≥5 chữ số trên cả ba asset (chênh lệch ~10⁻⁷–10⁻⁵,
@@ -22,15 +25,21 @@ xếp chót 7/7.** Ba nghiên cứu ablation/so-sánh (gắn nhãn exploratory,
   dương báo cáo trước đây (−0,007383, BTC 3 fold) từng đảo dấu thành thua ở
   fold ≥ 5; Phase 2 truy ra nguyên nhân (fit/predict inconsistency trong
   `calibrate_bias`) và sửa, sau đó edge ổn định ~−0,013 ở mọi fold. Xem §5b.
-- **Windowing thua baseline mạnh (Phase 3).** Khi so với bộ baseline
-  pre-registered (OrderFlow AR(5), Logistic+Pairwise, Hawkes…) dùng đúng cùng
-  feature causal, windowed-QRW thua có ý nghĩa thống kê trên cả ba asset (BTC
-  hạng 4/7, ETH 7/7, BNB 4/7). OrderFlow AR(5) thắng QRW ở mọi asset. Lợi thế
-  vs affine ở §5b không sống sót. Xem §5c.
+- **Windowing thua baseline mạnh ở chiều directional (Phase 3).** Khi so với bộ
+  baseline pre-registered (OrderFlow AR(5), Logistic+Pairwise, Hawkes…) dùng
+  đúng cùng feature causal, windowed-QRW thua có ý nghĩa thống kê trên cả ba
+  asset (BTC hạng 4/7, ETH 7/7, BNB 4/7). OrderFlow AR(5) thắng QRW ở mọi asset.
+  Lợi thế vs affine ở §5b không sống sót. Xem §5c.
+- **CRPS phân phối — cạnh tranh, không thua rõ (Phase 5).** Ở endpoint chính
+  đăng-ký-trước (mean marginal CRPS, đo bằng `BenchmarkSuite` v4, 5 window/asset),
+  QRW đứng hạng 1/6 trên ETH, 2/6 trên BNB, 3/6 trên BTC — ngang ngửa GARCH/GBM.
+  Đây là chiều DUY NHẤT QRW không bị thua dứt khoát, nhưng vẫn không có lợi thế
+  nhất quán; QRW thắng ở window biến động thấp và thua đậm ở window biến động
+  cao (không mô hình hóa volatility). Xem §5d.
 
 Các caveat cũ vẫn giữ nguyên: dữ liệu hoạt động ngắn, OBI là proxy trade-flow,
-chưa chạy trên toàn bộ dataset gốc, và toàn bộ Phase 1–3 là exploratory (chưa
-đóng băng protocol/pre-registration confirmatory).
+và toàn bộ Phase 1–5 là exploratory (chưa đóng băng protocol/pre-registration
+confirmatory); windowing CRPS trong-file mỏng hơn chuẩn day-cluster.
 
 Báo cáo Phase 4/5 cũ dùng protocol v2 đã bị vô hiệu hóa. Mã nguồn hiện dùng
 `fixed_origin_marginal_density_matrix_ar1_obi_v4`; vì vậy mọi bảng điểm, biểu
@@ -271,6 +280,38 @@ Tổng hợp Phase 1–3: KHÔNG có bằng chứng cho bất kỳ lợi thế d
 dù là cơ chế "giao thoa lượng tử" (pha = 0) hay thành phần windowing cổ điển
 (thua OrderFlow AR trên mọi asset).
 
+## 5d. Endpoint CHÍNH đăng ký trước — CRPS phân phối (Phase 5, exploratory)
+
+Phase 1–3 đo endpoint **directional** (Brier). Nhưng endpoint đăng-ký-trước
+CHÍNH lại là **mean fixed-origin marginal CRPS** (một bài toán phân phối, không
+phải phân loại hướng). Tôi dùng chính `BenchmarkSuite` (protocol v4,
+[benchmark_suite.py](../src/evaluation/benchmark_suite.py)) — tiến hóa density
+matrix QRW thành fixed-origin position marginals rồi chấm CRPS từng horizon so
+với holdout thật — đấu với CRW (3 biến thể), GARCH(1,1) và GBM. Để tránh
+single-origin fragility (bài học Phase 2), chạy **5 window không chồng lấp** mỗi
+asset. Script: [marginal_crps_comparison.py](../scripts/research/marginal_crps_comparison.py).
+
+Mean marginal CRPS trung bình qua 5 window (thấp = tốt):
+
+| Asset | Hạng QRW | Model tốt nhất | QRW CRPS | Best CRPS | QRW thắng window |
+|---|:--:|---|---:|---:|:--:|
+| BTC | 3/6 | GBM | 2,347 | 1,858 | 0/5 |
+| ETH | **1/6** | **QRW** | 0,0962 | 0,0962 | 3/5 |
+| BNB | 2/6 | GARCH(1,1) | 0,0958 | 0,0927 | 3/5 |
+
+**Kết luận Phase 5 — tinh tế, khác chiều directional:** trên endpoint phân phối,
+QRW **cạnh tranh** với GARCH/GBM chứ không bị đè bẹp: tốt nhất trên ETH, gần như
+hòa GARCH trên BNB (0,0958 vs 0,0927), nhưng thua GBM/GARCH trên BTC (hạng 3).
+**Không có lợi thế nhất quán** (hạng dao động 1–3 theo asset), nhưng cũng
+**không thua rõ** như ở chiều directional. Ba caveat quan trọng: (a) biên nhỏ và
+phụ thuộc window — QRW thường thắng ở window **biến động thấp** (marginal hẹp,
+gần tĩnh) và thua đậm ở window **biến động cao** (BNB window 5: GARCH 0,034 vs
+QRW 0,080), tức QRW **không mô hình hóa động lực volatility** như GARCH; (b)
+windowing trong-file mỏng hơn pre-registration (ETH chỉ gói gọn 1 ngày UTC); (c)
+exploratory. Diễn giải trung thực: đây là **chiều duy nhất** QRW không bị thua
+dứt khoát — nhưng vẫn không phải một lợi thế bền vững, và không đến từ pha lượng
+tử (pha vẫn = 0).
+
 ## 6. AIC/BIC và scorecard
 
 AIC/BIC chỉ được xếp hạng trong cùng họ likelihood:
@@ -321,20 +362,26 @@ chế "quantum refinement" (`alpha_phase`) mà `calibrate()` có thể chọn tr
 trước đó (QRW kém hơn baseline) được tính từ một pipeline chưa từng thực sự
 kiểm định cơ chế nó tuyên bố kiểm định.
 
-Ba bước ablation/so-sánh (§5b–5c) đã làm rõ trọn vẹn: **(1)** đóng góp của cơ
-chế giao thoa lượng tử (`alpha_phase`) đo được **bằng 0** trên cả ba asset —
+Năm bước ablation/so-sánh (§5b–5d, Phase 1–5) đã làm rõ trọn vẹn: **(1)** đóng
+góp của cơ chế giao thoa lượng tử (`alpha_phase`) đo được **bằng 0** trên cả ba
+asset —
 bỏ pha cho kết quả giống hệt, ép pha lớn hơn làm xấu đi. **(2)** Fold-fragility
 từng thấy trên BTC (edge đảo dấu ở fold ≥ 5) là một **bug** fit/predict
 inconsistency trong `calibrate_bias`, đã sửa ở Phase 2; sau khi sửa,
 windowed-QRW thắng baseline **affine** ổn định trên BTC/BNB (thua ETH). **(3)**
 Nhưng lợi thế đó chỉ vì affine yếu: khi đấu với baseline cổ điển **mạnh**
 (OrderFlow AR(5), Logistic+Pairwise) dùng đúng cùng feature causal, windowed-QRW
-**thua có ý nghĩa thống kê trên cả ba asset** (ETH xếp chót 7/7). Tổng hợp:
-**chưa có bằng chứng cho bất kỳ lợi thế dự báo nào của QRW — dù là cơ chế
-lượng tử hay thành phần windowing cổ điển; một logistic tự hồi quy đơn giản
-(OrderFlow AR) đánh bại nó ở mọi asset.** Các hạn chế còn lại: chưa chạy trên
-toàn bộ 10 ngày gốc do giới hạn bộ nhớ (§8-6); dữ liệu hoạt động vẫn ngắn và
-OBI chưa phải L2 order-book imbalance thật.
+**thua có ý nghĩa thống kê trên cả ba asset** (§5c; ETH xếp chót 7/7). **(4)**
+Ở endpoint CHÍNH đăng-ký-trước là marginal CRPS (§5d), bức tranh **tinh tế hơn**:
+QRW cạnh tranh với GARCH/GBM — hạng 1 trên ETH, 2 trên BNB, 3 trên BTC — không
+thua rõ nhưng cũng không có lợi thế nhất quán. **(5)** Phase 4 đóng limitation
+#6: chạy được walk-forward directional trên **toàn bộ 32,4M tick gốc** (loader
+downcast, 1.070 MB), edge post-fix = −0,013 (thắng affine, thay số cũ
++0,049889). Tổng hợp: **chưa có bằng chứng cho một lợi thế dự báo bền vững của QRW, và cơ
+chế lượng tử cụ thể (pha) đóng góp bằng 0**; ở directional một logistic tự hồi quy
+đơn giản (OrderFlow AR) đánh bại QRW ở mọi asset, còn ở phân phối (CRPS) QRW chỉ
+ngang ngửa chứ không vượt GARCH/GBM. Các hạn chế còn lại: dữ liệu hoạt động vẫn
+ngắn và OBI chưa phải L2 order-book imbalance thật; toàn bộ là exploratory.
 
 Kết luận khoa học cuối cùng chỉ nên được đưa ra sau khi: protocol được đóng
 băng, provenance khớp commit/data hash, walk-forward được chạy lại thành công

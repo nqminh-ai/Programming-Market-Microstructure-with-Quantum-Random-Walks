@@ -1,0 +1,284 @@
+{
+  "kind": "marginal_crps_comparison",
+  "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
+  "generated_utc": "2026-07-22T07:00:10.665048+00:00",
+  "git_commit": "0198737f783718c545bcb2b212563e8a488ba2c8",
+  "python": "3.14.5",
+  "protocol_version": "fixed_origin_marginal_density_matrix_ar1_obi_v4",
+  "label": "ETHUSDT",
+  "feature_path": "D:\\Project made by me\\AI_Quantum\\Quantum 1\\data\\assets\\ethusdt\\features\\features_ETHUSDT_2026-06-12.parquet",
+  "rows": 2872918,
+  "windows": 5,
+  "n_steps": 200,
+  "n_paths": 2000,
+  "seed": 2026,
+  "primary_endpoint": "mean_marginal_crps",
+  "aggregate": {
+    "CRW Biased": {
+      "mean_crps": 0.13718573146000515,
+      "crps_per_window": [
+        0.120535,
+        0.191542,
+        0.12291,
+        0.096624,
+        0.154318
+      ],
+      "windows_scored": 5,
+      "windows_best": 0
+    },
+    "CRW Correlated": {
+      "mean_crps": 0.11158423333248906,
+      "crps_per_window": [
+        0.100877,
+        0.157063,
+        0.100351,
+        0.070225,
+        0.129405
+      ],
+      "windows_scored": 5,
+      "windows_best": 1
+    },
+    "CRW Simple": {
+      "mean_crps": 0.13749457524000713,
+      "crps_per_window": [
+        0.129028,
+        0.179626,
+        0.122734,
+        0.101385,
+        0.154701
+      ],
+      "windows_scored": 5,
+      "windows_best": 0
+    },
+    "GARCH(1,1)": {
+      "mean_crps": 0.1235409483946481,
+      "crps_per_window": [
+        0.077384,
+        0.17655,
+        0.111867,
+        0.089251,
+        0.162654
+      ],
+      "windows_scored": 5,
+      "windows_best": 1
+    },
+    "GBM": {
+      "mean_crps": 0.12765647108099382,
+      "crps_per_window": [
+        0.119083,
+        0.179589,
+        0.11366,
+        0.086813,
+        0.139138
+      ],
+      "windows_scored": 5,
+      "windows_best": 0
+    },
+    "QRW Adaptive": {
+      "mean_crps": 0.09616478708498757,
+      "crps_per_window": [
+        0.083894,
+        0.130436,
+        0.100614,
+        0.06799,
+        0.097891
+      ],
+      "windows_scored": 5,
+      "windows_best": 3
+    }
+  },
+  "ranked_by_mean_crps": [
+    "QRW Adaptive",
+    "CRW Correlated",
+    "GARCH(1,1)",
+    "GBM",
+    "CRW Biased",
+    "CRW Simple"
+  ],
+  "best_overall": "QRW Adaptive",
+  "qrw_rank": 1,
+  "qrw_windows_best": 3,
+  "per_window": [
+    {
+      "window": 0,
+      "scores": {
+        "QRW Adaptive": {
+          "mean_marginal_crps": 0.08389380150007489,
+          "mean_marginal_absolute_error": 0.1562298500000699,
+          "direction_log_loss": 0.6583036632098472
+        },
+        "CRW Simple": {
+          "mean_marginal_crps": 0.12902752268763062,
+          "mean_marginal_absolute_error": 0.15009237500010503,
+          "direction_log_loss": 0.5757752501281784
+        },
+        "CRW Biased": {
+          "mean_marginal_crps": 0.12053496096263482,
+          "mean_marginal_absolute_error": 0.14131832500011096,
+          "direction_log_loss": 0.42899721127624274
+        },
+        "CRW Correlated": {
+          "mean_marginal_crps": 0.10087689017508956,
+          "mean_marginal_absolute_error": 0.1509644500000838,
+          "direction_log_loss": 0.622182829439799
+        },
+        "GARCH(1,1)": {
+          "mean_marginal_crps": 0.07738403984291838,
+          "mean_marginal_absolute_error": 0.11792266141021393,
+          "direction_log_loss": 0.36599112732588535
+        },
+        "GBM": {
+          "mean_marginal_crps": 0.11908319487992039,
+          "mean_marginal_absolute_error": 0.1515910866714807,
+          "direction_log_loss": 0.694234308008202
+        }
+      },
+      "best_crps_model": "GARCH(1,1)"
+    },
+    {
+      "window": 1,
+      "scores": {
+        "QRW Adaptive": {
+          "mean_marginal_crps": 0.13043592887493138,
+          "mean_marginal_absolute_error": 0.2017272499999313,
+          "direction_log_loss": 0.6575635343375947
+        },
+        "CRW Simple": {
+          "mean_marginal_crps": 0.17962584763744502,
+          "mean_marginal_absolute_error": 0.2009526249999285,
+          "direction_log_loss": 0.5627498662166858
+        },
+        "CRW Biased": {
+          "mean_marginal_crps": 0.19154238991243078,
+          "mean_marginal_absolute_error": 0.21291872499991973,
+          "direction_log_loss": 0.7830447122684454
+        },
+        "CRW Correlated": {
+          "mean_marginal_crps": 0.15706313259993132,
+          "mean_marginal_absolute_error": 0.2064215499999295,
+          "direction_log_loss": 0.6799321180452067
+        },
+        "GARCH(1,1)": {
+          "mean_marginal_crps": 0.17654980576242466,
+          "mean_marginal_absolute_error": 0.20732153498745215,
+          "direction_log_loss": 0.7885868855410655
+        },
+        "GBM": {
+          "mean_marginal_crps": 0.17958906952654188,
+          "mean_marginal_absolute_error": 0.20932829564218636,
+          "direction_log_loss": 0.8097926545624938
+        }
+      },
+      "best_crps_model": "QRW Adaptive"
+    },
+    {
+      "window": 2,
+      "scores": {
+        "QRW Adaptive": {
+          "mean_marginal_crps": 0.10061352435006336,
+          "mean_marginal_absolute_error": 0.16921455000006083,
+          "direction_log_loss": 0.654295159002522
+        },
+        "CRW Simple": {
+          "mean_marginal_crps": 0.12273375750009777,
+          "mean_marginal_absolute_error": 0.1430597000000839,
+          "direction_log_loss": 0.558126442686069
+        },
+        "CRW Biased": {
+          "mean_marginal_crps": 0.12290961508759599,
+          "mean_marginal_absolute_error": 0.143725375000083,
+          "direction_log_loss": 0.5704621077521745
+        },
+        "CRW Correlated": {
+          "mean_marginal_crps": 0.10035135195006836,
+          "mean_marginal_absolute_error": 0.15443455000007134,
+          "direction_log_loss": 0.6404725217577162
+        },
+        "GARCH(1,1)": {
+          "mean_marginal_crps": 0.1118665292849083,
+          "mean_marginal_absolute_error": 0.146690266106056,
+          "direction_log_loss": 0.6931193706089188
+        },
+        "GBM": {
+          "mean_marginal_crps": 0.11365953423988419,
+          "mean_marginal_absolute_error": 0.1435277354737491,
+          "direction_log_loss": 0.6706704298773835
+        }
+      },
+      "best_crps_model": "CRW Correlated"
+    },
+    {
+      "window": 3,
+      "scores": {
+        "QRW Adaptive": {
+          "mean_marginal_crps": 0.0679899042874441,
+          "mean_marginal_absolute_error": 0.12872902499994696,
+          "direction_log_loss": 0.6462323210800784
+        },
+        "CRW Simple": {
+          "mean_marginal_crps": 0.10138467328743016,
+          "mean_marginal_absolute_error": 0.12158137499991438,
+          "direction_log_loss": 0.5611366211344829
+        },
+        "CRW Biased": {
+          "mean_marginal_crps": 0.09662409246243296,
+          "mean_marginal_absolute_error": 0.11655292499991866,
+          "direction_log_loss": 0.47516970995478786
+        },
+        "CRW Correlated": {
+          "mean_marginal_crps": 0.07022505143743729,
+          "mean_marginal_absolute_error": 0.1246542249999398,
+          "direction_log_loss": 0.5909814578054051
+        },
+        "GARCH(1,1)": {
+          "mean_marginal_crps": 0.08925082678467758,
+          "mean_marginal_absolute_error": 0.11336643710146557,
+          "direction_log_loss": 0.5623446563975871
+        },
+        "GBM": {
+          "mean_marginal_crps": 0.08681295274228028,
+          "mean_marginal_absolute_error": 0.12093193579085668,
+          "direction_log_loss": 0.6713440814927047
+        }
+      },
+      "best_crps_model": "QRW Adaptive"
+    },
+    {
+      "window": 4,
+      "scores": {
+        "QRW Adaptive": {
+          "mean_marginal_crps": 0.09789077641242411,
+          "mean_marginal_absolute_error": 0.17971927499992277,
+          "direction_log_loss": 0.6703004774663299
+        },
+        "CRW Simple": {
+          "mean_marginal_crps": 0.1547010750874322,
+          "mean_marginal_absolute_error": 0.17440357499991407,
+          "direction_log_loss": 0.5553751372010798
+        },
+        "CRW Biased": {
+          "mean_marginal_crps": 0.15431759887493116,
+          "mean_marginal_absolute_error": 0.17410254999991423,
+          "direction_log_loss": 0.5452699417373351
+        },
+        "CRW Correlated": {
+          "mean_marginal_crps": 0.12940474049991876,
+          "mean_marginal_absolute_error": 0.17537619999991474,
+          "direction_log_loss": 0.631689542504008
+        },
+        "GARCH(1,1)": {
+          "mean_marginal_crps": 0.16265354029831158,
+          "mean_marginal_absolute_error": 0.18032036563457032,
+          "direction_log_loss": 0.8543738592471897
+        },
+        "GBM": {
+          "mean_marginal_crps": 0.13913760401634223,
+          "mean_marginal_absolute_error": 0.17426740245463784,
+          "direction_log_loss": 0.6834851397231256
+        }
+      },
+      "best_crps_model": "QRW Adaptive"
+    }
+  ],
+  "verdict": "The QRW marginal wins the CRPS endpoint in 3/5 windows; overall best is 'QRW Adaptive'."
+}
