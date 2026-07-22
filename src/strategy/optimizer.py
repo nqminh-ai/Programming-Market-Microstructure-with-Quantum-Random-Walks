@@ -8,6 +8,7 @@ from itertools import product
 import numpy as np
 import pandas as pd
 
+from src.evaluation.deflated_sharpe import deflated_sharpe_ratio
 from src.models.volatility_forecaster import QRWVolatilityForecaster
 from src.strategy.signal_engine import QRWSignalEngine
 
@@ -39,6 +40,37 @@ class QRWStrategyOptimizer:
             dtype="object",
         )
 
+    def _deflate(
+        self,
+        frame: pd.DataFrame,
+        selected: dict,
+        regime_rows: list[dict],
+        n_candidates: int,
+    ) -> dict[str, float]:
+        """Judge the winner against what the luckiest of N trials would show.
+
+        Selection happens before this runs, so the point is not to change which
+        thresholds are chosen but to say honestly whether the winner survives
+        the fact that it was the best of ``n_candidates`` noisy trials.
+        """
+        engine = QRWSignalEngine(
+            theta_buy=selected["theta_buy"],
+            theta_sell=selected["theta_sell"],
+            transaction_cost=self.signal_engine.transaction_cost,
+        )
+        pnl = engine.backtest_from_probabilities(frame)["pnl"].to_numpy(dtype=float)
+        trial_sharpes = np.array(
+            [row.get("sharpe_per_observation", np.nan) for row in regime_rows],
+            dtype=float,
+        )
+        try:
+            return deflated_sharpe_ratio(
+                pnl, n_trials=n_candidates, trial_sharpes=trial_sharpes
+            )
+        except ValueError as error:
+            # A flat or degenerate P&L series has no Sharpe to deflate.
+            return {"deflated_sharpe_ratio": float("nan"), "reason": str(error)}
+
     def _metrics_for_thresholds(
         self,
         frame: pd.DataFrame,
@@ -69,7 +101,14 @@ class QRWStrategyOptimizer:
             return float(metrics["hit_rate"])
         if objective == "profit_factor":
             return float(metrics["profit_factor"])
-        raise ValueError("objective must be sharpe/t_stat, hit_rate, or profit_factor")
+        if objective == "net_pnl":
+            # The only objective denominated in money after costs. hit_rate and
+            # profit_factor can both improve while net P&L falls, because
+            # neither charges for the trades taken to achieve them.
+            return float(metrics["net_pnl"])
+        raise ValueError(
+            "objective must be sharpe/t_stat, hit_rate, profit_factor, or net_pnl"
+        )
 
     def grid_search(
         self,
@@ -105,23 +144,13 @@ class QRWStrategyOptimizer:
             candidates: list[tuple[float, dict]] = []
             for theta_buy, theta_sell in product(grid, grid):
                 metrics = self._metrics_for_thresholds(frame, theta_buy, theta_sell)
-                raw_score = self._objective(metrics, objective)
-                
-                # Ad hoc multiple-testing penalty: grows with log(n_candidates)
-                # tried in the grid search and shrinks with sqrt(n_trades).
-                # This is NOT the Deflated Sharpe Ratio (Bailey & Lopez de
-                # Prado) -- it does not account for skew, kurtosis, or the
-                # variance of the maximum Sharpe under repeated trials. The
-                # 0.5/0.1 coefficients below are uncalibrated constants.
-                penalty = np.sqrt(np.log(n_candidates)) / max(np.sqrt(metrics["n_trades"]), 1.0)
-                if objective in {"sharpe", "t_stat"}:
-                    score = raw_score - penalty * 0.5
-                elif objective == "hit_rate":
-                    score = raw_score - penalty * 0.1
-                elif objective == "profit_factor":
-                    score = raw_score * np.exp(-penalty)
-                else:
-                    score = raw_score
+                # Selection is by the objective alone. The ad hoc penalty that
+                # used to sit here -- sqrt(log(n_candidates))/sqrt(n_trades)
+                # scaled by uncalibrated 0.5/0.1 constants -- has been replaced
+                # by deflating the winner's Sharpe after the search, which is
+                # the published treatment of selection bias and accounts for
+                # skew, kurtosis and the variance of the trial Sharpes.
+                score = self._objective(metrics, objective)
 
                 eligible = (
                     metrics["n_trades"] >= min_trades
@@ -167,6 +196,12 @@ class QRWStrategyOptimizer:
                     "constraint_relaxed": True,
                 }
             selected["n_evaluated"] = len(grid) ** 2
+            selected["deflated_sharpe"] = self._deflate(
+                frame,
+                selected,
+                [row for row in surface_rows if row["regime"] == regime],
+                n_candidates,
+            )
             best[regime] = selected
 
         self.search_surface = pd.DataFrame(surface_rows)

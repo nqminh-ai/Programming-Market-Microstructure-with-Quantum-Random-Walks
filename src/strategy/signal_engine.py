@@ -310,6 +310,9 @@ class QRWSignalEngine:
 
         pnl_std = float(np.std(pnl, ddof=1)) if len(pnl) > 1 else 0.0
         t_stat = float(np.mean(pnl) / pnl_std * np.sqrt(len(pnl))) if pnl_std > 0 else 0.0
+        # Unannualised mean/std. This is the quantity the Deflated Sharpe Ratio
+        # operates on, and unlike t_stat it does not grow with sample size.
+        sharpe_per_observation = float(np.mean(pnl) / pnl_std) if pnl_std > 0 else 0.0
 
         sharpe_annualised = None
         if pnl_std > 0 and timestamp_column and timestamp_column in backtest_df.columns:
@@ -330,5 +333,6 @@ class QRWSignalEngine:
                 float(np.mean(episode_confidence)) if episode_confidence else 0.0
             ),
             "t_stat": t_stat,
+            "sharpe_per_observation": sharpe_per_observation,
             "sharpe_annualised": sharpe_annualised,
         }

@@ -1290,6 +1290,39 @@ def tab_optimizer(config: dict) -> None:
                 "Hit Rate": values.get("metrics", {}).get("hit_rate"),
             })
         st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+
+        # The single most important number on this tab: whether the winning
+        # configuration survives having been picked as the best of many trials.
+        deflated = optimal.get("deflated_sharpe") or {}
+        probability = deflated.get("deflated_sharpe_ratio")
+        if probability is not None and np.isfinite(probability):
+            significant = probability > 0.95
+            color = COLORS["accent_green"] if significant else COLORS["accent_red"]
+            st.markdown(
+                f"""
+                <div class="kpi-card" style="border-left:3px solid {color};
+                     margin-top:0.75rem;">
+                    <div class="kpi-label">Kết quả này có thật hay chỉ do may mắn?</div>
+                    <div style="color:{color}; font-size:1.35rem; font-weight:600;">
+                        {"Có ý nghĩa thống kê" if significant else "KHÔNG có ý nghĩa thống kê"}
+                        &nbsp;<span style="font-size:0.95rem; color:#8FA3BE;">
+                        (Deflated Sharpe = {probability:.3f})</span>
+                    </div>
+                    <div style="margin-top:0.5rem; color:#C7D3E0; font-size:0.86rem;
+                         line-height:1.55;">
+                        Máy đã thử <b>{deflated.get('n_trials', 0)}</b> tổ hợp tham số.
+                        Thử càng nhiều thì càng dễ gặp một tổ hợp trông đẹp
+                        <b>hoàn toàn do ngẫu nhiên</b> — với số lần thử này, tổ hợp
+                        may mắn nhất sẽ đạt Sharpe khoảng
+                        <b>{deflated.get('expected_maximum_sharpe', 0):+.3f}</b> dù
+                        không hề có kỹ năng gì. Tổ hợp tốt nhất thực tế đạt
+                        <b>{deflated.get('sharpe', 0):+.3f}</b>.
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
         st.download_button(
             "Export optimal params as JSON",
             data=json.dumps(results, indent=2),

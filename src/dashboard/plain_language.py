@@ -166,6 +166,8 @@ TAB_GUIDES: dict[str, dict[str, object]] = {
             "Điều đáng lo là khi chỉ có **một điểm sáng nhỏ cô lập** — nghĩa là kết "
             "quả tốt chỉ do may mắn ở đúng một cấu hình.",
             "Vùng sáng **rộng và liền mạch** mới là dấu hiệu đáng tin.",
+            "Xem ô **Deflated Sharpe** phía dưới bảng: nó trả lời thẳng câu hỏi "
+            "'kết quả này có thật hay chỉ do thử nhiều lần rồi vớ được?'.",
         ],
         "caveat": "Dò càng nhiều tổ hợp thì càng dễ tìm được thứ 'có vẻ tốt' hoàn "
                   "toàn do ngẫu nhiên. Đây là cái bẫy phổ biến nhất trong ngành.",
@@ -239,6 +241,11 @@ GLOSSARY: list[tuple[str, str]] = [
     ("Exploratory (thăm dò)",
      "Kết quả tìm tòi, chưa phải kết luận chính thức. Muốn thành chính thức phải "
      "đăng ký phương pháp trước rồi mới thu dữ liệu mới."),
+    ("Deflated Sharpe Ratio",
+     "Xác suất chiến lược thật sự có kỹ năng, **sau khi trừ đi lợi thế của việc "
+     "đã thử rất nhiều cấu hình**. Thử 500 tổ hợp thì kiểu gì cũng có một tổ hợp "
+     "trông đẹp do may mắn; chỉ số này hỏi 'đẹp hơn mức may mắn thường thấy "
+     "chưa?'. Trên 0,95 mới đáng tin. Chiến lược demo ở đây đạt **0,000**."),
     ("Overfitting (quá khớp)",
      "Mô hình học thuộc lòng dữ liệu cũ thay vì hiểu quy luật — nên đúng với quá "
      "khứ nhưng sai với tương lai. Kẻ thù số một của lĩnh vực này."),
