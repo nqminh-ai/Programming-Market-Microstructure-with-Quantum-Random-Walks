@@ -27,6 +27,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.dashboard.design_system import COLORS, GLOBAL_CSS, PLOTLY_TEMPLATE
+from src.dashboard.plain_language import (
+    glossary_expander,
+    render_start_here,
+    tab_explainer,
+)
 from src.data.paths import asset_data_dir
 
 DEMO_MODE = os.getenv("DEMO_MODE", "true").lower() == "true"
@@ -155,7 +160,10 @@ def synthetic_data_banner(command_hint: str) -> None:
     """
     import streamlit as st
     st.warning(
-        f"⚠ No real artifact found — showing synthetic demo data. Run:\n\n"
+        "⚠ **Phần dưới đây là số liệu giả do máy tự sinh**, không phải kết quả "
+        "tính từ dữ liệu thị trường. Nó chỉ để bạn thấy giao diện trông ra sao. "
+        "Đừng diễn giải các con số này.\n\n"
+        "Người phụ trách kỹ thuật có thể tạo dữ liệu thật bằng lệnh:\n\n"
         f"```bash\n{command_hint}\n```"
     )
 
@@ -212,36 +220,47 @@ def render_sidebar() -> dict:
             unsafe_allow_html=True,
         )
 
+        st.caption(
+            "Bạn có thể để nguyên mọi thiết lập bên dưới — chúng đã được đặt "
+            "sẵn ở mức hợp lý. Di chuột vào dấu **?** để xem giải thích."
+        )
+
         date = st.date_input(
-            "Analysis Date",
+            "Ngày phân tích",
             value=datetime(2026, 6, 12).date(),
             key="sidebar_date",
+            help="Ngày dữ liệu thị trường được đem ra phân tích.",
         )
         asset = st.selectbox(
-            "Asset",
+            "Tài sản theo dõi",
             ["VN30F1M", "VNINDEX", "Synthetic"],
             key="sidebar_asset",
+            help="VN30F1M và VNINDEX là chỉ số chứng khoán Việt Nam. "
+                 "'Synthetic' là dữ liệu giả lập do máy tạo ra để thử nghiệm.",
         )
 
         st.markdown("---")
         st.markdown(
-            '<div class="kpi-label">Live Data</div>',
+            '<div class="kpi-label">Dữ liệu trực tiếp</div>',
             unsafe_allow_html=True,
         )
         requested_live = st.toggle(
-            "Live SSI Mode",
+            "Nối dữ liệu thị trường thật",
             value=False,
             disabled=asset == "Synthetic",
             key="ssi_live_mode",
+            help="Bật để lấy giá trực tiếp từ sàn (cần tài khoản dữ liệu SSI). "
+                 "Tắt thì bảng dùng dữ liệu đã lưu sẵn.",
         )
         live_mode = bool(requested_live and asset != "Synthetic")
         refresh_seconds = st.slider(
-            "Refresh interval (seconds)",
+            "Làm mới sau mỗi (giây)",
             1,
             10,
             1,
             disabled=not live_mode,
             key="ssi_refresh_seconds",
+            help="Bảng tự cập nhật lại sau mỗi khoảng thời gian này.",
         )
         collector = _sync_live_collector(live_mode, asset)
         if collector is not None:
@@ -253,40 +272,73 @@ def render_sidebar() -> dict:
 
         st.markdown("---")
         st.markdown(
-            '<div class="kpi-label">Forecast Controls</div>',
+            '<div class="kpi-label">Thiết lập dự báo</div>',
             unsafe_allow_html=True,
         )
         window = st.slider(
-            "Rolling window (ticks)", 5, 30, 15, 5, key="vol_window"
+            "Số giao dịch dùng để tính",
+            5,
+            30,
+            15,
+            5,
+            key="vol_window",
+            help="Mô hình nhìn lại bao nhiêu giao dịch gần nhất để ước lượng "
+                 "mức biến động. Số nhỏ = phản ứng nhanh nhưng nhiễu; "
+                 "số lớn = mượt hơn nhưng chậm.",
         )
-        show_garch = st.checkbox("Show GARCH", True, key="show_garch")
-        show_real = st.checkbox("Show Realized Vol", True, key="show_real")
+        show_garch = st.checkbox(
+            "Hiện mô hình đối chứng GARCH",
+            True,
+            key="show_garch",
+            help="GARCH là mô hình cổ điển đã dùng nhiều thập kỷ trong tài chính, "
+                 "để đây làm mốc so sánh.",
+        )
+        show_real = st.checkbox(
+            "Hiện mức biến động đã thực sự xảy ra",
+            True,
+            key="show_real",
+            help="Đường sự thật: mức dao động đo được sau khi mọi việc đã diễn ra. "
+                 "Dùng để chấm xem dự báo sát đến đâu.",
+        )
         theta_buy = st.slider(
-            "θ_buy", 0.50, 0.80, 0.60, 0.01, key="theta_buy"
+            "Ngưỡng tự tin để gợi ý MUA",
+            0.50,
+            0.80,
+            0.60,
+            0.01,
+            key="theta_buy",
+            help="Mô hình chỉ gợi ý MUA khi tự tin vượt mức này. Kéo lên cao "
+                 "⟹ ít tín hiệu hơn nhưng chọn lọc hơn.",
         )
         theta_sell = st.slider(
-            "θ_sell", 0.50, 0.80, 0.60, 0.01, key="theta_sell"
+            "Ngưỡng tự tin để gợi ý BÁN",
+            0.50,
+            0.80,
+            0.60,
+            0.01,
+            key="theta_sell",
+            help="Tương tự nhưng cho chiều bán. Kéo lên cao ⟹ ít tín hiệu bán hơn.",
         )
 
         st.markdown("---")
         st.markdown(
-            '<div class="kpi-label">Module Status</div>',
+            '<div class="kpi-label">Tình trạng các mục</div>',
             unsafe_allow_html=True,
         )
         results_dir = ROOT / "results" / "track_a"
         modules = {
-            "A1 VOL": (results_dir / "vol_metrics.json").exists(),
-            "A2 RISK": (results_dir / "risk_paths.parquet").exists(),
-            "A3 SIG": (results_dir / "signal_log.parquet").exists(),
-            "A4 OPT": (results_dir / "optimizer_params.json").exists(),
-            "A5 ANM": (results_dir / "anomaly_log.parquet").exists(),
+            "Mức biến động": (results_dir / "vol_metrics.json").exists(),
+            "Rủi ro thua lỗ": (results_dir / "risk_paths.parquet").exists(),
+            "Tín hiệu mua/bán": (results_dir / "signal_log.parquet").exists(),
+            "Dò tham số": (results_dir / "optimizer_params.json").exists(),
+            "Bất thường": (results_dir / "anomaly_log.parquet").exists(),
         }
         status_html = '<div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.5rem;">'
         for name, ready in modules.items():
             color = "#00E676" if ready else "#4A6080"
-            status = "READY" if ready else "PENDING"
+            status = "✓ có dữ liệu" if ready else "○ chưa có dữ liệu"
             status_html += (
-                f'<div style="font-family:\'JetBrains Mono\'; font-size:0.75rem; color:{color};">'
+                f'<div style="font-family:\'Inter\',sans-serif; font-size:0.78rem; color:{color};">'
                 f"{name}: {status}"
                 f"</div>"
             )
@@ -296,8 +348,13 @@ def render_sidebar() -> dict:
         st.markdown("---")
         ready_count = sum(modules.values())
         st.caption(
-            "Track A — QRW Breadth Platform  \n"
-            f"{ready_count}/5 modules ready · Demo mode {'ON' if DEMO_MODE else 'OFF'}"
+            f"{ready_count}/5 mục đã có dữ liệu để hiển thị.  \n"
+            + (
+                "Đang ở **chế độ trình diễn** — số liệu chỉ để minh hoạ cách "
+                "dùng, không phải kết quả đầu tư."
+                if DEMO_MODE
+                else "Đang chạy trên dữ liệu thật."
+            )
         )
 
     return {
@@ -330,12 +387,12 @@ def render_header(config: dict) -> None:
     for name, ready in modules_status.items():
         border_color = "#00E676" if ready else "#4A6080"
         text_color = "#00E676" if ready else "#4A6080"
-        status = "READY" if ready else "PENDING"
+        status = "✓" if ready else "○"
         pills_html += (
             f'<span style="background:#0D1420; border:1px solid {border_color}; '
             f'color:{text_color}; padding:0.2rem 0.6rem; border-radius:3px; '
-            f'font-size:0.7rem; font-family:\'JetBrains Mono\';">'
-            f"{name} {status}</span>"
+            f'font-size:0.72rem; font-family:\'Inter\',sans-serif;">'
+            f"{status} {name}</span>"
         )
 
     live_info = config.get("live_info")
@@ -1505,24 +1562,39 @@ def _render_dashboard(config: dict) -> None:
     elif live_info and live_info.get("last_error"):
         st.caption(f"SSI connection detail: {live_info['last_error']}")
 
+    # Plain-language names first, the technical term in parentheses so a
+    # reader who knows the jargon can still navigate.
     tabs = st.tabs([
-        "Volatility",
-        "Risk",
-        "Signal",
-        "Optimizer",
-        "Anomaly",
+        "🏁 Bắt đầu ở đây",
+        "📈 Mức biến động",
+        "🛡️ Rủi ro thua lỗ",
+        "🎯 Tín hiệu mua/bán",
+        "🎛️ Dò tham số",
+        "🚨 Bất thường",
     ])
 
     with tabs[0]:
-        tab_volatility(runtime_config)
+        render_start_here()
     with tabs[1]:
-        tab_risk(runtime_config)
+        tab_explainer("volatility")
+        tab_volatility(runtime_config)
+        glossary_expander()
     with tabs[2]:
-        tab_signal(runtime_config)
+        tab_explainer("risk")
+        tab_risk(runtime_config)
+        glossary_expander()
     with tabs[3]:
-        tab_optimizer(runtime_config)
+        tab_explainer("signal")
+        tab_signal(runtime_config)
+        glossary_expander()
     with tabs[4]:
+        tab_explainer("optimizer")
+        tab_optimizer(runtime_config)
+        glossary_expander()
+    with tabs[5]:
+        tab_explainer("anomaly")
         tab_anomaly(runtime_config)
+        glossary_expander()
 
 
 def main() -> None:
