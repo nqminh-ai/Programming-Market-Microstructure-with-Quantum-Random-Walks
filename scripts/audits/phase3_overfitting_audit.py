@@ -537,8 +537,10 @@ def write_markdown(path: Path, audit: dict[str, Any]) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--feature-path", type=Path)
-    parser.add_argument("--output-json", type=Path, default=Path("reports/phase3_overfitting_audit.json"))
-    parser.add_argument("--output-markdown", type=Path, default=Path("reports/phase3_overfitting_audit.md"))
+    # Default to the location freeze_release.py and phase6_pipeline.py read.
+    # Writing to reports/ root instead left a second, un-consumed copy behind.
+    parser.add_argument("--output-json", type=Path, default=Path("reports/audits/phase3_overfitting_audit.json"))
+    parser.add_argument("--output-markdown", type=Path, default=Path("reports/audits/phase3_overfitting_audit.md"))
     parser.add_argument("--rolling-blocks", type=int, default=8)
     parser.add_argument("--permutations", type=int, default=2_000)
     parser.add_argument("--bootstrap-samples", type=int, default=10_000)
