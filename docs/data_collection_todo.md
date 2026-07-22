@@ -2,8 +2,35 @@
 
 ## Trạng thái
 
-Chưa bắt đầu. Dữ liệu hiện có chỉ dùng cho phát triển và không được tái gắn
-nhãn thành confirmatory.
+**Hạ tầng: ĐÃ SẴN SÀNG. Thu thập: chưa bắt đầu** (cần ≥20 ngày UTC thời gian
+thực nên không thể rút ngắn). Dữ liệu hiện có chỉ dùng cho phát triển và
+**không được tái gắn nhãn thành confirmatory**.
+
+Runner thực thi protocol này:
+[`scripts/operations/collect_confirmatory.py`](../scripts/operations/collect_confirmatory.py)
+(test: [`tests/test_collect_confirmatory.py`](../tests/test_collect_confirmatory.py)).
+Nó cưỡng chế bằng code các điều khoản bên dưới:
+
+- thu **đồng bộ** trade + L2 depth trên một stream kết hợp, `obi_source` bị
+  hard-code là `"lob"` nên không thể âm thầm rơi về trade-flow proxy;
+- phân đoạn theo **ngày UTC trọn vẹn**, ghi vào
+  `data/assets/<symbol>/raw/confirmatory/<YYYY-MM-DD>/`;
+- chạy theo chunk ⟹ khởi động lại thì **tiếp tục** ngày dở thay vì mất;
+- ghi venue, timezone, reconnect, message rơi, coverage quan sát được, gap lớn
+  nhất; chỉ đánh dấu ngày **complete** khi vượt ngưỡng chất lượng tường minh;
+- manifest **bất biến** mỗi ngày (SHA-256 từng file raw, protocol version, git
+  commit) và **từ chối ghi đè** ngày đã complete.
+
+```powershell
+# Thu ngày UTC hiện tại cho cả ba tài sản (chạy lại an toàn, tự resume)
+python -m scripts.operations.collect_confirmatory
+
+# Thu một ngày cụ thể
+python -m scripts.operations.collect_confirmatory --day 2026-08-01
+
+# Báo cáo tiến độ tới mốc >= 20 ngày/tài sản
+python -m scripts.operations.collect_confirmatory --status
+```
 
 ## Điều kiện bắt đầu
 

@@ -376,8 +376,15 @@ cho ưu thế lượng tử, và không mâu thuẫn với kết luận §5c–5
 
 ## 8. Hạn chế chưa giải quyết
 
-1. Chưa có ít nhất 20 ngày UTC mới, untouched, cho mỗi tài sản.
-2. Chưa có L2 LOB đồng bộ với trade feed.
+1. Chưa có ít nhất 20 ngày UTC mới, untouched, cho mỗi tài sản. **Hạ tầng đã
+   sẵn sàng** ([collect_confirmatory.py](../scripts/operations/collect_confirmatory.py),
+   11 test) — phân đoạn theo ngày UTC, resumable, manifest bất biến có SHA-256,
+   `--status` báo tiến độ. Phần còn thiếu là **thời gian thực**: ≥20 ngày UTC
+   tương lai không thể rút ngắn.
+2. Chưa có L2 LOB đồng bộ với trade feed **trong tập confirmatory**. Runner ở
+   mục 1 thu trade + L2 depth trên cùng một stream kết hợp và hard-code
+   `obi_source="lob"`, nên khi chạy nó sẽ đóng mục này; dữ liệu exploratory
+   hiện tại vẫn là trade-flow proxy.
 3. Artifact Phase 3–6 chính thức chưa được tái tạo hoàn chỉnh dưới protocol v4.
 4. Dữ liệu cross-asset chưa được đánh giá theo toàn bộ ngày có sẵn.
 5. Chưa thể đưa ra kết luận confirmatory hoặc production-readiness.
