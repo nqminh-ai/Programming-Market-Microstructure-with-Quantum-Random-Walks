@@ -137,7 +137,7 @@ với người ngoài ngành: **dự báo tốt hơn thì có kiếm được ti
 
 Với horizon `h`, một cược hướng đúng `p` phần trăm thu về `(2p−1)·E|biến động|`
 trước phí. Ở horizon dự án đang dùng — **1 tick** — biến động trung bình chỉ
-bằng 0,0005 (BTC) lần chi phí một vòng giao dịch:
+bằng 0,0006 (BTC) lần chi phí một vòng giao dịch:
 
 > **Ngưỡng hoà vốn vượt 100%. Một mô hình dự đoán đúng *hoàn hảo* vẫn lỗ.**
 
@@ -145,16 +145,28 @@ bằng 0,0005 (BTC) lần chi phí một vòng giao dịch:
 được. Chúng tôi đổi nhãn sang lợi suất qua `h` tick và chạy lại trên các cửa sổ
 **không chồng lấp**:
 
-| Horizon | BTC | Lớp đa số | Lãi ròng/lệnh |
-|---|---:|---:|---:|
-| 1.000 (~49 giây) | **65,7%** | 51,2% | **−2,56 bps** |
-| 50.000 (~41 phút) | 55,7% | 55,7% *(không hơn hằng số)* | vẫn âm |
+| Horizon | BTC | Lớp đa số | Cửa sổ | Lãi ròng/lệnh |
+|---|---:|---:|---:|---:|
+| 1.000 (~26 giây) | **64,4%** [64,0–64,8] | 50,0% | 68.001 | **−2,72 bps** |
+| 50.000 (~22 phút) | 50,3% *(= hằng số)* | 50,3% | 1.365 | vẫn âm |
 
-**Order flow có sức dự báo thật** — 65,7% là con số đáng kể. Nhưng ở horizon đó
-giá chưa dịch đủ để trả phí; kéo dài ra tới khi biên độ đủ lớn thì kỹ năng biến
-mất. **Không horizon nào, trên bất kỳ tài sản nào, đạt hoà vốn.**
+**Order flow có sức dự báo thật, và nó lặp lại được.** Lần chạy đầu trên 32,4M
+dòng cho 65,7%; sau khi nâng dữ liệu lên **gấp 7 lần** (227,6M dòng, 68.001 cửa
+sổ) con số là 64,4% với khoảng tin cậy chỉ ±0,4 điểm. Hiệu ứng giả do mẫu nhỏ
+không sống sót qua phép nhân bảy như vậy.
 
-Con số 65,7% được **kiểm tra chứ không báo cáo thẳng**: nó truy về `tick_direction`
+Nhưng ở horizon đó giá chưa dịch đủ để trả phí — ngưỡng hoà vốn của BTC tại
+h=1.000 là **112,9%**, vẫn vượt 100% ngay cả ở phí maker. Kéo dài ra tới khi
+biên độ đủ lớn thì kỹ năng biến mất. **Không horizon nào, trên bất kỳ tài sản
+nào, vượt được ngưỡng hoà vốn.**
+
+Có đúng một ô *nhìn* như vượt — BNB ở h=50.000, 53,6% so với ngưỡng 52,3% — và
+nó là ví dụ tốt cho cách dự án tự kiểm tra: chỉ 323 cửa sổ, **p = 0,345**,
+khoảng tin cậy [48,1%–58,9%] vẫn chứa mức tung đồng xu. Trên 12 ô được xét, một
+ô vượt ngưỡng 1,3 điểm là điều phải xảy ra do ngẫu nhiên. Báo cáo gắn dấu
+`⚠ p=…` cho nó thay vì dấu tick.
+
+Con số 64,4% được **kiểm tra chứ không báo cáo thẳng**: nó truy về `tick_direction`
 (autocorr 0,965) và tương quan sụp từ +0,329 xuống +0,011 ở cửa sổ tương lai kế
 tiếp — dấu hiệu của tác động order flow thật, chứ nếu là rò rỉ dữ liệu thì sẽ
 duy trì.
@@ -239,11 +251,11 @@ tiêu cực **đáng tin**: chúng tôi không hạ chuẩn đối thủ.
 |---|---|---|
 | 1 | OBI là **trade-flow proxy**, không phải L2 LOB thật | Hạ tầng thu đã sẵn sàng và có test; cần **≥20 ngày UTC thời gian thực** — không nén được |
 | 2 | Toàn bộ Phase 1–6 là **exploratory**, chưa phải confirmatory | Protocol đã đóng băng dạng văn bản + code; chờ dữ liệu ở #1 |
-| 3 | Dữ liệu trải trên khoảng thời gian ngắn | Đã chạy full 32,4M tick, nhưng bề rộng *thời gian* vẫn hạn chế |
+| 3 | Dữ liệu trải trên khoảng thời gian ngắn | Đã nâng lên **69 ngày trùng khớp cho cả ba asset** (493,7M tick, 2026-05-13 → 07-20); vẫn là hai tháng rưỡi, chưa phủ nhiều chế độ thị trường |
 | 4 | Windowing CRPS trong-file mỏng hơn chuẩn day-cluster | Đã ghi rõ trong §5d báo cáo cuối |
 | 5 | Model không mô hình hoá volatility | Giải thích trực tiếp thất bại ở window biến động cao (§3.5) |
 | 6 | Phân tích giao dịch **chưa có adverse selection** | Khi spread thu được lớn hơn phí, công thức hoà vốn kết luận có lãi ở *mọi* độ chính xác — đó là ảo giác. Cần L2 thật để mô hình hoá hàng đợi lệnh (#1) |
-| 7 | Khử chồng lấp làm cỡ mẫu tụt còn **86–9.695 cửa sổ** | Khoảng tin cậy rộng; §3.6 không phải kết luận dứt khoát |
+| 7 | Khử chồng lấp làm cỡ mẫu tụt còn **323–68.001 cửa sổ** | Đã hẹp lại nhiều sau khi mở rộng dữ liệu, nhưng ô nhỏ nhất (BNB h=50.000, 323 cửa sổ) vẫn có khoảng tin cậy ±5 điểm; §3.6 vẫn là exploratory |
 
 Không hạn chế nào ở trên được phát hiện bởi người ngoài — tất cả do chính pipeline
 kiểm toán của dự án nêu ra.

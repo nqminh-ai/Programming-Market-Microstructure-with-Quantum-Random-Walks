@@ -348,14 +348,15 @@ dữ liệu.
 
 Với horizon `h`, một cược hướng có tỉ lệ đúng `p` thu về `(2p−1)·E|r_h|` trước
 phí, nên hoà vốn đòi `p > 0,5 + chi_phí/(2·E|r_h|)`. Ở horizon dự án đang dùng —
-**1 tick** — biến động trung bình chỉ bằng 0,0005 (BTC), 0,0010 (ETH) và 0,0022
+**1 tick** — biến động trung bình chỉ bằng 0,0006 (BTC), 0,0011 (ETH) và 0,0033
 (BNB) lần một vòng taker, tức ngưỡng hoà vốn **vượt 100%**: một mô hình dự đoán
 đúng *hoàn hảo* vẫn lỗ. Đây là giới hạn của **horizon**, không phải của mô hình,
 và không kỹ thuật mô hình hoá nào cứu được.
 
-Half-spread được **đo từ dữ liệu** (0,20–0,67 bps) chứ không giả định, và nó nhỏ
-hơn phí sàn nhiều — nên **phí mới là đòn bẩy chính**. Đặt lệnh chờ (maker
-2bps/chiều) trở nên khả thi từ ~41 phút (BTC), ~25 phút (ETH), ~13 phút (BNB).
+Half-spread được **đo từ dữ liệu** (0,24–0,96 bps, đo trên toàn bộ 69 ngày) chứ
+không giả định, và nó nhỏ hơn phí sàn nhiều — nên **phí mới là đòn bẩy chính**.
+Đặt lệnh chờ (maker 2bps/chiều) trở nên khả thi từ ~22 phút (BTC), ~23 phút
+(ETH), ~9 phút (BNB).
 Script: [horizon_feasibility.py](../scripts/research/horizon_feasibility.py).
 
 ### Có kỹ năng thật, nhưng không ở nơi có tiền
@@ -364,19 +365,39 @@ Script: [horizon_feasibility.py](../scripts/research/horizon_feasibility.py).
 ký trên các cửa sổ **không chồng lấp** (anchor cách nhau đúng `h` tick, nên
 không nhãn nào chia sẻ tương lai với nhãn khác):
 
-| Horizon | BTC | ETH | BNB | Lãi ròng/lệnh (maker 2bps) |
-|---|---:|---:|---:|---:|
-| 1.000 (~49s) | **65,7%** | 58,8% | 54,0% | −2,56 / −0,62 / −1,57 bps |
-| 10.000 | 53,9% | 60,5% | 49,2% *(thua hằng số)* | vẫn âm |
-| 50.000 | 55,7% *(= hằng số)* | thiếu mẫu | 51,9% | vẫn âm |
+Bảng dưới chạy trên **69 ngày mỗi asset** (BTC 227,6M dòng, ETH 212,0M, BNB
+54,1M — xem "Mở rộng dữ liệu" bên dưới). Mỗi ô là độ chính xác của mô hình tốt
+nhất, kèm khoảng tin cậy Wilson 95% và cỡ mẫu kiểm định:
 
-**Order flow có sức dự báo thật** — BTC đạt 65,7% so với lớp đa số 51,2%. Nhưng
-ở horizon đó giá chưa dịch đủ để trả phí. Kéo horizon ra tới khi biên độ đủ lớn
-thì **kỹ năng biến mất**: BTC ở h=50.000 và BNB ở h=10.000 không mô hình nào
-thắng nổi một hằng số. **Không horizon nào trên bất kỳ asset nào đạt hoà vốn**,
-kể cả ở mức phí maker.
+| Horizon | BTC | ETH | BNB |
+|---|---:|---:|---:|
+| 1.000 | **64,4%** [64,0–64,8] n=68.001 | 58,5% [58,1–58,9] n=63.265 | 54,4% [53,6–55,2] n=16.076 |
+| 5.000 | 56,4% [55,5–57,2] n=13.636 | 53,8% [52,9–54,7] n=12.691 | 52,9% [51,2–54,6] n=3.230 |
+| 10.000 | 55,5% [54,3–56,7] n=6.823 | 52,6% [51,3–53,8] n=6.347 | 51,9% [49,4–54,3] n=1.618 |
+| 50.000 | 50,3% *(= hằng số)* n=1.365 | 51,0% *(thua hằng số 51,3%)* n=1.271 | 53,6% [48,1–58,9] n=323 |
+| **Ngưỡng hoà vốn maker 2bps ở h=50.000** | 58,5% | 55,5% | 52,3% |
 
-Con số 65,7% được **kiểm tra chứ không báo cáo thẳng**: ablation từng feature
+**Order flow có sức dự báo thật, và nó lặp lại được.** Ở lần chạy trước trên
+32,4M dòng, BTC h=1.000 đạt 65,7% với 9.695 cửa sổ. Trên **7 lần** lượng dữ liệu
+đó (68.001 cửa sổ), con số là 64,4% với khoảng tin cậy chỉ còn ±0,4 điểm. Một
+hiệu ứng giả do cỡ mẫu nhỏ sẽ không sống sót qua phép nhân bảy này.
+
+Nhưng ở horizon đó giá chưa dịch đủ để trả phí — ngưỡng hoà vốn của BTC tại
+h=1.000 là **112,9%**, tức vẫn vượt 100% ngay cả ở phí maker. Kéo horizon ra tới
+khi biên độ đủ lớn thì **kỹ năng biến mất**: BTC ở h=50.000 rơi đúng bằng hằng
+số, ETH còn *thua* hằng số. Câu hỏi mà việc mở rộng dữ liệu nhằm trả lời — liệu
+h=50.000 của ETH, trước đây bị bỏ trống vì "thiếu mẫu", có edge hay không — nay
+đã có đáp án dứt khoát: **không**.
+
+**Không horizon nào trên bất kỳ asset nào vượt ngưỡng hoà vốn**, kể cả ở mức phí
+maker. Một ô *nhìn* như vượt: BNB h=50.000 đạt 53,6% so với ngưỡng 52,3%, lãi
+ròng +1,14 bps/lệnh. Nó **không qua được kiểm định**: chỉ 323 cửa sổ, kiểm định
+nhị thức một phía cho **p = 0,345**, và khoảng tin cậy [48,1%–58,9%] vẫn chứa cả
+mức tung đồng xu. Với 12 ô asset×horizon được xét, một ô vượt ngưỡng 1,3 điểm là
+điều phải xảy ra do ngẫu nhiên. Script nay tự gắn dấu `⚠ p=…` cho những ô như
+vậy thay vì dấu tick, để lần chạy sau không tuyên bố nhầm.
+
+Con số 64,4% được **kiểm tra chứ không báo cáo thẳng**: ablation từng feature
 truy ra `tick_direction` (tương quan +0,356 với lợi suất tương lai), một biến có
 autocorr **0,965 ở lag 1** — đúng hiện tượng long-memory of order flow. Đối
 chiếu với các cửa sổ tương lai **rời nhau** cho thấy tương quan sụp từ +0,329
@@ -384,10 +405,28 @@ xuống +0,011 ngay ở cửa sổ kế tiếp, tức tác động flow ngắn h
 thì sẽ duy trì qua mọi cửa sổ. Script:
 [horizon_label_baselines.py](../scripts/research/horizon_label_baselines.py).
 
+### Mở rộng dữ liệu: 7× và kết luận không đổi
+
+Toàn bộ §5e ban đầu chạy trên 31 ngày BTC (32,4M dòng), với ETH và BNB lệch
+ngày nhau. Để kiểm tra xem kết luận có phải là hệ quả của cỡ mẫu nhỏ hay không,
+dữ liệu được kéo lên **69 ngày trùng khớp cho cả ba asset** (2026-05-13 →
+2026-07-20, tổng 493,7M dòng). Cỡ mẫu kiểm định ở horizon dài tăng từ **194 lên
+1.271–1.365 cửa sổ**, đưa sai số chuẩn của độ chính xác từ 3,6% xuống 1,4%.
+
+Half-spread cũng được đo lại trên **toàn bộ** store thay vì 4 triệu dòng đầu:
+BTC 0,239 bps, ETH 0,454 bps, BNB 0,958 bps. Ngưỡng khả thi cho lệnh maker
+2bps/chiều là h=50.000 với BTC (~21,8 phút) và ETH (~23,4 phút), h=5.000 với
+BNB (~9,2 phút).
+
+**Kết luận không đổi ở bất kỳ điểm nào.** Đây là điều đáng nói nhất: dữ liệu lớn
+gấp bảy lần không lật được kết quả nào, chỉ làm các khoảng tin cậy hẹp lại quanh
+đúng những con số cũ.
+
 ### Hạn chế của chính phần này
 
-Khử chồng lấp làm cỡ mẫu tụt còn **86–9.695 cửa sổ**, nên khoảng tin cậy rất
-rộng và không kết luận nào ở đây là dứt khoát. Phân tích cũng **chưa có số hạng
+Khử chồng lấp làm cỡ mẫu tụt còn **323–68.001 cửa sổ**, và ở horizon dài nhất
+của BNB (323 cửa sổ) khoảng tin cậy vẫn rộng hơn ±5 điểm — không kết luận nào ở
+riêng ô đó là dứt khoát. Phân tích cũng **chưa có số hạng
 adverse selection**: khi spread thu được lớn hơn phí, công thức hoà vốn kết luận
 có lãi ở *mọi* độ chính xác — đó là ảo giác, vì lệnh chờ có xu hướng được khớp
 đúng lúc thị trường đi ngược lại. Muốn dùng kịch bản maker phải mô hình hoá hàng
@@ -512,9 +551,11 @@ chế lượng tử cụ thể (pha) đóng góp bằng 0**; ở directional m�
 dẫn đầu trên một trong ba asset. **(6)** §5e đi thêm một bước và hỏi liệu bất kỳ
 dự báo nào ở đây có **giao dịch được** không: không. Horizon 1 tick mà dự án dùng
 có ngưỡng hoà vốn **vượt 100%** — dự đoán đúng hoàn hảo vẫn lỗ. Order flow có kỹ
-năng thật ở horizon ngắn (BTC 65,7%) nhưng giá chưa dịch đủ để trả phí, còn ở
-horizon dài đủ trả phí thì kỹ năng biến mất. Các hạn chế còn lại: dữ liệu hoạt động vẫn
-ngắn và OBI chưa phải L2 order-book imbalance thật; toàn bộ là exploratory.
+năng thật ở horizon ngắn (BTC 64,4% trên 68.001 cửa sổ không chồng lấp) nhưng giá
+chưa dịch đủ để trả phí, còn ở horizon dài đủ trả phí thì kỹ năng biến mất. Kết
+luận đó **đứng vững sau khi dữ liệu được nhân bảy** lên 69 ngày cho cả ba asset.
+Các hạn chế còn lại: dữ liệu hoạt động vẫn ngắn và OBI chưa phải L2 order-book
+imbalance thật; toàn bộ là exploratory.
 
 Kết luận khoa học cuối cùng chỉ nên được đưa ra sau khi: protocol được đóng
 băng, provenance khớp commit/data hash, walk-forward được chạy lại thành công
