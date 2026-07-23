@@ -32,7 +32,15 @@ ANSI = re.compile(r"\x1b\[[0-9;]*m")
 TEMP = Path(tempfile.gettempdir())
 DEFAULT_LOGS = tuple(
     str(TEMP / name)
-    for name in ("vol_bnb.log", "vol_eth.log", "vol_btc.log", "conf100b.log")
+    for name in (
+        "vol_bnb.log",
+        "vol_eth.log",
+        "vol_btc.log",
+        "day_bnb.log",
+        "day_eth.log",
+        "day_btc.log",
+        "conf100b.log",
+    )
 )
 
 
