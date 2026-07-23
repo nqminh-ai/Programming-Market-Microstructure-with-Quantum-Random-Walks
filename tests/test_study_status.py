@@ -7,6 +7,8 @@ the state it is actually written in -- coloured, buffered, and half-finished.
 
 from __future__ import annotations
 
+import pytest
+
 from scripts.operations.study_status import read_progress
 
 MARKER = "Quantum Val Brier: 0.15, Classical Val Brier: 0.17"
@@ -99,3 +101,22 @@ def test_the_window_total_is_read_from_the_log_when_it_is_there(tmp_path) -> Non
 
 def test_a_missing_log_is_skipped_rather_than_raising(tmp_path) -> None:
     assert read_progress(tmp_path / "nope.log") is None
+
+
+def test_the_rate_tracks_recent_windows_not_the_whole_run(tmp_path) -> None:
+    """Conditions change mid-run, and a since-start average hides that.
+
+    Starting a second study alongside one already going pushed the since-start
+    figure to 185s while the job was in fact back to 60s, so the estimate
+    stayed pessimistic long after the contention had gone.
+    """
+    slow = [f"2026-07-23 19:{m:02d}:00 | DEBUG | {MARKER}" for m in (0, 5, 10, 15)]
+    fast = [f"2026-07-23 19:{m:02d}:00 | DEBUG | {MARKER}" for m in (16, 17, 18, 19)]
+    path = _log(tmp_path, slow + fast)
+
+    progress = read_progress(path, total=40)
+
+    assert progress.done == 8
+    # The last six span 19:10 -> 19:19, five gaps, so 108s -- not the 163s a
+    # since-start average would report.
+    assert progress.per_window_seconds == pytest.approx(108.0)

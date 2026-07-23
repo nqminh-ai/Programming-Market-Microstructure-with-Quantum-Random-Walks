@@ -32,7 +32,7 @@ ANSI = re.compile(r"\x1b\[[0-9;]*m")
 TEMP = Path(tempfile.gettempdir())
 DEFAULT_LOGS = tuple(
     str(TEMP / name)
-    for name in ("vol_bnb.log", "vol_rest.log", "conf100b.log", "step2c.log")
+    for name in ("vol_bnb.log", "vol_eth.log", "vol_btc.log", "conf100b.log")
 )
 
 
@@ -45,12 +45,23 @@ class Progress:
     last_seen: float | None
     finished: bool
 
+    stamps: tuple[float, ...] = ()
+
     @property
     def per_window_seconds(self) -> float | None:
-        if self.done < 2 or self.first_seen is None or self.last_seen is None:
+        """Rate over the recent windows, not over the whole run.
+
+        Averaging since the first window answers the wrong question once
+        conditions change mid-run: starting a second study alongside this one
+        pushed the since-start figure to 185s while the job was actually doing
+        112s, so the estimate stayed pessimistic long after the contention that
+        caused it had gone.
+        """
+        recent = self.stamps[-6:]
+        if len(recent) < 2:
             return None
-        elapsed = self.last_seen - self.first_seen
-        return elapsed / (self.done - 1) if elapsed > 0 else None
+        elapsed = recent[-1] - recent[0]
+        return elapsed / (len(recent) - 1) if elapsed > 0 else None
 
     @property
     def remaining_text(self) -> str:
@@ -106,6 +117,7 @@ def read_progress(path: Path, total: int | None = None) -> Progress | None:
         first_seen=stamps[0] if stamps else None,
         last_seen=stamps[-1] if stamps else None,
         finished=finished,
+        stamps=tuple(stamps),
     )
 
 
