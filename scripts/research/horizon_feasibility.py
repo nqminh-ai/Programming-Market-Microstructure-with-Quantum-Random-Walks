@@ -43,10 +43,9 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 
 from src.data.common import timestamps_to_nanoseconds
+from src.data.feature_store import load_feature_columns
 from src.evaluation.provenance import canonical_repo_path, sha256_file
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -105,34 +104,9 @@ def _git_commit() -> str:
 
 
 def _load(path: Path, max_rows: int) -> pd.DataFrame:
-    handle = pq.ParquetFile(path)
-    names = set(handle.schema.names)
-    columns = [column for column in NEEDED_COLUMNS if column in names]
-    total = handle.metadata.num_rows
-
-    if max_rows and total > max_rows:
-        # Read only the row groups the cap can reach. Reading the file and then
-        # slicing means materialising all 227M rows of a 69-day store to keep
-        # four million of them.
-        blocks = []
-        rows = 0
-        for index in range(handle.metadata.num_row_groups):
-            blocks.append(handle.read_row_group(index, columns=columns))
-            rows += blocks[-1].num_rows
-            if rows >= max_rows:
-                break
-        frame = pa.concat_tables(blocks).to_pandas()
-        del blocks
-        frame = frame.iloc[:max_rows]
-    else:
-        frame = pd.read_parquet(path, columns=columns)
-
-    # Sorting unconditionally copies the whole frame, which at this size is the
-    # difference between fitting in memory and not. The stores are written in
-    # date order from per-day files, so the check almost always passes.
-    if not frame["timestamp"].is_monotonic_increasing:
-        frame = frame.sort_values("timestamp", kind="stable")
-    return frame.reset_index(drop=True)
+    # No downcast here: price and mid_price are differenced against each other
+    # at tick scale, and segment_id is only compared for equality.
+    return load_feature_columns(path, NEEDED_COLUMNS, max_rows=max_rows)
 
 
 def measure_half_spread(frame: pd.DataFrame, chunk: int = 10_000_000) -> float | None:

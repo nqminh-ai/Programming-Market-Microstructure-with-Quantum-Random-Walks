@@ -29,12 +29,12 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-import pyarrow.parquet as pq
 
 from scripts.audits.phase3_overfitting_audit import (
     fit_model,
     moving_block_bootstrap_mean,
 )
+from src.data.feature_store import load_feature_columns
 from src.evaluation.provenance import canonical_repo_path, sha256_file
 from scripts.research.alpha_phase_ablation import paired_edge, run_affine, run_config
 
@@ -53,9 +53,11 @@ NEEDED_COLUMNS = [
 ]
 # price stays float64 (tick-level diffs need the precision); the rest downcast.
 DOWNCAST = {
-    "obi": np.float32,
-    "trade_intensity": np.float32,
-    "tick_direction": np.float32,
+    "obi": "float32",
+    "trade_intensity": "float32",
+    "tick_direction": "float32",
+    "segment_id": "int32",
+    "obi_valid": "bool",
 }
 
 
@@ -69,26 +71,16 @@ def _git_commit() -> str:
 
 
 def _load_frame_efficient(path: Path, max_rows: int) -> pd.DataFrame:
-    """Load only the needed columns, downcast, and sort by timestamp."""
-    schema_names = set(pq.ParquetFile(path).schema.names)
-    columns = [c for c in NEEDED_COLUMNS if c in schema_names]
-    frame = pd.read_parquet(path, columns=columns)
-    if max_rows and len(frame) > max_rows:
-        frame = frame.iloc[:max_rows]
-    frame = frame.sort_values("timestamp", kind="stable").reset_index(drop=True)
-    for column, dtype in DOWNCAST.items():
-        if column in frame.columns:
-            frame[column] = frame[column].astype(dtype)
-    if "obi_valid" in frame.columns:
-        frame["obi_valid"] = frame["obi_valid"].astype(bool)
-    if "segment_id" in frame.columns and frame["segment_id"].dtype != np.int32:
-        # Keep segment ids compact but lossless where possible.
-        try:
-            frame["segment_id"] = frame["segment_id"].astype(np.int32)
-        except (ValueError, OverflowError, TypeError):
-            pass
-    gc.collect()
-    return frame
+    """Load only the needed columns, downcast, and sort by timestamp.
+
+    Reading everything at its stored width and downcasting afterwards is 7.7GB
+    on the 227M-row store, and the unconditional sort doubles it. The shared
+    loader narrows each column as it is read and sorts only when the data is
+    not already ordered.
+    """
+    return load_feature_columns(
+        path, NEEDED_COLUMNS, downcast=DOWNCAST, max_rows=max_rows
+    )
 
 
 def parse_args() -> argparse.Namespace:

@@ -28,7 +28,6 @@ label is new, so nothing here is a confirmatory result.
 from __future__ import annotations
 
 import argparse
-import gc
 import json
 import platform
 import subprocess
@@ -39,11 +38,10 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 from scipy.special import expit
 from scipy.stats import binomtest
 
+from src.data.feature_store import load_feature_columns
 from src.evaluation.directional_baselines import (
     FEATURE_NAMES,
     _fit_logistic,
@@ -95,51 +93,19 @@ DOWNCAST = {
     "trade_intensity": "float32",
     "tick_direction": "float32",
     "mid_price": "float32",
+    # Already the stored types; naming them keeps the frame's dtypes fixed even
+    # if a future store widens them, and makes an id too large for int32 an
+    # error rather than a silent fallback to int64.
+    "segment_id": "int32",
+    "obi_valid": "bool",
 }
 
 
 def _load(path: Path, max_rows: int) -> pd.DataFrame:
-    """Load only the needed columns and downcast.
-
-    A 31-day feature store is ~115M rows; read naively at float64 that is over
-    7GB and the process is killed on a 16GB machine.
-    """
-    handle = pq.ParquetFile(path)
-    names = set(handle.schema.names)
-    columns = [column for column in NEEDED_COLUMNS if column in names]
-
-    # Read one column at a time and release each Arrow buffer as soon as it has
-    # been converted. Reading the whole table and calling to_pandas holds the
-    # Arrow copy and the pandas copy at once, which on a 113M-row store is
-    # ~8GB and gets the process killed. Column-wise, the peak is the finished
-    # arrays plus one column.
-    data: dict[str, np.ndarray] = {}
-    for name in columns:
-        column = pq.read_table(path, columns=[name]).column(0)
-        dtype = DOWNCAST.get(name)
-        if dtype is not None:
-            column = column.cast(pa.type_for_alias(dtype))
-        values = column.to_numpy(zero_copy_only=False)
-        del column
-        if max_rows and len(values) > max_rows:
-            values = values[:max_rows]
-        if name == "segment_id":
-            try:
-                values = values.astype(np.int32, copy=False)
-            except (ValueError, OverflowError, TypeError):
-                pass
-        elif name == "obi_valid":
-            values = values.astype(bool, copy=False)
-        data[name] = values
-        gc.collect()
-
-    frame = pd.DataFrame(data, copy=False)
-    del data
-    gc.collect()
-    if not frame["timestamp"].is_monotonic_increasing:
-        frame = frame.sort_values("timestamp", kind="stable").reset_index(drop=True)
-        gc.collect()
-    return frame
+    """Load only the needed columns and downcast."""
+    return load_feature_columns(
+        path, NEEDED_COLUMNS, downcast=DOWNCAST, max_rows=max_rows
+    )
 
 
 def build_horizon_events(frame: pd.DataFrame, horizon: int) -> dict[str, np.ndarray]:
