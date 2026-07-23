@@ -34,6 +34,10 @@ import numpy as np
 import pandas as pd
 
 from scripts.research.full_dataset_confirmation import _load_frame_efficient
+from scipy.stats import spearmanr
+
+from src.data.common import timestamps_to_nanoseconds
+
 from src.evaluation.provenance import canonical_repo_path, sha256_file
 from src.evaluation.benchmark_suite import BenchmarkSuite
 
@@ -42,6 +46,100 @@ PRIMARY = "mean_marginal_crps"
 TIE_BREAK = "direction_log_loss"
 SECONDARY = "mean_marginal_absolute_error"
 METRICS = (PRIMARY, SECONDARY, TIE_BREAK)
+
+
+QRW_MODEL = "QRW Adaptive"
+
+
+def window_volatility(window) -> float:
+    """Realised volatility of the window: std of tick-to-tick log returns.
+
+    Per-tick and scale-free, so windows of different length and different
+    assets are comparable. Segment breaks are excluded -- the jump across a
+    data gap is not a price move and would dominate the estimate.
+    """
+    price = window["price"].to_numpy(dtype=np.float64)
+    if len(price) < 3:
+        return float("nan")
+    with np.errstate(divide="ignore", invalid="ignore"):
+        returns = np.diff(np.log(price))
+    usable = np.isfinite(returns)
+    if "segment_id" in window.columns:
+        segment = window["segment_id"].to_numpy()
+        usable &= segment[1:] == segment[:-1]
+    if usable.sum() < 2:
+        return float("nan")
+    return float(np.std(returns[usable], ddof=1))
+
+
+def volatility_relationship(per_window: list[dict[str, Any]]) -> dict[str, Any]:
+    """Does the QRW fall further behind as the window gets more volatile?
+
+    The report has carried this as an interpretation -- "QRW wins on quiet
+    windows and loses badly on volatile ones, so it does not model volatility
+    dynamics" -- read off five windows per asset, with an acknowledged
+    counter-example. Five points cannot support it either way, so it is
+    measured here instead: Spearman between realised volatility and how far
+    the QRW sits behind the best alternative model in that window.
+
+    Rank correlation rather than Pearson: the relationship need not be linear
+    and a single turbulent window should not set the answer.
+    """
+    pairs = [
+        (row["realised_volatility"], row["qrw_crps_gap"])
+        for row in per_window
+        if np.isfinite(row.get("realised_volatility", np.nan))
+        and np.isfinite(row.get("qrw_crps_gap", np.nan))
+    ]
+    if len(pairs) < 5:
+        return {
+            "windows_used": len(pairs),
+            "spearman": None,
+            "p_value": None,
+            "supports_claim": None,
+            "note": "fewer than 5 usable windows; no correlation reported",
+        }
+
+    volatility = np.array([p[0] for p in pairs])
+    gap = np.array([p[1] for p in pairs])
+    result = spearmanr(volatility, gap)
+    rho = float(result.statistic)
+    p_value = float(result.pvalue)
+    return {
+        "windows_used": len(pairs),
+        "spearman": rho,
+        "p_value": p_value,
+        # The claim is directional: more volatility => QRW further behind.
+        "supports_claim": bool(rho > 0 and p_value < 0.05),
+        "median_volatility": float(np.median(volatility)),
+        "median_gap": float(np.median(gap)),
+    }
+
+
+def day_cluster_boundaries(frame: pd.DataFrame, windows: int) -> np.ndarray:
+    """Row boundaries that fall only on UTC-day edges.
+
+    The pre-registration makes the complete UTC day the unit of analysis.
+    Splitting on row count instead can put every window inside a single day --
+    which is what happened to ETHUSDT -- so a "window" then measures a few
+    hours of one session rather than a stretch of market. Days are grouped as
+    evenly as the count allows and the boundaries are the first row of each
+    group's first day, so no window holds a partial day.
+
+    Raises when there are fewer days than requested windows: silently
+    returning fewer would restate the same thinness the day unit exists to fix.
+    """
+    nanoseconds = timestamps_to_nanoseconds(frame["timestamp"]).to_numpy(dtype="int64")
+    day_index = nanoseconds // 86_400_000_000_000
+    # First row of each distinct day; the frame is time-ordered by the loader.
+    starts = np.flatnonzero(np.r_[True, day_index[1:] != day_index[:-1]])
+    if len(starts) < windows:
+        raise ValueError(
+            f"{len(starts)} UTC day(s) in the frame cannot fill {windows} "
+            f"day-cluster windows; widen --max-rows or lower --windows"
+        )
+    edges = np.linspace(0, len(starts), windows + 1).astype(int)
+    return np.r_[starts[edges[:-1]], len(frame)]
 
 
 def _git_commit() -> str:
@@ -87,6 +185,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--label", default="BTCUSDT")
     parser.add_argument("--max-rows", type=int, default=4000000)
     parser.add_argument("--windows", type=int, default=5)
+    parser.add_argument(
+        "--window-unit",
+        choices=("rows", "utc-day"),
+        default="rows",
+        help="utc-day keeps every window a whole number of UTC days, "
+             "which is the pre-registered unit of analysis.",
+    )
     parser.add_argument("--n-steps", type=int, default=200)
     parser.add_argument("--n-paths", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=2026)
@@ -103,7 +208,10 @@ def main() -> None:
     frame = _load_frame_efficient(feature_path, args.max_rows)
     print(f"[crps] {args.label}: {len(frame):,} rows from {feature_path.name}")
 
-    boundaries = np.linspace(0, len(frame), args.windows + 1, dtype=int)
+    if args.window_unit == "utc-day":
+        boundaries = day_cluster_boundaries(frame, args.windows)
+    else:
+        boundaries = np.linspace(0, len(frame), args.windows + 1, dtype=int)
     per_window: list[dict[str, Any]] = []
     models: set[str] = set()
     for w in range(args.windows):
@@ -119,7 +227,22 @@ def main() -> None:
             continue
         models.update(scores)
         best = min(scores, key=lambda m: scores[m].get(PRIMARY, np.inf))
-        per_window.append({"window": w, "scores": scores, "best_crps_model": best})
+        # How far the QRW sits behind the best *alternative*, so a window the
+        # QRW wins scores negative rather than zero.
+        rivals = [
+            scores[m].get(PRIMARY, np.inf) for m in scores if m != QRW_MODEL
+        ]
+        qrw_crps = scores.get(QRW_MODEL, {}).get(PRIMARY, np.nan)
+        gap = float(qrw_crps - min(rivals)) if rivals else float("nan")
+        per_window.append(
+            {
+                "window": w,
+                "scores": scores,
+                "best_crps_model": best,
+                "realised_volatility": window_volatility(window),
+                "qrw_crps_gap": gap,
+            }
+        )
         print(
             f"[crps]   best CRPS: {best} "
             f"({scores[best][PRIMARY]:.4f}); "
@@ -172,6 +295,26 @@ def main() -> None:
             f"The QRW marginal wins the CRPS endpoint in {qrw_best_count}/"
             f"{len(per_window)} windows; overall best is '{best_overall}'."
         )
+    volatility_test = volatility_relationship(per_window)
+    if volatility_test["spearman"] is None:
+        verdict += (
+            f" Volatility relationship not tested: only "
+            f"{volatility_test['windows_used']} usable windows."
+        )
+    elif volatility_test["supports_claim"]:
+        verdict += (
+            f" The QRW does fall further behind as realised volatility rises "
+            f"(Spearman {volatility_test['spearman']:+.2f}, p="
+            f"{volatility_test['p_value']:.3f}, {volatility_test['windows_used']} "
+            f"windows) -- consistent with it not modelling volatility dynamics."
+        )
+    else:
+        verdict += (
+            f" The volatility story is NOT supported at this sample size: "
+            f"Spearman between realised volatility and the QRW's CRPS gap is "
+            f"{volatility_test['spearman']:+.2f} (p={volatility_test['p_value']:.3f}, "
+            f"{volatility_test['windows_used']} windows)."
+        )
     print(f"[crps] VERDICT: {verdict}")
 
     audit = {
@@ -186,6 +329,7 @@ def main() -> None:
         "feature_sha256": sha256_file(feature_path),
         "rows": int(len(frame)),
         "windows": len(per_window),
+        "window_unit": args.window_unit,
         "n_steps": args.n_steps,
         "n_paths": args.n_paths,
         "seed": args.seed,
@@ -196,6 +340,7 @@ def main() -> None:
         "qrw_rank": qrw_rank,
         "qrw_windows_best": qrw_best_count,
         "per_window": per_window,
+        "volatility_relationship": volatility_test,
         "verdict": verdict,
     }
     label = args.label
