@@ -6,7 +6,6 @@
     "quantity",
     "side",
     "trade_id",
-    "day",
     "is_gap_start",
     "segment_id",
     "price_increment",

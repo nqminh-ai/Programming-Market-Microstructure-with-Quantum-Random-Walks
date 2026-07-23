@@ -14,6 +14,7 @@ so an aggregate counted as a day would be folded back into the next rebuild.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,7 +22,7 @@ from pathlib import Path
 import pyarrow.parquet as pq
 
 from src.data.common import normalize_symbol
-from src.data.paths import asset_data_dir
+from src.data.paths import asset_data_dir, asset_report_dir
 
 DAY = re.compile(r"(\d{4}-\d{2}-\d{2})")
 DEFAULT_SYMBOLS = ("BTCUSDT", "ETHUSDT", "BNBUSDT")
@@ -55,6 +56,35 @@ def _stage(directory: Path, pattern: str) -> StageDays:
     return StageDays(days, files)
 
 
+def _metadata_drift(symbol: str, feature_days: set[str]) -> list[str]:
+    """Days whose feature_metadata no longer describes the feature file.
+
+    The pipeline writes the two together, so they only diverge when a file is
+    rewritten out of band -- which happened when the `day` passthrough was
+    dropped from 121 feature files and the metadata beside them kept listing
+    it. Nothing reads the field, which is exactly why the drift went unnoticed.
+    """
+    directory = asset_report_dir(symbol, "feature_metadata")
+    if not directory.is_dir():
+        return []
+    drifted = []
+    for day in sorted(feature_days):
+        record_path = directory / f"feature_metadata_{symbol}_{day}.json"
+        feature_path = asset_data_dir(symbol, "features") / f"features_{symbol}_{day}.parquet"
+        if not record_path.is_file() or not feature_path.is_file():
+            continue
+        try:
+            record = json.loads(record_path.read_text(encoding="utf-8"))
+            handle = pq.ParquetFile(feature_path)
+            matches = list(record.get("columns", [])) == list(handle.schema_arrow.names)
+            matches &= record.get("rows") == handle.metadata.num_rows
+        except Exception:  # noqa: BLE001 - a bad record must not stop the report
+            matches = False
+        if not matches:
+            drifted.append(day)
+    return drifted
+
+
 def asset_status(symbol: str) -> dict[str, object]:
     upper = normalize_symbol(symbol)
     raw = _stage(asset_data_dir(upper, "raw"), f"tick_{upper}_*")
@@ -85,6 +115,7 @@ def asset_status(symbol: str) -> dict[str, object]:
         "unprocessed": sorted(raw.days - processed.days),
         "no_features": sorted(processed.days - features.days),
         "duplicate_raw": raw.files - len(raw.days),
+        "metadata_drift": _metadata_drift(upper, features.days),
     }
 
 
@@ -117,6 +148,10 @@ def main() -> None:
             days = status["no_features"]
             shown = ", ".join(days[:4]) + (" ..." if len(days) > 4 else "")
             print(f"          ! {len(days)} ngay chua co feature: {shown}")
+        if status["metadata_drift"]:
+            days = status["metadata_drift"]
+            shown = ", ".join(days[:4]) + (" ..." if len(days) > 4 else "")
+            print(f"          ! {len(days)} ngay metadata khong khop file feature: {shown}")
 
     print("\nFile gop (khong phai file theo ngay):")
     for symbol in symbols:
