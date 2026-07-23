@@ -45,7 +45,7 @@ import numpy as np
 import pandas as pd
 
 from src.data.common import timestamps_to_nanoseconds
-from src.data.feature_store import load_feature_columns
+from src.data.feature_store import load_feature_columns, load_trade_sign
 from src.evaluation.provenance import canonical_repo_path, sha256_file
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -106,7 +106,14 @@ def _git_commit() -> str:
 def _load(path: Path, max_rows: int) -> pd.DataFrame:
     # No downcast here: price and mid_price are differenced against each other
     # at tick scale, and segment_id is only compared for equality.
-    return load_feature_columns(path, NEEDED_COLUMNS, max_rows=max_rows)
+    frame = load_feature_columns(path, NEEDED_COLUMNS, max_rows=max_rows)
+    # The aggressor side, as +1/-1. Loaded apart from the frame because it is
+    # stored as a string, and 227M of those cost over 11GB once pandas turns
+    # them into objects.
+    sign = load_trade_sign(path, max_rows)
+    if sign is not None and len(sign) == len(frame):
+        frame["trade_sign"] = sign
+    return frame
 
 
 def roll_half_spread(frame: pd.DataFrame, chunk: int = 10_000_000) -> float | None:
@@ -278,15 +285,83 @@ def expected_absolute_move(
     return move_sum / count, count
 
 
-def round_trip_cost(scenario: dict[str, Any], half_spread: float | None) -> float:
-    """Total round-trip cost as a fraction of notional."""
+def realised_half_spread(
+    frame: pd.DataFrame, horizon: int, chunk: int = 10_000_000
+) -> float | None:
+    """What the passive side of a trade still holds ``horizon`` ticks later.
+
+    ``d * (P_t - P_{t+h}) / P_t`` averaged over trades, where ``d`` is +1 when
+    the taker bought. The maker took the other side, so a price that keeps
+    moving the taker's way is money out of the maker's pocket and the average
+    comes out negative.
+
+    This is the quantity a maker actually earns, and it is not the quoted
+    spread. The difference between the two is adverse selection: passive orders
+    are filled preferentially by traders who are right about the next move. On
+    these stores the order flow is 64% directional at h=1,000, so the effect is
+    not marginal.
+
+    Uses the trade price ``h`` ticks ahead as the reference. Over short
+    horizons that reference carries its own bid-ask bounce, and because trade
+    signs are autocorrelated at 0.965 the bounce does not average out -- the
+    h=1 estimate is largely that artefact rather than price impact. The long
+    horizons, where consecutive signs have decorrelated, are the meaningful
+    ones.
+    """
+    if "trade_sign" not in frame.columns:
+        return None
+    price_column = frame["price"].to_numpy()
+    sign_column = frame["trade_sign"].to_numpy()
+    rows = len(price_column)
+    if horizon >= rows:
+        return None
+    segment_column = (
+        frame["segment_id"].to_numpy() if "segment_id" in frame.columns else None
+    )
+
+    total = 0.0
+    count = 0
+    for begin in range(0, rows - horizon, chunk):
+        stop = min(begin + chunk, rows - horizon)
+        entry = price_column[begin:stop].astype(np.float64, copy=False)
+        later = price_column[begin + horizon : stop + horizon].astype(
+            np.float64, copy=False
+        )
+        usable = np.isfinite(entry) & np.isfinite(later) & (entry > 0)
+        if segment_column is not None:
+            usable &= (
+                segment_column[begin:stop]
+                == segment_column[begin + horizon : stop + horizon]
+            )
+        if not usable.any():
+            continue
+        sign = sign_column[begin:stop][usable].astype(np.float64)
+        total += float((sign * (entry[usable] - later[usable]) / entry[usable]).sum())
+        count += int(usable.sum())
+
+    if count == 0:
+        return None
+    return total / count
+
+
+def round_trip_cost(
+    scenario: dict[str, Any],
+    half_spread: float | None,
+    realised: float | None = None,
+) -> float:
+    """Total round-trip cost as a fraction of notional.
+
+    A taker crosses the spread on both legs and pays it. A maker rests on the
+    passive side and earns -- not the quoted half-spread, but ``realised``,
+    what is left of it once the price has moved. Passing ``realised=None``
+    falls back to crediting the full half-spread, which is the no-adverse-
+    selection assumption and is only correct if flow carries no information.
+    """
     fee = 2.0 * float(scenario["fee_bps_per_side"]) * 1e-4
-    if half_spread is None:
-        return fee
-    # A taker pays the half-spread on entry and exit; a resting maker order is
-    # filled at the passive side and earns it instead.
-    spread_term = 2.0 * half_spread
-    return fee + spread_term if scenario["crosses_spread"] else fee - spread_term
+    if scenario["crosses_spread"]:
+        return fee if half_spread is None else fee + 2.0 * half_spread
+    earned = realised if realised is not None else half_spread
+    return fee if earned is None else fee - 2.0 * earned
 
 
 def breakeven_accuracy(cost: float, expected_move: float) -> float:
@@ -318,20 +393,28 @@ def analyse(frame: pd.DataFrame, horizons: tuple[int, ...]) -> dict[str, Any]:
         move, pairs = expected_absolute_move(frame, horizon)
         if not np.isfinite(move):
             continue
+        # What a passive order keeps at this horizon, and the adverse-selection
+        # component it loses. Both are horizon-dependent, so maker costs are
+        # no longer a single number for the whole grid.
+        realised = realised_half_spread(frame, horizon)
+        adverse = None if realised is None or half_spread is None else half_spread - realised
         entry: dict[str, Any] = {
             "horizon_ticks": int(horizon),
             "pairs": pairs,
             "expected_abs_move": move,
             "seconds": None if per_tick is None else per_tick * horizon,
+            "realised_half_spread": realised,
+            "adverse_selection": adverse,
             "scenarios": {},
         }
-        for name, cost in costs.items():
+        for name, scenario in FEE_SCENARIOS.items():
+            cost = round_trip_cost(scenario, half_spread, realised)
             accuracy = breakeven_accuracy(cost, move)
             # A negative round trip means captured spread exceeds fees, and the
-            # break-even model then claims profit at any accuracy. That is an
-            # artefact: a resting limit order is filled preferentially when the
-            # market is moving against it, and this analysis carries no adverse
-            # selection term. Such scenarios are flagged, not called tradable.
+            # break-even model then claims profit at any accuracy. With the
+            # realised spread in hand this should no longer happen for makers,
+            # since what they keep is negative; the flag stays so that a future
+            # store where it does happen is reported rather than believed.
             spread_dominates = cost <= 0
             entry["scenarios"][name] = {
                 "round_trip_cost": cost,

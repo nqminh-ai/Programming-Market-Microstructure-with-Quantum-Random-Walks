@@ -211,3 +211,93 @@ def test_the_vwap_deviation_is_not_reported_as_a_spread() -> None:
 
     assert roll == pytest.approx(1e-6, rel=0.05), "Roll should recover the true half"
     assert deviation > 5 * roll, "the deviation is drift, and is the larger quantity"
+
+
+def _informed_flow_frame(n: int = 100_000, impact: float = 1e-5, seed: int = 11) -> pd.DataFrame:
+    """Trades whose aggressor side predicts the next move by a known amount.
+
+    Each trade pushes the price by `impact` in the taker's direction. Whoever
+    is resting on the other side is therefore down `impact` one tick later,
+    which is what the realised half-spread has to recover.
+    """
+    rng = np.random.default_rng(seed)
+    sign = rng.choice([-1, 1], size=n).astype(np.int8)
+    steps = sign.astype(np.float64) * impact
+    # Trade i executes at the price *before* its own impact lands, so the
+    # impact shows up between p_i and p_{i+1} -- which is what the maker on the
+    # other side of trade i loses. Putting it in p_i instead would mean the
+    # move was already paid for at the fill and nothing is recoverable.
+    price = 100.0 * np.exp(np.concatenate([[0.0], np.cumsum(steps)[:-1]]))
+    return pd.DataFrame(
+        {
+            "timestamp": np.arange(n) * 50_000_000 + 1_783_099_484_231_822_000,
+            "price": price,
+            "mid_price": price,
+            "segment_id": np.zeros(n, dtype=np.int32),
+            "trade_sign": sign,
+        }
+    )
+
+
+def test_realised_spread_is_negative_when_flow_predicts_the_move() -> None:
+    """The passive side is picked off, so what it keeps is below zero."""
+    frame = _informed_flow_frame(impact=1e-5)
+
+    realised = hf.realised_half_spread(frame, horizon=1)
+
+    # One tick of impact against the maker, so about -1e-5.
+    assert realised == pytest.approx(-1e-5, rel=0.05)
+
+
+def test_realised_spread_is_about_zero_when_flow_carries_no_information() -> None:
+    rng = np.random.default_rng(3)
+    n = 200_000
+    price = 100.0 * np.exp(np.cumsum(rng.normal(0.0, 1e-5, n)))
+    frame = pd.DataFrame(
+        {
+            "timestamp": np.arange(n) * 50_000_000 + 1_783_099_484_231_822_000,
+            "price": price,
+            "mid_price": price,
+            "segment_id": np.zeros(n, dtype=np.int32),
+            "trade_sign": rng.choice([-1, 1], size=n).astype(np.int8),
+        }
+    )
+
+    realised = hf.realised_half_spread(frame, horizon=100)
+
+    assert abs(realised) < 2e-6, "uninformed flow should cost the maker nothing"
+
+
+def test_realised_spread_is_unchanged_by_the_chunk_size() -> None:
+    frame = _informed_flow_frame(50_000)
+
+    whole = hf.realised_half_spread(frame, 100, chunk=len(frame))
+    split = hf.realised_half_spread(frame, 100, chunk=1_000)
+
+    assert split == pytest.approx(whole, rel=1e-9)
+
+
+def test_realised_spread_needs_the_aggressor_side() -> None:
+    frame = _informed_flow_frame(1_000).drop(columns=["trade_sign"])
+    assert hf.realised_half_spread(frame, 10) is None
+
+
+def test_maker_cost_charges_what_the_passive_side_actually_keeps() -> None:
+    """Crediting the quoted half-spread assumes flow carries no information."""
+    maker = hf.FEE_SCENARIOS["maker_futures_2bps"]
+
+    no_adverse_selection = hf.round_trip_cost(maker, half_spread=1e-6)
+    with_adverse_selection = hf.round_trip_cost(maker, half_spread=1e-6, realised=-1e-5)
+
+    assert no_adverse_selection == pytest.approx(4e-4 - 2e-6)
+    assert with_adverse_selection == pytest.approx(4e-4 + 2e-5)
+    assert with_adverse_selection > no_adverse_selection
+
+
+def test_taker_cost_is_untouched_by_the_realised_spread() -> None:
+    """A taker pays the spread; what a maker keeps is not the taker's concern."""
+    taker = hf.FEE_SCENARIOS["taker_futures_4bps"]
+
+    assert hf.round_trip_cost(taker, 1e-6, realised=-1e-5) == pytest.approx(
+        hf.round_trip_cost(taker, 1e-6)
+    )

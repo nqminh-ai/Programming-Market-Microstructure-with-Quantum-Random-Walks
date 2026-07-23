@@ -41,7 +41,7 @@ import pandas as pd
 from scipy.special import expit
 from scipy.stats import binomtest
 
-from src.data.feature_store import load_feature_columns
+from src.data.feature_store import load_feature_columns, load_trade_sign
 from src.evaluation.directional_baselines import (
     FEATURE_NAMES,
     _fit_logistic,
@@ -52,6 +52,7 @@ from scripts.research.horizon_feasibility import (
     FEE_SCENARIOS,
     breakeven_accuracy,
     measure_half_spread,
+    realised_half_spread,
     roll_half_spread,
     round_trip_cost,
     seconds_per_tick as measure_seconds_per_tick,
@@ -104,9 +105,16 @@ DOWNCAST = {
 
 def _load(path: Path, max_rows: int) -> pd.DataFrame:
     """Load only the needed columns and downcast."""
-    return load_feature_columns(
+    frame = load_feature_columns(
         path, NEEDED_COLUMNS, downcast=DOWNCAST, max_rows=max_rows
     )
+    # Needed to price the maker scenarios: the realised half-spread is signed
+    # by which side was the aggressor. Loaded apart from the frame because the
+    # column is a string, and 227M strings cost over 11GB once pandas has them.
+    sign = load_trade_sign(path, max_rows)
+    if sign is not None and len(sign) == len(frame):
+        frame["trade_sign"] = sign
+    return frame
 
 
 def build_horizon_events(frame: pd.DataFrame, horizon: int) -> dict[str, np.ndarray]:
@@ -274,6 +282,10 @@ def analyse(
     # 28-109x here. Both studies must charge the same costs.
     half_spread = roll_half_spread(frame)
     vwap_deviation = measure_half_spread(frame)
+    # Costs at the effective spread, kept for reference. The maker figures
+    # that actually drive the verdict are recomputed per horizon below,
+    # because what a passive order keeps depends on how far the price runs
+    # after it is filled.
     costs = {
         name: round_trip_cost(scenario, half_spread)
         for name, scenario in FEE_SCENARIOS.items()
@@ -294,8 +306,18 @@ def analyse(
             continue
 
         expected_move = float(np.abs(events["log_return"]).mean())
+        # Maker costs are recomputed at this horizon: a resting order does not
+        # earn the quoted half-spread, it earns whatever survives the price
+        # move that follows the fill, and that is negative here. The break-even
+        # thresholds have to be built from these, not from the reference costs.
+        realised = realised_half_spread(frame, horizon)
+        horizon_costs = {
+            name: round_trip_cost(scenario, half_spread, realised)
+            for name, scenario in FEE_SCENARIOS.items()
+        }
         thresholds = {
-            name: breakeven_accuracy(cost, expected_move) for name, cost in costs.items()
+            name: breakeven_accuracy(cost, expected_move)
+            for name, cost in horizon_costs.items()
         }
         best_name = max(
             scored["models"], key=lambda key: scored["models"][key]["accuracy"]
@@ -305,7 +327,7 @@ def analyse(
         # (2p - 1) * E|move| before paying the round trip.
         net_edge = {
             name: (2.0 * best_accuracy - 1.0) * expected_move - cost
-            for name, cost in costs.items()
+            for name, cost in horizon_costs.items()
         }
         # A point estimate above a threshold is not evidence of being above it.
         # De-overlapping leaves a few hundred windows at the long horizons, and
@@ -339,6 +361,12 @@ def analyse(
                 "horizon_ticks": int(horizon),
                 "seconds": None if seconds_per_tick is None else seconds_per_tick * horizon,
                 "expected_abs_move": expected_move,
+                "realised_half_spread": realised,
+                "adverse_selection": (
+                    None if realised is None or half_spread is None
+                    else half_spread - realised
+                ),
+                "round_trip_cost": horizon_costs,
                 "breakeven_accuracy": thresholds,
                 "net_edge_per_trade": net_edge,
                 "best_model": best_name,

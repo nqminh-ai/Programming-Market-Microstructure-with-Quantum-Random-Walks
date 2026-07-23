@@ -29,7 +29,37 @@ from typing import Mapping, Sequence
 import numpy as np
 import pandas as pd
 import pyarrow as pa
+import pyarrow.compute as pc
 import pyarrow.parquet as pq
+
+
+def load_trade_sign(path: str | Path, max_rows: int = 0) -> np.ndarray | None:
+    """Aggressor sign per trade: ``+1`` the taker bought, ``-1`` it sold.
+
+    ``side`` is stored as a string, and 227M of those become Python objects the
+    moment they reach pandas -- over 11GB for a column that carries one bit of
+    information. The comparison is done inside Arrow instead, so what crosses
+    into numpy is a boolean array and then an int8 one.
+
+    Returns ``None`` when the store has no ``side`` column.
+    """
+    path = Path(path)
+    handle = pq.ParquetFile(path)
+    if "side" not in handle.schema.names:
+        return None
+
+    column = _read_column(handle, path, "side", max_rows)
+    is_buy = pc.equal(column, pa.scalar("buy", type=column.type)).to_numpy(
+        zero_copy_only=False
+    )
+    del column
+    gc.collect()
+    if max_rows and len(is_buy) > max_rows:
+        is_buy = is_buy[:max_rows]
+    sign = np.where(is_buy, np.int8(1), np.int8(-1)).astype(np.int8)
+    del is_buy
+    gc.collect()
+    return sign
 
 
 def _read_column(
