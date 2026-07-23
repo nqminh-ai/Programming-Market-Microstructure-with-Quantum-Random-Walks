@@ -26,6 +26,7 @@ import gc
 import json
 import platform
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -201,6 +202,15 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    # Line buffering, or a run redirected to a log shows nothing for the hour
+    # it takes: Python block-buffers stdout when it is not a terminal, so the
+    # per-window progress only lands when the process exits. UTF-8 for the same
+    # reason the other studies set it -- a cp1252 console cannot encode the
+    # labels and would kill the run on its first print.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
+
     args = parse_args()
     feature_path = (ROOT / args.feature_path).resolve()
     if not feature_path.exists():
