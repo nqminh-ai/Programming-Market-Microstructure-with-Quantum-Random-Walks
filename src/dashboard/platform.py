@@ -27,6 +27,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.dashboard.design_system import COLORS, GLOBAL_CSS, PLOTLY_TEMPLATE
+from src.dashboard.findings import render_findings_tab
 from src.dashboard.plain_language import (
     glossary_expander,
     render_start_here,
@@ -1629,6 +1630,7 @@ def _render_dashboard(config: dict) -> None:
     # reader who knows the jargon can still navigate.
     tabs = st.tabs([
         "🏁 Bắt đầu ở đây",
+        "🔬 Kết quả nghiên cứu",
         "📈 Mức biến động",
         "🛡️ Rủi ro thua lỗ",
         "🎯 Tín hiệu mua/bán",
@@ -1639,22 +1641,27 @@ def _render_dashboard(config: dict) -> None:
     with tabs[0]:
         render_start_here()
     with tabs[1]:
+        # The only tab showing a result rather than a demo, so it sits next to
+        # the landing tab and ahead of the tooling.
+        render_findings_tab()
+        glossary_expander()
+    with tabs[2]:
         tab_explainer("volatility")
         tab_volatility(runtime_config)
         glossary_expander()
-    with tabs[2]:
+    with tabs[3]:
         tab_explainer("risk")
         tab_risk(runtime_config)
         glossary_expander()
-    with tabs[3]:
+    with tabs[4]:
         tab_explainer("signal")
         tab_signal(runtime_config)
         glossary_expander()
-    with tabs[4]:
+    with tabs[5]:
         tab_explainer("optimizer")
         tab_optimizer(runtime_config)
         glossary_expander()
-    with tabs[5]:
+    with tabs[6]:
         tab_explainer("anomaly")
         tab_anomaly(runtime_config)
         glossary_expander()
