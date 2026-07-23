@@ -351,9 +351,9 @@ Hai điều chỉnh trong chính phép đo trước khi tin nó:
 
 | Asset | Window | Spearman | p (hai phía) | Ủng hộ? | Hạng QRW | QRW thắng |
 |---|---:|---:|---:|:--:|:--:|:--:|
-| BNBUSDT | 40 | +0,216 | 0,169 | không | **1/6** | 22/40 |
+| BNBUSDT | 40 | +0,222 | 0,169 | không | **1/6** | 22/40 |
 | ETHUSDT | 40 | +0,047 | 0,773 | không | **1/6** | 31/40 |
-| BTCUSDT | 40 | +0,214 | 0,187 | không | 3/6 | 3/40 |
+| BTCUSDT | 40 | +0,213 | 0,187 | không | 3/6 | 3/40 |
 
 Gộp ba asset một phía: **Fisher p = 0,0720**, **Stouffer p = 0,0425**.
 
