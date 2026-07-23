@@ -1,0 +1,55 @@
+{
+  "kind": "full_dataset_directional_confirmation",
+  "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
+  "generated_utc": "2026-07-23T04:15:05.589024+00:00",
+  "git_commit": "5a558c8fe84c2cf2866bbd5ba226c82dfcc1dc82",
+  "python": "3.14.5",
+  "label": "BTCUSDT_69d_100M",
+  "feature_path": "data/assets/btcusdt/features/features_BTCUSDT_69d.parquet",
+  "feature_sha256": "08669062fdc117d2f2e486daa54bd5615bcc3c263974ad8469f18d6dab6b9b43",
+  "rows": 100000000,
+  "in_memory_mb": 3300.0,
+  "quantum_improved": true,
+  "alpha_phase": -1.2272538715126335e-05,
+  "gamma": 0.01,
+  "tick_size": 0.009999999995,
+  "stale_prefix_edge_reference": 0.049889,
+  "fold_results": [
+    {
+      "folds": 2,
+      "a_full_brier": 0.07702563323961031,
+      "affine_brier": 0.09230530161810978,
+      "edge_qrw_minus_affine": -0.015279668378499473,
+      "confidence_interval_95": [
+        -0.015454650973705002,
+        -0.015100915895284638
+      ],
+      "qrw_wins": true,
+      "events": 11886739
+    },
+    {
+      "folds": 3,
+      "a_full_brier": 0.0770248849402326,
+      "affine_brier": 0.09179066994557324,
+      "edge_qrw_minus_affine": -0.01476578500534063,
+      "confidence_interval_95": [
+        -0.014954347051630405,
+        -0.014569711883224808
+      ],
+      "qrw_wins": true,
+      "events": 11886739
+    },
+    {
+      "folds": 5,
+      "a_full_brier": 0.07702557549937125,
+      "affine_brier": 0.09078317731635757,
+      "edge_qrw_minus_affine": -0.013757601816986311,
+      "confidence_interval_95": [
+        -0.013933850736361816,
+        -0.013587264524303512
+      ],
+      "qrw_wins": true,
+      "events": 11886737
+    }
+  ]
+}

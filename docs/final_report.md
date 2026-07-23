@@ -601,6 +601,24 @@ cho ưu thế lượng tử, và không mâu thuẫn với kết luận §5c–5
    Lưu ý: điều này chỉ củng cố so sánh vs affine ở full scale; §5c vẫn cho thấy
    QRW thua baseline mạnh.
 
+   **Lặp lại trên 100M dòng, giai đoạn khác (2026-07-23).** Chạy lại đúng quy
+   trình đó trên store 69 ngày mới, lấy 100.000.000 dòng đầu — gấp **3,1 lần**
+   và phủ khoảng thời gian khác hẳn:
+
+   | Dữ liệu | folds=2 | folds=3 | folds=5 |
+   |---|---:|---:|---:|
+   | 32,4M (gốc) | — | −0,013091 | −0,012771 |
+   | **100M (mới)** | **−0,015280** | **−0,014766** | **−0,013758** |
+
+   Cùng dấu, cùng bậc độ lớn, khoảng tin cậy 95% đều nằm trọn bên âm, và giữ
+   nguyên quy luật edge co lại khi tăng số fold. Kết quả trung tâm **không phải
+   là hiện tượng của riêng một mẫu**. Xem
+   [confirmation_btcusdt_69d_100M.md](../reports/research/confirmation_btcusdt_69d_100M.md).
+
+   Không chạy được trên trọn 227,6M dòng: khâu calibrate cần thêm ~3 GB trên
+   frame 7,5 GB và máy 15,8 GB không đủ. Đây là giới hạn phần cứng, đã ghi rõ
+   thay vì lặng lẽ báo cáo phần chạy được như thể là toàn bộ.
+
 ## 9. Kết luận
 
 Dự án đã sửa ngữ nghĩa đo QRW và quy tắc thống kê theo hướng có thể kiểm toán.
