@@ -1,8 +1,8 @@
 {
   "kind": "horizon_label_baselines",
   "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
-  "generated_utc": "2026-07-23T00:01:10.421583+00:00",
-  "git_commit": "9adde323946b06d11d80bff4cd1b0a0419595aed",
+  "generated_utc": "2026-07-23T00:59:25.336978+00:00",
+  "git_commit": "bfe50182c2da57ceac78b42ed95960a5148c8268",
   "python": "3.14.5",
   "label": "BTCUSDT",
   "feature_path": "data/assets/btcusdt/features/features_BTCUSDT_69d.parquet",
@@ -10,13 +10,15 @@
   "rows": 227586094,
   "train_fraction": 0.7,
   "analysis": {
-    "half_spread": 2.3876776127317294e-05,
+    "half_spread": 7.321507619071284e-07,
+    "half_spread_estimator": "roll_1984",
+    "vwap_deviation_superseded": 2.3876776127317294e-05,
     "seconds_per_tick": 0.02619491891746215,
     "round_trip_costs": {
-      "taker_repo_5bps": 0.0010477535522546346,
-      "taker_futures_4bps": 0.0008477535522546346,
-      "maker_futures_2bps": 0.00035224644774536543,
-      "maker_rebate_0bps": -4.775355225463459e-05
+      "taker_repo_5bps": 0.0010014643015238143,
+      "taker_futures_4bps": 0.0008014643015238143,
+      "maker_futures_2bps": 0.00039853569847618574,
+      "maker_rebate_0bps": -1.4643015238142568e-06
     },
     "horizons": [
       {
@@ -24,16 +26,16 @@
         "seconds": 26.19491891746215,
         "expected_abs_move": 0.00028011547270696596,
         "breakeven_accuracy": {
-          "taker_repo_5bps": 2.370217203872042,
-          "taker_futures_4bps": 2.013221572628881,
-          "maker_futures_2bps": 1.1287522148300908,
+          "taker_repo_5bps": 2.2875919024499316,
+          "taker_futures_4bps": 1.9305962712067695,
+          "maker_futures_2bps": 1.2113775162522018,
           "maker_rebate_0bps": 0.5
         },
         "net_edge_per_trade": {
-          "taker_repo_5bps": -0.0009671267945996965,
-          "taker_futures_4bps": -0.0007671267945996965,
-          "maker_futures_2bps": -0.00027161969009042736,
-          "maker_rebate_0bps": 0.00012838030990957266
+          "taker_repo_5bps": -0.0009208375438688761,
+          "taker_futures_4bps": -0.0007208375438688761,
+          "maker_futures_2bps": -0.00031790894082124767,
+          "maker_rebate_0bps": 8.209105917875234e-05
         },
         "best_model": "OrderFlow AR(5)",
         "best_accuracy": 0.6439170012205703,
@@ -91,16 +93,16 @@
         "seconds": 130.97459458731075,
         "expected_abs_move": 0.0006687735083790604,
         "breakeven_accuracy": {
-          "taker_repo_5bps": 1.2833396053576696,
-          "taker_futures_4bps": 1.1338121513734725,
-          "maker_futures_2bps": 0.7633525725317101,
+          "taker_repo_5bps": 1.248732036314591,
+          "taker_futures_4bps": 1.099204582330394,
+          "maker_futures_2bps": 0.7979601415747886,
           "maker_rebate_0bps": 0.5
         },
         "net_edge_per_trade": {
-          "taker_repo_5bps": -0.0009627100451022959,
-          "taker_futures_4bps": -0.0007627100451022959,
-          "maker_futures_2bps": -0.0002672029405930267,
-          "maker_rebate_0bps": 0.0001327970594069733
+          "taker_repo_5bps": -0.0009164207943714755,
+          "taker_futures_4bps": -0.0007164207943714756,
+          "maker_futures_2bps": -0.000313492191323847,
+          "maker_rebate_0bps": 8.650780867615297e-05
         },
         "best_model": "OrderFlow AR(5)",
         "best_accuracy": 0.5635816955118803,
@@ -158,16 +160,16 @@
         "seconds": 261.9491891746215,
         "expected_abs_move": 0.000950047964545486,
         "breakeven_accuracy": {
-          "taker_repo_5bps": 1.0514213973164461,
-          "taker_futures_4bps": 0.9461635537844713,
-          "maker_futures_2bps": 0.6853835074073782,
+          "taker_repo_5bps": 1.0270598637632609,
+          "taker_futures_4bps": 0.921802020231286,
+          "maker_futures_2bps": 0.7097450409605635,
           "maker_rebate_0bps": 0.5
         },
         "net_edge_per_trade": {
-          "taker_repo_5bps": -0.0009434613163694568,
-          "taker_futures_4bps": -0.0007434613163694568,
-          "maker_futures_2bps": -0.0002479542118601876,
-          "maker_rebate_0bps": 0.00015204578813981243
+          "taker_repo_5bps": -0.0008971720656386365,
+          "taker_futures_4bps": -0.0006971720656386365,
+          "maker_futures_2bps": -0.0002942434625910079,
+          "maker_rebate_0bps": 0.00010575653740899209
         },
         "best_model": "Logistic L2 (5F)",
         "best_accuracy": 0.5548878792320093,
@@ -225,16 +227,16 @@
         "seconds": 1309.7459458731075,
         "expected_abs_move": 0.0020769574558935164,
         "breakeven_accuracy": {
-          "taker_repo_5bps": 0.7522327911150897,
-          "taker_futures_4bps": 0.7040854399422272,
-          "maker_futures_2bps": 0.5847986670949472,
+          "taker_repo_5bps": 0.7410892670627622,
+          "taker_futures_4bps": 0.6929419158898998,
+          "maker_futures_2bps": 0.5959421911472745,
           "maker_rebate_0bps": 0.5
         },
         "net_edge_per_trade": {
-          "taker_repo_5bps": -0.0010340593272707213,
-          "taker_futures_4bps": -0.0008340593272707214,
-          "maker_futures_2bps": -0.0003385522227614522,
-          "maker_rebate_0bps": 6.144777723854784e-05
+          "taker_repo_5bps": -0.000987770076539901,
+          "taker_futures_4bps": -0.0007877700765399011,
+          "maker_futures_2bps": -0.0003848414734922725,
+          "maker_rebate_0bps": 1.5158526507727503e-05
         },
         "best_model": "Majority class",
         "best_accuracy": 0.5032967032967033,
@@ -252,7 +254,7 @@
         "clears_breakeven_p_value": {
           "taker_repo_5bps": 1.0,
           "taker_futures_4bps": 1.0,
-          "maker_futures_2bps": 0.9999999994555222,
+          "maker_futures_2bps": 0.9999999999980399,
           "maker_rebate_0bps": 0.41429115179188
         },
         "clears_breakeven_significant": {
@@ -289,5 +291,5 @@
       }
     ]
   },
-  "verdict": "\u0110\u00e1nh gi\u00e1 4 horizon tr\u00ean c\u00e1c c\u1eeda s\u1ed5 **kh\u00f4ng ch\u1ed3ng l\u1ea5p**. C\u00f3 3/4 horizon m\u00e0 m\u00f4 h\u00ecnh t\u1ed1t nh\u1ea5t v\u01b0\u1ee3t baseline \u0111a s\u1ed1; cao nh\u1ea5t l\u00e0 h=1,000 (OrderFlow AR(5), 64.4% so v\u1edbi 50.0%). **Kh\u00f4ng horizon n\u00e0o v\u01b0\u1ee3t ng\u01b0\u1ee1ng ho\u00e0 v\u1ed1n** k\u1ec3 c\u1ea3 \u1edf m\u1ee9c ph\u00ed maker 2bps. \u0110i\u1ec3m c\u1ed1t l\u00f5i: **k\u1ef9 n\u0103ng d\u1ef1 b\u00e1o v\u00e0 kh\u1ea3 n\u0103ng sinh l\u1eddi n\u1eb1m \u1edf hai \u0111\u1ea7u \u0111\u1ed1i l\u1eadp c\u1ee7a thang horizon**. \u1ede h=1,000 \u0111\u1ed9 ch\u00ednh x\u00e1c cao nh\u1ea5t (64.4%) nh\u01b0ng bi\u00ean \u0111\u1ed9 gi\u00e1 qu\u00e1 nh\u1ecf n\u00ean l\u00e3i r\u00f2ng v\u1eabn l\u00e0 **-2.72 bps/l\u1ec7nh**; \u1edf horizon d\u00e0i, bi\u00ean \u0111\u1ed9 \u0111\u1ee7 l\u1edbn th\u00ec k\u1ef9 n\u0103ng l\u1ea1i bi\u1ebfn m\u1ea5t. C\u1ee1 m\u1eabu ki\u1ec3m \u0111\u1ecbnh nh\u1ecf nh\u1ea5t ch\u1ec9 1365 c\u1eeda s\u1ed5 \u2014 m\u1ecdi con s\u1ed1 \u1edf \u0111\u00e2y c\u00f3 kho\u1ea3ng tin c\u1eady r\u1ea5t r\u1ed9ng v\u00e0 kh\u00f4ng \u0111\u01b0\u1ee3c coi l\u00e0 k\u1ebft lu\u1eadn."
+  "verdict": "\u0110\u00e1nh gi\u00e1 4 horizon tr\u00ean c\u00e1c c\u1eeda s\u1ed5 **kh\u00f4ng ch\u1ed3ng l\u1ea5p**. C\u00f3 3/4 horizon m\u00e0 m\u00f4 h\u00ecnh t\u1ed1t nh\u1ea5t v\u01b0\u1ee3t baseline \u0111a s\u1ed1; cao nh\u1ea5t l\u00e0 h=1,000 (OrderFlow AR(5), 64.4% so v\u1edbi 50.0%). **Kh\u00f4ng horizon n\u00e0o v\u01b0\u1ee3t ng\u01b0\u1ee1ng ho\u00e0 v\u1ed1n** k\u1ec3 c\u1ea3 \u1edf m\u1ee9c ph\u00ed maker 2bps. \u0110i\u1ec3m c\u1ed1t l\u00f5i: **k\u1ef9 n\u0103ng d\u1ef1 b\u00e1o v\u00e0 kh\u1ea3 n\u0103ng sinh l\u1eddi n\u1eb1m \u1edf hai \u0111\u1ea7u \u0111\u1ed1i l\u1eadp c\u1ee7a thang horizon**. \u1ede h=1,000 \u0111\u1ed9 ch\u00ednh x\u00e1c cao nh\u1ea5t (64.4%) nh\u01b0ng bi\u00ean \u0111\u1ed9 gi\u00e1 qu\u00e1 nh\u1ecf n\u00ean l\u00e3i r\u00f2ng v\u1eabn l\u00e0 **-3.18 bps/l\u1ec7nh**; \u1edf horizon d\u00e0i, bi\u00ean \u0111\u1ed9 \u0111\u1ee7 l\u1edbn th\u00ec k\u1ef9 n\u0103ng l\u1ea1i bi\u1ebfn m\u1ea5t. C\u1ee1 m\u1eabu ki\u1ec3m \u0111\u1ecbnh nh\u1ecf nh\u1ea5t ch\u1ec9 1365 c\u1eeda s\u1ed5 \u2014 m\u1ecdi con s\u1ed1 \u1edf \u0111\u00e2y c\u00f3 kho\u1ea3ng tin c\u1eady r\u1ea5t r\u1ed9ng v\u00e0 kh\u00f4ng \u0111\u01b0\u1ee3c coi l\u00e0 k\u1ebft lu\u1eadn."
 }

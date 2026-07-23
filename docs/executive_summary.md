@@ -156,20 +156,30 @@ sổ) con số là 64,4% với khoảng tin cậy chỉ ±0,4 điểm. Hiệu �
 không sống sót qua phép nhân bảy như vậy.
 
 Nhưng ở horizon đó giá chưa dịch đủ để trả phí — ngưỡng hoà vốn của BTC tại
-h=1.000 là **112,9%**, vẫn vượt 100% ngay cả ở phí maker. Kéo dài ra tới khi
+h=1.000 là **121,1%**, vẫn vượt 100% ngay cả ở phí maker. Kéo dài ra tới khi
 biên độ đủ lớn thì kỹ năng biến mất. **Không horizon nào, trên bất kỳ tài sản
 nào, vượt được ngưỡng hoà vốn.**
 
-Có đúng một ô *nhìn* như vượt — BNB ở h=50.000, 53,6% so với ngưỡng 52,3% — và
-nó là ví dụ tốt cho cách dự án tự kiểm tra: chỉ 323 cửa sổ, **p = 0,345**,
-khoảng tin cậy [48,1%–58,9%] vẫn chứa mức tung đồng xu. Trên 12 ô được xét, một
-ô vượt ngưỡng 1,3 điểm là điều phải xảy ra do ngẫu nhiên. Báo cáo gắn dấu
-`⚠ p=…` cho nó thay vì dấu tick.
+Có đúng một ô từng *nhìn* như vượt — BNB ở h=50.000 — và nó bị bác bỏ **hai lần
+độc lập**. Về thống kê: chỉ 323 cửa sổ, **p = 0,345**, khoảng tin cậy
+[48,1%–58,9%] vẫn chứa mức tung đồng xu; trên 12 ô được xét, một ô vượt ngưỡng
+1,3 điểm là điều phải xảy ra do ngẫu nhiên. Về đo lường: khoản lãi +1,14 bps của
+nó đến từ một ước lượng spread **sai gấp 30 lần** (xem dưới); đo đúng thì ngưỡng
+lên 54,3%, cao hơn 53,6% đạt được, và lãi ròng thành −0,71 bps.
 
 Con số 64,4% được **kiểm tra chứ không báo cáo thẳng**: nó truy về `tick_direction`
 (autocorr 0,965) và tương quan sụp từ +0,329 xuống +0,011 ở cửa sổ tương lai kế
 tiếp — dấu hiệu của tác động order flow thật, chứ nếu là rò rỉ dữ liệu thì sẽ
 duy trì.
+
+**Và một lỗi đo lường thứ tư, trong chính phần này.** Mô hình chi phí trừ
+half-spread khỏi phí maker, tức ghi có cho lệnh chờ khoản spread ăn được. Nhưng
+half-spread ấy tính bằng `|price − mid|`, mà `mid_price` là **VWAP trượt 100
+lệnh** chứ không phải mid sổ lệnh — nên nó đo độ phân tán giá, không phải chênh
+lệch mua–bán. Trên BTCUSDT nó bằng 175 tick, cho một cặp có spread thật 1–10
+tick. Thay bằng ước lượng **Roll (1984)**: 0,0073 bps thay vì 0,239 — phóng đại
+**33× (BTC), 22× (ETH), 30× (BNB)**. Sửa xong, mọi ngưỡng hoà vốn đều tăng và ô
+sát ngưỡng duy nhất biến mất.
 
 Phần này cũng phát hiện **ba lỗi đo lường** khiến chiến lược demo trông có lãi:
 số lệnh bị thổi phồng 15–34×, một t-statistic bị gọi nhầm là "Sharpe", và bộ dò
@@ -300,14 +310,17 @@ Lịch sử commit của chuỗi nghiên cứu này:
 Dự án này **không** trình bày một model lượng tử thắng thị trường. Nó trình bày
 một quy trình đủ chặt để **phát hiện rằng model của chính mình không thắng**.
 
-Cụ thể, dự án đã **ba lần tự bác bỏ chính mình**, và mỗi lần đều công bố thay vì
-giấu đi:
+Cụ thể, dự án đã **bốn lần tự bác bỏ chính mình**, và mỗi lần đều công bố thay
+vì giấu đi:
 
 1. Một bug `calibrate_bias` từng tạo ra con số đẹp hơn sự thật gần **4 lần**
    (+0,0499 so với −0,0131 thật).
 2. Một artifact BNB không tái lập được; chạy lại đúng cách cho kết quả **xấu
    hơn** cho model (hạng 2/6 → 4/6).
 3. Ba lỗi đo lường khiến chiến lược demo trông có lãi; sửa xong nó **lỗ 4,2%**.
+4. Con số "half-spread đo được" trong chính phân tích giao dịch hoá ra **không
+   phải spread** mà là độ phân tán giá quanh một VWAP trượt — sai **22–33×**.
+   Sửa xong, ô cuối cùng còn *nhìn* như sinh lời cũng biến mất.
 
 Và dự án chấp nhận thua một hồi quy tuyến tính 5 hệ số, rồi còn đi thêm một bước
 nữa để chứng minh rằng **ngay cả khi có dự báo tốt cũng chưa giao dịch được** —

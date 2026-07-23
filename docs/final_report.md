@@ -348,15 +348,16 @@ dữ liệu.
 
 Với horizon `h`, một cược hướng có tỉ lệ đúng `p` thu về `(2p−1)·E|r_h|` trước
 phí, nên hoà vốn đòi `p > 0,5 + chi_phí/(2·E|r_h|)`. Ở horizon dự án đang dùng —
-**1 tick** — biến động trung bình chỉ bằng 0,0006 (BTC), 0,0011 (ETH) và 0,0033
+**1 tick** — biến động trung bình chỉ bằng 0,0006 (BTC), 0,0012 (ETH) và 0,0039
 (BNB) lần một vòng taker, tức ngưỡng hoà vốn **vượt 100%**: một mô hình dự đoán
 đúng *hoàn hảo* vẫn lỗ. Đây là giới hạn của **horizon**, không phải của mô hình,
 và không kỹ thuật mô hình hoá nào cứu được.
 
-Half-spread được **đo từ dữ liệu** (0,24–0,96 bps, đo trên toàn bộ 69 ngày) chứ
-không giả định, và nó nhỏ hơn phí sàn nhiều — nên **phí mới là đòn bẩy chính**.
-Đặt lệnh chờ (maker 2bps/chiều) trở nên khả thi từ ~22 phút (BTC), ~23 phút
-(ETH), ~9 phút (BNB).
+Half-spread được **ước lượng bằng Roll (1984)** trên toàn bộ 69 ngày: 0,0073 bps
+(BTC), 0,0210 (ETH), 0,0316 (BNB) — xem "Sửa: half-spread cũ không phải spread"
+bên dưới. Nó nhỏ hơn phí sàn **ba bậc độ lớn**, nên **phí gần như là toàn bộ chi
+phí**. Đặt lệnh chờ (maker 2bps/chiều) trở nên khả thi từ ~22 phút (BTC),
+~23 phút (ETH), ~18 phút (BNB).
 Script: [horizon_feasibility.py](../scripts/research/horizon_feasibility.py).
 
 ### Có kỹ năng thật, nhưng không ở nơi có tiền
@@ -375,7 +376,7 @@ nhất, kèm khoảng tin cậy Wilson 95% và cỡ mẫu kiểm định:
 | 5.000 | 56,4% [55,5–57,2] n=13.636 | 53,8% [52,9–54,7] n=12.691 | 52,9% [51,2–54,6] n=3.230 |
 | 10.000 | 55,5% [54,3–56,7] n=6.823 | 52,6% [51,3–53,8] n=6.347 | 51,9% [49,4–54,3] n=1.618 |
 | 50.000 | 50,3% *(= hằng số)* n=1.365 | 51,0% *(thua hằng số 51,3%)* n=1.271 | 53,6% [48,1–58,9] n=323 |
-| **Ngưỡng hoà vốn maker 2bps ở h=50.000** | 58,5% | 55,5% | 52,3% |
+| **Ngưỡng hoà vốn maker 2bps ở h=50.000** | 59,6% | 57,0% | 54,3% |
 
 **Order flow có sức dự báo thật, và nó lặp lại được.** Ở lần chạy trước trên
 32,4M dòng, BTC h=1.000 đạt 65,7% với 9.695 cửa sổ. Trên **7 lần** lượng dữ liệu
@@ -383,19 +384,20 @@ nhất, kèm khoảng tin cậy Wilson 95% và cỡ mẫu kiểm định:
 hiệu ứng giả do cỡ mẫu nhỏ sẽ không sống sót qua phép nhân bảy này.
 
 Nhưng ở horizon đó giá chưa dịch đủ để trả phí — ngưỡng hoà vốn của BTC tại
-h=1.000 là **112,9%**, tức vẫn vượt 100% ngay cả ở phí maker. Kéo horizon ra tới
-khi biên độ đủ lớn thì **kỹ năng biến mất**: BTC ở h=50.000 rơi đúng bằng hằng
-số, ETH còn *thua* hằng số. Câu hỏi mà việc mở rộng dữ liệu nhằm trả lời — liệu
-h=50.000 của ETH, trước đây bị bỏ trống vì "thiếu mẫu", có edge hay không — nay
-đã có đáp án dứt khoát: **không**.
+h=1.000 là **121,1%** và của ETH là **100,2%**, tức vượt 100% ngay cả ở phí
+maker: dự đoán đúng *hoàn hảo* vẫn lỗ. Kéo horizon ra tới khi biên độ đủ lớn thì
+**kỹ năng biến mất**: BTC ở h=50.000 rơi đúng bằng hằng số, ETH còn *thua* hằng
+số. Câu hỏi mà việc mở rộng dữ liệu nhằm trả lời — liệu h=50.000 của ETH, trước
+đây bị bỏ trống vì "thiếu mẫu", có edge hay không — nay đã có đáp án dứt khoát:
+**không**.
 
 **Không horizon nào trên bất kỳ asset nào vượt ngưỡng hoà vốn**, kể cả ở mức phí
-maker. Một ô *nhìn* như vượt: BNB h=50.000 đạt 53,6% so với ngưỡng 52,3%, lãi
-ròng +1,14 bps/lệnh. Nó **không qua được kiểm định**: chỉ 323 cửa sổ, kiểm định
-nhị thức một phía cho **p = 0,345**, và khoảng tin cậy [48,1%–58,9%] vẫn chứa cả
-mức tung đồng xu. Với 12 ô asset×horizon được xét, một ô vượt ngưỡng 1,3 điểm là
-điều phải xảy ra do ngẫu nhiên. Script nay tự gắn dấu `⚠ p=…` cho những ô như
-vậy thay vì dấu tick, để lần chạy sau không tuyên bố nhầm.
+maker, và sau khi sửa ước lượng spread thì **không còn ô nào sát ngưỡng**. Ô duy
+nhất từng vượt (BNB h=50.000) đã được xử lý hai lần độc lập: kiểm định nhị thức
+cho p = 0,345 với khoảng tin cậy [48,1%–58,9%] chứa cả mức tung đồng xu; và
+spread đo đúng đẩy ngưỡng của nó từ 52,3% lên 54,3%, cao hơn 53,6% đạt được.
+Script vẫn gắn dấu `⚠ p=…` thay vì dấu tick cho bất kỳ ô nào vượt ngưỡng mà
+không qua kiểm định, để lần chạy sau không tuyên bố nhầm.
 
 Con số 64,4% được **kiểm tra chứ không báo cáo thẳng**: ablation từng feature
 truy ra `tick_direction` (tương quan +0,356 với lợi suất tương lai), một biến có
@@ -404,6 +406,35 @@ chiếu với các cửa sổ tương lai **rời nhau** cho thấy tương quan
 xuống +0,011 ngay ở cửa sổ kế tiếp, tức tác động flow ngắn hạn **thật**; rò rỉ
 thì sẽ duy trì qua mọi cửa sổ. Script:
 [horizon_label_baselines.py](../scripts/research/horizon_label_baselines.py).
+
+### Sửa: half-spread cũ không phải spread
+
+Mô hình chi phí **trừ** half-spread khỏi phí maker, tức ghi có cho lệnh chờ
+khoản spread ăn được ở cả hai chiều. Half-spread đó tính bằng `|price − mid|`,
+nhưng `mid_price` trong feature store là **VWAP trượt 100 lệnh**, không phải mid
+của sổ lệnh. Đại lượng được đo thực chất là độ lệch giá khớp so với trung bình
+trượt của chính nó — tức độ phân tán giá trong cửa sổ trung bình, bị chi phối
+bởi độ trôi, và không liên quan gì tới chênh lệch mua–bán.
+
+Trên một ngày BTCUSDT nó bằng **1,753 USD ≈ 175 tick**, cho một cặp có spread
+thật 1–10 tick. Ước lượng Roll (1984) — nghịch đảo bid-ask bounce ngay trong
+chuỗi giá khớp, chỉ cần giá giao dịch — cho **0,0085 bps** thay vì 0,28 bps.
+Trên cả ba store 69 ngày, thống kê cũ phóng đại **33× (BTC), 22× (ETH), 30×
+(BNB)**.
+
+Báo cáo trước có ghi chú `mid_price` "là giá tham chiếu suy ra, không phải L2
+mid thật, nên số hạng spread là xấp xỉ". Ghi chú đó nói nhẹ quá: nó **không
+phải xấp xỉ của spread, mà là một đại lượng khác**.
+
+Hệ quả: ngưỡng hoà vốn tăng ở mọi ô, lãi ròng âm sâu hơn, và **ô "vượt ngưỡng"
+duy nhất biến mất**. BNB ở h=50.000 từng đạt 53,6% so với ngưỡng 52,3% (lãi
++1,14 bps/lệnh); với spread đo đúng, ngưỡng là **54,3%** và lãi ròng
+**−0,71 bps**. Khoản lãi đó hoàn toàn là tạo tác của một ước lượng spread hào
+phóng gấp 30 lần. ETH ở h=1.000 cũng vượt mốc 100% (89,2% → **100,2%**), nhập
+vào cùng nhóm với BTC: dự đoán đúng hoàn hảo vẫn lỗ.
+
+Thống kê cũ vẫn được tính và in kèm hệ số phóng đại trong mọi báo cáo, để việc
+sửa **kiểm toán được** thay vì lặng lẽ thay số.
 
 ### Mở rộng dữ liệu: 7× và kết luận không đổi
 
