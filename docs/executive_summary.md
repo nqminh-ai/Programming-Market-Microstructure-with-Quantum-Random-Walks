@@ -319,7 +319,7 @@ Lịch sử commit của chuỗi nghiên cứu này:
 Dự án này **không** trình bày một model lượng tử thắng thị trường. Nó trình bày
 một quy trình đủ chặt để **phát hiện rằng model của chính mình không thắng**.
 
-Cụ thể, dự án đã **bốn lần tự bác bỏ chính mình**, và mỗi lần đều công bố thay
+Cụ thể, dự án đã **năm lần tự bác bỏ chính mình**, và mỗi lần đều công bố thay
 vì giấu đi:
 
 1. Một bug `calibrate_bias` từng tạo ra con số đẹp hơn sự thật gần **4 lần**
@@ -330,10 +330,30 @@ vì giấu đi:
 4. Con số "half-spread đo được" trong chính phân tích giao dịch hoá ra **không
    phải spread** mà là độ phân tán giá quanh một VWAP trượt — sai **22–33×**.
    Sửa xong, ô cuối cùng còn *nhìn* như sinh lời cũng biến mất.
+5. Giả định "lệnh chờ ăn được spread" — nền tảng của mọi con số maker — hoá ra
+   **sai dấu**. Đo thực tế: bên thụ động **mất** ~1,2 bps ở cả ba asset.
 
 Và dự án chấp nhận thua một hồi quy tuyến tính 5 hệ số, rồi còn đi thêm một bước
 nữa để chứng minh rằng **ngay cả khi có dự báo tốt cũng chưa giao dịch được** —
 vì ở horizon đang dùng, phí giao dịch lớn hơn biên độ giá tới hơn hai nghìn lần.
+
+### Và điều dự án **không** làm
+
+Không một kết quả nào trong báo cáo này được gắn nhãn **confirmatory**. Đó không
+phải sơ suất mà là **lựa chọn có chủ đích, và được cưỡng chế bằng code**.
+
+Protocol confirmatory đã viết xong, đóng băng và pre-register: endpoint chính,
+quy tắc chia train/validation/test theo ngày UTC, cách xử lý gap, tất cả cố định
+trước khi nhìn dữ liệu. Runner thực thi nó tồn tại, có 11 test, và hard-code
+`obi_source="lob"` để **không thể** âm thầm rơi về trade-flow proxy.
+
+Nhưng nó cần **≥20 ngày UTC thu thời gian thực** — thứ duy nhất trong dự án
+không thể rút ngắn bằng tính toán. Số ngày đã thu: **0**.
+
+Cách dễ nhất là gắn nhãn confirmatory lên dữ liệu exploratory sẵn có. Dự án
+chọn xây đúng cái máy khiến việc đó bất khả thi, rồi tôn trọng nó. Vì vậy mọi
+con số ở trên đều mang nhãn `EXPLORATORY_ONLY_NOT_CONFIRMATORY`, kể cả những
+con số **ủng hộ** kết luận của chúng tôi.
 
 Trong một lĩnh vực mà kết quả dương tính không tái lập được là vấn đề hệ thống,
 chúng tôi cho rằng khả năng tự bác bỏ mới là đóng góp có giá trị.
