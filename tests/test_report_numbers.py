@@ -53,6 +53,11 @@ def summary() -> str:
     return _doc("executive_summary.md")
 
 
+@pytest.fixture(scope="module")
+def paper() -> str:
+    return _doc("paper_draft.md")
+
+
 # ---------------------------------------------------------------------------
 # The central corrected result
 # ---------------------------------------------------------------------------
@@ -235,3 +240,45 @@ def test_the_summary_lists_as_many_refutations_as_it_counts(summary: str) -> Non
     listed = [n for n in range(1, 10) if f"\n{n}. " in body[:2500]]
 
     assert listed == list(range(1, 7))
+
+
+# ---------------------------------------------------------------------------
+# The paper draft -- the document that went stale, so it gets its own guard
+# ---------------------------------------------------------------------------
+
+# It described the project at 1,908 ticks / 118.5s with the full dataset unrun
+# for ten-plus iterations after that stopped being true. These pin it to the
+# artifacts so it cannot silently fall behind them again.
+
+
+def test_the_paper_carries_the_current_dataset_size_not_the_old_one(
+    paper: str,
+) -> None:
+    assert "493,7 triệu" in paper
+    assert "69 ngày" in paper
+    # The tiny early dataset must not be described as the current evidence.
+    assert "1.908" not in paper
+    assert "118,5" not in paper
+
+
+def test_the_paper_headline_edge_is_the_corrected_full_dataset_one(
+    paper: str,
+) -> None:
+    audit = _artifact("full_dataset_confirmation.json")
+    three_fold = next(f for f in audit["fold_results"] if f["folds"] == 3)
+
+    assert _vn(three_fold["edge_qrw_minus_affine"], 6).lstrip("-") in paper
+    # The superseded subset figure and the "could not rerun" excuse are gone.
+    assert "0,007383" not in paper
+    assert "chưa chạy lại được trên toàn bộ dataset" not in paper
+
+
+def test_the_paper_does_not_relabel_itself_confirmatory(paper: str) -> None:
+    assert "exploratory" in paper.lower()
+    assert "confirmatory" in paper.lower()  # only ever as the thing not yet done
+
+
+def test_the_paper_agrees_with_the_summary_on_the_refutation_count(
+    paper: str,
+) -> None:
+    assert "sáu lần" in paper
