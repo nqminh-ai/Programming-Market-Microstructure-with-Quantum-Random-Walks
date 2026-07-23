@@ -335,7 +335,7 @@ vì giấu đi:
 
 Và dự án chấp nhận thua một hồi quy tuyến tính 5 hệ số, rồi còn đi thêm một bước
 nữa để chứng minh rằng **ngay cả khi có dự báo tốt cũng chưa giao dịch được** —
-vì ở horizon đang dùng, phí giao dịch lớn hơn biên độ giá tới hơn hai nghìn lần.
+vì ở horizon đang dùng, phí giao dịch lớn hơn biên độ giá **1.610 lần** (BTC).
 
 ### Và điều dự án **không** làm
 

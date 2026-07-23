@@ -87,3 +87,71 @@ def test_project_answer_states_the_negative_result() -> None:
     combined = " ".join(answer for _, answer in pl.WHAT_IS_QRW).lower()
     assert "không đóng góp gì" in combined
     assert "thua" in combined
+
+
+def _lay_copy() -> str:
+    """Everything a visitor reads on the landing tab, as one string.
+
+    Questions and glossary headwords included, not just the bodies -- a visitor
+    reads those too, and some of what matters is stated in them.
+    """
+    parts: list[str] = []
+    for question, answer in pl.WHAT_IS_QRW:
+        parts += [question, answer]
+    parts += list(pl.WHY_NEGATIVE_MATTERS)
+    for term, meaning in pl.GLOSSARY:
+        parts += [term, meaning]
+    return "\n".join(parts)
+
+
+def test_the_fee_multiple_quoted_to_visitors_matches_the_report() -> None:
+    """The copy states a specific multiple; it has to be the one on file.
+
+    This number has already moved once -- correcting the spread estimator
+    changed it from about 2,000x to 1,610x -- and prose does not get rerun the
+    way a report artifact does.
+    """
+    import json
+    from pathlib import Path
+
+    report = json.loads(
+        Path("reports/research/horizon_feasibility_BTCUSDT.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    one_tick = next(
+        row
+        for row in report["analysis"]["horizons"]
+        if row["horizon_ticks"] == 1
+    )
+    multiple = 1.0 / one_tick["scenarios"]["taker_repo_5bps"]["move_to_cost_ratio"]
+    # Vietnamese thousands separator.
+    expected = f"{round(multiple / 10) * 10:,.0f}".replace(",", ".")
+
+    assert expected in _lay_copy(), (
+        f"copy should quote {expected}x, the report says {multiple:,.0f}x"
+    )
+
+
+def test_visitors_are_told_a_perfect_forecast_still_loses() -> None:
+    """The most counter-intuitive finding, and the easiest one to omit."""
+    copy = _lay_copy()
+    assert "ĐÚNG 100%" in copy or "đúng 100%" in copy
+    assert "vẫn **lỗ**" in copy or "vẫn lỗ" in copy
+
+
+def test_the_passive_order_explanation_has_the_sign_the_data_shows() -> None:
+    """Textbooks say a resting order earns the spread; here it pays.
+
+    Getting this backwards would restate the assumption the project disproved.
+    """
+    copy = _lay_copy()
+    assert "adverse selection" in copy.lower()
+    assert "mất" in copy, "a resting order loses; saying it earns inverts the finding"
+
+
+def test_visitors_are_told_nothing_is_confirmed() -> None:
+    """The exploratory label is the honest frame, not a footnote."""
+    joined = "\n".join(pl.WHY_NEGATIVE_MATTERS)
+    assert "thăm dò" in joined
+    assert "20 ngày" in joined

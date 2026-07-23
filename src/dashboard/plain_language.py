@@ -66,18 +66,58 @@ WHAT_IS_QRW = [
         "cả ba loại tiền. Một phép hồi quy tuyến tính đơn giản 5 hệ số đánh bại nó "
         "ở mọi trường hợp.",
     ),
+    (
+        "Giả sử có ai đó dự đoán ĐÚNG 100% thì sao?",
+        "Vẫn **lỗ**. Đây là phần bất ngờ nhất của dự án. Mô hình dự đoán giá của "
+        "giao dịch *kế tiếp*, mà khoảng thời gian đó giá chỉ nhúc nhích rất ít — "
+        "trong khi mỗi lần mua bán đều mất phí cho sàn. Với Bitcoin, phí một vòng "
+        "mua–bán lớn gấp **1.610 lần** biên độ giá mà ta đang cố đoán.\n\n"
+        "Ví dụ cho dễ hình dung: giống như đoán đúng con xúc xắc để ăn 1 đồng, "
+        "nhưng mỗi lần chơi phải trả 1.610 đồng tiền vé. Đoán đúng bao nhiêu lần "
+        "cũng không cứu được. **Đây là giới hạn của khoảng thời gian dự báo, không "
+        "phải của mô hình** — không kỹ thuật nào sửa được.",
+    ),
+    (
+        "Vậy dự báo xa hơn để giá kịp chạy thì sao?",
+        "Chúng tôi thử đúng điều đó, ở nhiều khoảng thời gian từ vài giây tới vài "
+        "giờ. Kết quả là **kỹ năng và tiền nằm ở hai đầu đối lập**: ở khoảng ngắn "
+        "(~26 giây) thì đoán đúng tới 64% — con số thật sự tốt — nhưng giá chưa "
+        "kịp chạy đủ để trả phí. Kéo dài ra tới khi giá chạy đủ thì **khả năng "
+        "đoán biến mất**, chỉ còn ngang mức tung đồng xu.\n\n"
+        "Không một khoảng thời gian nào, trên bất kỳ đồng tiền nào, có lãi.",
+    ),
+    (
+        "Đặt lệnh chờ để khỏi trả phí cao thì sao?",
+        "Đây là mẹo tiêu chuẩn: thay vì mua ngay theo giá thị trường, ta đặt lệnh "
+        "chờ ở giá tốt hơn và đợi người khác khớp vào. Sách vở nói cách này *được* "
+        "hưởng chênh lệch giá thay vì phải trả.\n\n"
+        "Chúng tôi **đo thử trên dữ liệu thật** thay vì tin sách. Kết quả ngược "
+        "lại: người đặt lệnh chờ **mất** khoảng 1,2 phần vạn mỗi lệnh. Lý do rất "
+        "đời: lệnh chờ của bạn chỉ được khớp khi có người *muốn* giao dịch ngược "
+        "lại với bạn — và họ thường có lý do. Bạn được khớp đúng lúc thị trường "
+        "sắp đi ngược hướng mình.",
+    ),
 ]
 
 WHY_NEGATIVE_MATTERS = [
     "Trong khoa học, một kết quả 'không' được kiểm chứng kỹ **có giá trị ngang** "
     "một kết quả 'có'. Nó ngăn người khác tốn công đi lại con đường cụt.",
-    "Chúng tôi **tự tìm ra một lỗi của chính mình**: một con số từng được báo cáo "
-    "là +0,0499 hoá ra do lỗi lập trình, con số thật là −0,0131. Chúng tôi công bố "
-    "cả lỗi lẫn cách sửa, thay vì lặng lẽ giữ số đẹp.",
+    "Dự án đã **năm lần tự bác bỏ chính mình**, và lần nào cũng công bố thay vì "
+    "giấu: một lỗi lập trình từng biến −0,0131 thành +0,0499; một kết quả không "
+    "chạy lại được, chạy lại đúng cách thì *xấu hơn*; ba lỗi khiến chiến lược demo "
+    "trông có lãi, sửa xong hoá ra lỗ 4,2%; một con số gọi là 'chênh lệch giá' hoá "
+    "ra đo nhầm đại lượng khác, sai 22–33 lần; và giả định 'lệnh chờ được hưởng "
+    "chênh lệch' hoá ra **sai cả dấu**.",
+    "Điểm chung của cả năm: **không lỗi nào do người ngoài chỉ ra**. Tất cả đều do "
+    "chính hệ thống kiểm toán của dự án tìm được — và cả năm đều làm kết quả xấu "
+    "đi, chứ không phải đẹp lên.",
     "Chúng tôi **chấp nhận thua** một mô hình đơn giản hơn nhiều, và ghi rõ điều đó "
     "trong báo cáo thay vì chỉ so với đối thủ yếu để trông có vẻ thắng.",
     "Toàn bộ kết quả đều **chạy lại được**: mỗi con số gắn với mã nguồn, mã băm "
     "dữ liệu và hạt giống ngẫu nhiên cụ thể.",
+    "Và **không con số nào** ở đây được gắn nhãn 'đã xác nhận'. Quy trình xác nhận "
+    "cần 20 ngày thu dữ liệu thời gian thực mà dự án chưa thu — nên chúng tôi để "
+    "nguyên nhãn 'thăm dò', kể cả với những kết quả **ủng hộ** kết luận của mình.",
 ]
 
 
@@ -225,6 +265,19 @@ GLOSSARY: list[tuple[str, str]] = [
     ("Phí giao dịch",
      "Khoản sàn thu mỗi lần mua/bán, ở đây là 0,05% mỗi chiều. Nghe nhỏ nhưng "
      "với chiến lược giao dịch dày, nó thường lớn hơn cả lợi nhuận gộp."),
+    ("Lệnh chờ (maker) và lệnh khớp ngay (taker)",
+     "**Taker** mua bán ngay theo giá thị trường — chắc chắn được, nhưng trả phí "
+     "cao. **Maker** đặt lệnh chờ ở giá tốt hơn và đợi người khác khớp vào — phí "
+     "thấp hơn, nhưng không chắc có được khớp hay không."),
+    ("Adverse selection (bị chọn ngược)",
+     "Lệnh chờ của bạn chỉ được khớp khi có người *muốn* giao dịch ngược lại — và "
+     "họ thường có lý do. Kết quả: bạn hay được khớp đúng lúc thị trường sắp đi "
+     "ngược hướng mình. Dự án đo được khoản này là **1,2 phần vạn mỗi lệnh**, "
+     "đủ để xoá sạch lợi thế phí thấp của lệnh chờ."),
+    ("Ngưỡng hoà vốn",
+     "Tỉ lệ đoán đúng tối thiểu để không lỗ sau khi trả phí. Nếu ngưỡng này **vượt "
+     "100%** thì kể cả đoán đúng mọi lần vẫn lỗ — đúng tình huống của dự án ở "
+     "khoảng thời gian đang dùng."),
     ("Drawdown",
      "Mức sụt giảm sâu nhất từ đỉnh xuống đáy. Cho biết bạn phải chịu đau đến đâu."),
     ("Brier score",
