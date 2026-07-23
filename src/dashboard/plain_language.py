@@ -102,14 +102,16 @@ WHAT_IS_QRW = [
 WHY_NEGATIVE_MATTERS = [
     "Trong khoa học, một kết quả 'không' được kiểm chứng kỹ **có giá trị ngang** "
     "một kết quả 'có'. Nó ngăn người khác tốn công đi lại con đường cụt.",
-    "Dự án đã **năm lần tự bác bỏ chính mình**, và lần nào cũng công bố thay vì "
+    "Dự án đã **sáu lần tự bác bỏ chính mình**, và lần nào cũng công bố thay vì "
     "giấu: một lỗi lập trình từng biến −0,0131 thành +0,0499; một kết quả không "
     "chạy lại được, chạy lại đúng cách thì *xấu hơn*; ba lỗi khiến chiến lược demo "
     "trông có lãi, sửa xong hoá ra lỗ 4,2%; một con số gọi là 'chênh lệch giá' hoá "
-    "ra đo nhầm đại lượng khác, sai 22–33 lần; và giả định 'lệnh chờ được hưởng "
-    "chênh lệch' hoá ra **sai cả dấu**.",
-    "Điểm chung của cả năm: **không lỗi nào do người ngoài chỉ ra**. Tất cả đều do "
-    "chính hệ thống kiểm toán của dự án tìm được — và cả năm đều làm kết quả xấu "
+    "ra đo nhầm đại lượng khác, sai 22–33 lần; giả định 'lệnh chờ được hưởng "
+    "chênh lệch' hoá ra **sai cả dấu**; và lời giải thích của chính chúng tôi cho "
+    "một kết quả — 'mô hình thua vì không nắm được mức dao động' — đo lại trên "
+    "nhiều dữ liệu hơn tám lần thì **không chứng minh được**.",
+    "Điểm chung của cả sáu: **không lỗi nào do người ngoài chỉ ra**. Tất cả đều do "
+    "chính hệ thống kiểm toán của dự án tìm được — và cả sáu đều làm kết quả xấu "
     "đi, chứ không phải đẹp lên.",
     "Chúng tôi **chấp nhận thua** một mô hình đơn giản hơn nhiều, và ghi rõ điều đó "
     "trong báo cáo thay vì chỉ so với đối thủ yếu để trông có vẻ thắng.",

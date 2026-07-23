@@ -54,9 +54,36 @@ def test_too_short_a_window_reports_nan_rather_than_a_number() -> None:
 
 def _rows(pairs: list[tuple[float, float]]) -> list[dict]:
     return [
-        {"realised_volatility": v, "qrw_crps_gap": g, "window": i}
+        {"realised_volatility": v, "qrw_crps_gap_relative": g, "window": i}
         for i, (v, g) in enumerate(pairs)
     ]
+
+
+def test_the_gap_is_read_relative_so_window_scale_cannot_drive_it() -> None:
+    """CRPS carries the scale of its window; the raw difference does too.
+
+    Across BTC windows CRPS spans 0.01 to 8.0, and the absolute gap tracked
+    that scale at Spearman +0.90. Rescaling each window must leave the answer
+    alone -- otherwise the correlation is partly measuring window size.
+    """
+    relative = [0.02, -0.01, 0.05, -0.03, 0.04, 0.01]
+    volatility = [1e-5, 2e-5, 3e-5, 4e-5, 5e-5, 6e-5]
+    scales = [0.01, 3.0, 0.2, 8.0, 0.05, 1.0]
+
+    plain = volatility_relationship(_rows(list(zip(volatility, relative))))
+    rescaled = volatility_relationship(
+        [
+            {
+                "realised_volatility": v,
+                "qrw_crps_gap": g * s,  # what the absolute gap would have been
+                "qrw_crps_gap_relative": g,
+                "window": i,
+            }
+            for i, (v, g, s) in enumerate(zip(volatility, relative, scales))
+        ]
+    )
+
+    assert rescaled["spearman"] == pytest.approx(plain["spearman"])
 
 
 def test_a_clean_rising_relationship_supports_the_claim() -> None:
@@ -97,7 +124,9 @@ def test_too_few_windows_reports_nothing_rather_than_a_correlation() -> None:
 
 def test_windows_with_no_volatility_estimate_are_dropped(_=None) -> None:
     rows = _rows([(1e-5, 0.01), (2e-5, 0.02), (3e-5, 0.03), (4e-5, 0.05)])
-    rows.append({"realised_volatility": float("nan"), "qrw_crps_gap": 0.9, "window": 9})
+    rows.append(
+        {"realised_volatility": float("nan"), "qrw_crps_gap_relative": 0.9, "window": 9}
+    )
 
     result = volatility_relationship(rows)
 

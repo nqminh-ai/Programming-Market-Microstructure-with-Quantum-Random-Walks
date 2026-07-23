@@ -34,9 +34,14 @@ chỉ ra:
   (mean marginal CRPS, đo bằng `BenchmarkSuite` v4, 5 window/asset), QRW đứng
   hạng 1/6 trên ETH nhưng 3/6 trên BTC và 4/6 trên BNB. Đây là chiều QRW thua
   **ít dứt khoát nhất**, không phải chiều QRW thắng; hạng dao động 1–4 theo
-  asset, và QRW thường thua đậm ở window biến động cao (không mô hình hóa
-  volatility). Số BNB đã được chạy lại 2026-07-22 sau khi phát hiện input cũ
+  asset. Số BNB đã được chạy lại 2026-07-22 sau khi phát hiện input cũ
   không tái lập được — xem hộp "Sửa số BNB" trong §5d. Xem §5d.
+- **Tuyên bố volatility không xác lập được (§5d′).** Câu "QRW thua đậm ở window
+  biến động cao vì không mô hình hóa volatility" vốn đọc từ **5 window/asset**.
+  Đo lại trên **40 window/asset**: tương quan chạy đúng chiều trên cả ba asset
+  nhưng không asset nào đạt ý nghĩa thống kê, và hai cách gộp nằm hai bên
+  α = 0,05 (Fisher 0,072 / Stouffer 0,043). Dữ liệu **nghiêng về** chiều đó,
+  không đủ để gọi là phát hiện. Xem §5d′.
 
 Các caveat cũ vẫn giữ nguyên: dữ liệu hoạt động ngắn, OBI là proxy trade-flow,
 và toàn bộ Phase 1–5 là exploratory (chưa đóng băng protocol/pre-registration
@@ -316,14 +321,63 @@ QRW **không bị đè bẹp như ở chiều directional**, nhưng cũng **khô
 đồng đều**: tốt nhất trên ETH (1/6), giữa bảng trên BTC (3/6) và **dưới trung
 bình trên BNB (4/6)** — thua cả CRW Correlated lẫn GBM. **Không có lợi thế nhất
 quán**; hạng dao động 1–4 theo asset. Ba caveat quan trọng: (a) biên nhỏ và phụ
-thuộc window — QRW thường thắng ở window **biến động thấp** (marginal hẹp, gần
-tĩnh) và thua đậm ở window **biến động cao**, tức QRW **không mô hình hóa động
-lực volatility** như GARCH; đáng chú ý trên BNB điều ngược lại xảy ra ở window 4
-(QRW 0,081 vs CRW 0,111) nhưng QRW thua ở bốn window còn lại, nên đây là bù trừ
-chứ không phải ưu thế; (b) windowing trong-file mỏng hơn pre-registration (ETH
-chỉ gói gọn 1 ngày UTC); (c) exploratory. Diễn giải trung thực: CRPS là chiều
-QRW **thua ít dứt khoát nhất**, không phải chiều QRW thắng — và phần không thua
-đó vẫn không đến từ pha lượng tử (pha vẫn = 0).
+thuộc window — bản báo cáo trước đọc từ 5 window rằng QRW thắng ở window **biến
+động thấp** và thua đậm ở window **biến động cao**; §5d′ dưới đây đo lại điều đó
+trên 40 window mỗi asset và **không chứng minh được** nó; (b) windowing trong-file
+mỏng hơn pre-registration (ETH chỉ gói gọn 1 ngày UTC); (c) exploratory. Diễn
+giải trung thực: CRPS là chiều QRW **thua ít dứt khoát nhất**, không phải chiều
+QRW thắng — và phần không thua đó vẫn không đến từ pha lượng tử (pha vẫn = 0).
+
+### 5d′. Đo lại tuyên bố volatility: 40 window/asset thay vì 5 (exploratory)
+
+Câu "QRW thắng window yên tĩnh, thua đậm window biến động — vì không mô hình hóa
+volatility" là **diễn giải đọc từ 5 điểm**, và giới hạn #5 dựa hẳn vào nó. Năm
+điểm không kết luận được theo chiều nào, nên tôi đo nó thay vì tiếp tục khẳng
+định: chạy lại trên store 69 ngày với **40 window không chồng lấp** mỗi asset
+(20 triệu dòng/asset), rồi tương quan Spearman giữa **realised volatility** của
+window và **khoảng cách CRPS tương đối** của QRW so với đối thủ tốt nhất.
+
+Hai điều chỉnh trong chính phép đo trước khi tin nó:
+
+- **Khoảng cách phải là tương đối.** Bản đầu tôi viết dùng hiệu tuyệt đối, nhưng
+  thang CRPS chênh nhau ba bậc giữa các window (BTC: 0,01 → 8,0), nên chênh 0,02
+  là thảm bại ở window này và là làm tròn ở window kia. Trên BTC, `|gap|` tuyệt
+  đối bám thang CRPS của window ở Spearman **+0,90** — tức phép đo đang hỏi một
+  phần "window này to cỡ nào", không phải câu cần hỏi. Đã đổi sang
+  `(CRPS_QRW − CRPS_đối_thủ_tốt_nhất) / CRPS_đối_thủ_tốt_nhất`.
+- **Kiểm định một phía, đúng chiều báo cáo khẳng định.** Hai phía tiêu tốn nửa
+  ngân sách cho khả năng QRW làm *tốt hơn* khi volatility tăng — điều báo cáo
+  không hề khẳng định.
+
+| Asset | Window | Spearman | p (hai phía) | Ủng hộ? | Hạng QRW | QRW thắng |
+|---|---:|---:|---:|:--:|:--:|:--:|
+| BNBUSDT | 40 | +0,216 | 0,169 | không | **1/6** | 22/40 |
+| ETHUSDT | 40 | +0,047 | 0,773 | không | **1/6** | 31/40 |
+| BTCUSDT | 40 | +0,214 | 0,187 | không | 3/6 | 3/40 |
+
+Gộp ba asset một phía: **Fisher p = 0,0720**, **Stouffer p = 0,0425**.
+
+**Kết luận: không xác lập được ở α = 0,05.** Tương quan chạy **đúng chiều báo
+cáo khẳng định trên cả ba asset** — đó không phải là không có gì — nhưng không
+asset nào tự đạt ý nghĩa thống kê, và hai cách gộp **nằm hai bên α**: Fisher nói
+không, Stouffer nói có. Khi kết luận phụ thuộc vào việc trích dẫn kiểm định nào
+thì nó chưa được xác lập. Câu đúng để viết là "dữ liệu **nghiêng về** chiều đó",
+không phải "chúng tôi tìm thấy điều đó". Giới hạn #5 đã được viết lại theo đúng
+mức đó.
+
+> **Hạng BNB đổi từ 4/6 → 1/6.** Trên dữ liệu 69 ngày với 40 window, BNB QRW
+> đứng **nhất**, thắng 22/40 window — trong khi bảng §5d (31 ngày, 5 window) ghi
+> 4/6. Hạng BTC (3/6) và ETH (1/6) **tái lập nguyên vẹn**. Ba khác biệt cùng có
+> thể giải thích: giai đoạn dữ liệu khác, số window khác (40 vs 5), và cỡ window
+> khác (500 nghìn dòng vs 6,3 triệu — tức lượng dữ liệu fit mỗi model khác 12,6
+> lần). Tôi **không thay số §5d bằng số này**: §5d là bảng theo protocol 5 window
+> đã đăng ký, còn đây là robustness check. Điều đáng rút ra không phải "QRW tốt
+> hơn ta tưởng trên BNB" mà là **thứ hạng CRPS của BNB không ổn định** giữa hai
+> thiết lập — càng củng cố kết luận "không có lợi thế nhất quán", chỉ là theo
+> một cách khác với cách §5d nói.
+
+Script: [volatility_claim_summary.py](../scripts/research/volatility_claim_summary.py) ·
+Artifact: [`volatility_claim.md`](../reports/research/volatility_claim.md)
 
 ## 5e. Khả thi giao dịch: kỹ năng và lợi nhuận ở hai đầu đối lập (exploratory)
 

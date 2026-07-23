@@ -118,9 +118,17 @@ khác — và chúng tôi báo cáo nó dù nó không ủng hộ kết luận c
 | BNBUSDT | 4/6 | CRW Correlated | 1/5 |
 
 Đây là chiều QRW thua **ít dứt khoát nhất** — không phải chiều QRW thắng. Nó
-dẫn đầu trên đúng một trong ba tài sản, và thua đậm ở các window biến động
-**cao** vì model không mô hình hoá volatility. §3.1 đã cho thấy phần không thua
-này **cũng không đến từ pha**.
+dẫn đầu trên đúng một trong ba tài sản. §3.1 đã cho thấy phần không thua này
+**cũng không đến từ pha**.
+
+**Và một tuyên bố của chính chúng tôi đã không đứng vững.** Bản trước giải thích
+kết quả trên bằng câu "QRW thua đậm ở window biến động cao vì không mô hình hoá
+volatility" — đọc từ **5 window mỗi tài sản**. Chúng tôi đo lại trên **40 window
+mỗi tài sản**: tương quan chạy đúng chiều đã khẳng định trên **cả ba** tài sản,
+nhưng không tài sản nào tự đạt ý nghĩa thống kê, và hai cách gộp kết quả nằm
+**hai bên** ngưỡng 0,05 (Fisher 0,072 · Stouffer 0,043). Khi kết luận phụ thuộc
+vào việc trích dẫn phép kiểm định nào, nó chưa được xác lập. Câu đúng là dữ liệu
+**nghiêng về** chiều đó — không phải chúng tôi đã chứng minh nó.
 
 > **Số BNB đã đổi (rà soát 2026-07-22).** Bản trước ghi BNB hạng 2/6. Rà soát
 > repo phát hiện artifact đó trỏ vào một file trong thư mục tạm của phiên làm
@@ -272,7 +280,7 @@ tiêu cực **đáng tin**: chúng tôi không hạ chuẩn đối thủ.
 | 2 | Toàn bộ Phase 1–6 là **exploratory**, chưa phải confirmatory | Protocol đã đóng băng dạng văn bản + code; chờ dữ liệu ở #1 |
 | 3 | Dữ liệu trải trên khoảng thời gian ngắn | Đã nâng lên **69 ngày trùng khớp cho cả ba asset** (493,7M tick, 2026-05-13 → 07-20); vẫn là hai tháng rưỡi, chưa phủ nhiều chế độ thị trường |
 | 4 | Windowing CRPS trong-file mỏng hơn chuẩn day-cluster | Đã ghi rõ trong §5d báo cáo cuối |
-| 5 | Model không mô hình hoá volatility | Giải thích trực tiếp thất bại ở window biến động cao (§3.5) |
+| 5 | Model không mô hình hoá volatility | **Hạ mức sau khi đo lại.** Trước đây nêu như lời giải thích cho thất bại ở window biến động cao, dựa trên 5 window/asset. Ở **40 window/asset** tương quan chạy đúng chiều trên cả ba asset nhưng không xác lập được (Fisher p=0,072 · Stouffer p=0,043 — hai bên α). Là **chiều dữ liệu nghiêng về**, không phải phát hiện (§3.5) |
 | 6 | Adverse selection **đã đo và tính vào chi phí**, nhưng chưa đủ | Realised half-spread âm ~1,2 bps ở cả ba asset: lệnh chờ **trả tiền** chứ không ăn spread. Còn thiếu mô hình *xác suất khớp* và vị trí hàng đợi — cần L2 thật (#1). Con số hiện tại là **cận dưới** của chi phí maker |
 | 7 | Khử chồng lấp làm cỡ mẫu tụt còn **323–68.001 cửa sổ** | Đã hẹp lại nhiều sau khi mở rộng dữ liệu, nhưng ô nhỏ nhất (BNB h=50.000, 323 cửa sổ) vẫn có khoảng tin cậy ±5 điểm; §3.6 vẫn là exploratory |
 
@@ -319,7 +327,7 @@ Lịch sử commit của chuỗi nghiên cứu này:
 Dự án này **không** trình bày một model lượng tử thắng thị trường. Nó trình bày
 một quy trình đủ chặt để **phát hiện rằng model của chính mình không thắng**.
 
-Cụ thể, dự án đã **năm lần tự bác bỏ chính mình**, và mỗi lần đều công bố thay
+Cụ thể, dự án đã **sáu lần tự bác bỏ chính mình**, và mỗi lần đều công bố thay
 vì giấu đi:
 
 1. Một bug `calibrate_bias` từng tạo ra con số đẹp hơn sự thật gần **4 lần**
@@ -332,6 +340,11 @@ vì giấu đi:
    Sửa xong, ô cuối cùng còn *nhìn* như sinh lời cũng biến mất.
 5. Giả định "lệnh chờ ăn được spread" — nền tảng của mọi con số maker — hoá ra
    **sai dấu**. Đo thực tế: bên thụ động **mất** ~1,2 bps ở cả ba asset.
+6. Lời giải thích của chính chúng tôi cho kết quả CRPS — "QRW thua vì không mô
+   hình hoá volatility" — đọc từ **5 window/asset**. Đo lại ở **40 window/asset**
+   thì **không xác lập được**; và phép đo đầu tiên tôi viết ra để kiểm nó cũng
+   sai (dùng khoảng cách CRPS tuyệt đối, mà thang CRPS chênh ba bậc giữa các
+   window), phải sửa thành khoảng cách tương đối trước khi con số có nghĩa.
 
 Và dự án chấp nhận thua một hồi quy tuyến tính 5 hệ số, rồi còn đi thêm một bước
 nữa để chứng minh rằng **ngay cả khi có dự báo tốt cũng chưa giao dịch được** —

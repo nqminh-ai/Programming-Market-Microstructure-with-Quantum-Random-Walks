@@ -1,0 +1,99 @@
+{
+  "kind": "volatility_claim_summary",
+  "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
+  "generated_utc": "2026-07-23T17:08:33.117298+00:00",
+  "git_commit": "b6ce0f291e54ed631f5cc1845c9d5bf9303b09c7",
+  "python": "3.14.5",
+  "claim_under_test": "The QRW falls further behind the best alternative as realised volatility rises, i.e. it does not model volatility dynamics.",
+  "gap_definition": "(QRW CRPS - best rival CRPS) / best rival CRPS, per window",
+  "alpha": 0.05,
+  "per_asset": [
+    {
+      "label": "BNBUSDT_69d",
+      "source": "reports/research/marginal_crps_vol_BNBUSDT.json",
+      "source_sha256": "19db3938f3237ad3567b87e9c8df05175f6d8a597deae32681b860fe994c38fe",
+      "source_git_commit": "9ad8efcd4dc70897b1b7a6e05b9880ff82f45dab",
+      "windows": 40,
+      "rows": 20000000,
+      "qrw_rank": 1,
+      "qrw_windows_best": 22,
+      "ranked_by_mean_crps": [
+        "QRW Adaptive",
+        "CRW Correlated",
+        "GBM",
+        "GARCH(1,1)",
+        "CRW Biased",
+        "CRW Simple"
+      ],
+      "windows_used": 40,
+      "spearman": 0.22195121951219515,
+      "p_value": 0.16867653059075433,
+      "supports_claim": false,
+      "median_volatility": 9.170181697798778e-06,
+      "median_gap": -0.0554881483071433
+    },
+    {
+      "label": "ETHUSDT_69d",
+      "source": "reports/research/marginal_crps_vol_ETHUSDT.json",
+      "source_sha256": "52f940f07231413d44e5e22c02ad44056f93065da452966cae46cf1a93ab9721",
+      "source_git_commit": "b6ce0f291e54ed631f5cc1845c9d5bf9303b09c7",
+      "windows": 40,
+      "rows": 20000000,
+      "qrw_rank": 1,
+      "qrw_windows_best": 31,
+      "ranked_by_mean_crps": [
+        "QRW Adaptive",
+        "CRW Correlated",
+        "GBM",
+        "GARCH(1,1)",
+        "CRW Simple",
+        "CRW Biased"
+      ],
+      "windows_used": 40,
+      "spearman": 0.04709193245778612,
+      "p_value": 0.772924797781821,
+      "supports_claim": false,
+      "median_volatility": 2.9079139899056192e-06,
+      "median_gap": -0.07865861743434502
+    },
+    {
+      "label": "BTCUSDT_69d",
+      "source": "reports/research/marginal_crps_vol_BTCUSDT.json",
+      "source_sha256": "2d394e00be8d0c1505a44d9ad03d7878a0e5c7eb5806d0c1f72e244a2be3e2d6",
+      "source_git_commit": "b6ce0f291e54ed631f5cc1845c9d5bf9303b09c7",
+      "windows": 40,
+      "rows": 20000000,
+      "qrw_rank": 3,
+      "qrw_windows_best": 3,
+      "ranked_by_mean_crps": [
+        "GARCH(1,1)",
+        "GBM",
+        "QRW Adaptive",
+        "CRW Correlated",
+        "CRW Simple",
+        "CRW Biased"
+      ],
+      "windows_used": 40,
+      "spearman": 0.21275797373358352,
+      "p_value": 0.1874767096107861,
+      "supports_claim": false,
+      "median_volatility": 2.267549028006493e-06,
+      "median_gap": 0.41150498632851507
+    }
+  ],
+  "combined": {
+    "assets_used": 3,
+    "one_sided_p_values": [
+      0.084338,
+      0.386462,
+      0.093738
+    ],
+    "all_in_claimed_direction": true,
+    "fisher_statistic": 11.58177627598819,
+    "fisher_p": 0.07197623812704795,
+    "stouffer_z": 1.722293915989138,
+    "stouffer_p": 0.04250814463548448,
+    "supports_claim": false
+  },
+  "verdict": "NOT established at alpha=0.05. The relationship runs in the asserted direction on every asset but no asset reaches significance on its own (BNBUSDT rho=+0.22 (p=0.169), ETHUSDT rho=+0.05 (p=0.773), BTCUSDT rho=+0.21 (p=0.187)), and the two pooling methods straddle alpha -- Fisher p=0.0720, Stouffer p=0.0425 -- so the pooled answer depends on which test is quoted. The claim should be stated as a direction the data leans towards, not a finding."
+}

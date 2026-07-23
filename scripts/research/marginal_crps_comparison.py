@@ -85,12 +85,19 @@ def volatility_relationship(per_window: list[dict[str, Any]]) -> dict[str, Any]:
 
     Rank correlation rather than Pearson: the relationship need not be linear
     and a single turbulent window should not set the answer.
+
+    The gap is the *relative* one. CRPS carries the scale of the window it was
+    measured in -- across BTC windows it spans 0.01 to 8.0 -- so an absolute
+    difference of 0.02 is a rout in one window and a rounding error in another.
+    Correlating the raw difference asks partly "how big is this window", which
+    is not the question. On BTC the absolute gap tracked window scale at
+    Spearman +0.90.
     """
     pairs = [
-        (row["realised_volatility"], row["qrw_crps_gap"])
+        (row["realised_volatility"], row["qrw_crps_gap_relative"])
         for row in per_window
         if np.isfinite(row.get("realised_volatility", np.nan))
-        and np.isfinite(row.get("qrw_crps_gap", np.nan))
+        and np.isfinite(row.get("qrw_crps_gap_relative", np.nan))
     ]
     if len(pairs) < 5:
         return {
@@ -243,7 +250,8 @@ def main() -> None:
             scores[m].get(PRIMARY, np.inf) for m in scores if m != QRW_MODEL
         ]
         qrw_crps = scores.get(QRW_MODEL, {}).get(PRIMARY, np.nan)
-        gap = float(qrw_crps - min(rivals)) if rivals else float("nan")
+        best_rival = min(rivals) if rivals else float("nan")
+        gap = float(qrw_crps - best_rival)
         per_window.append(
             {
                 "window": w,
@@ -251,6 +259,9 @@ def main() -> None:
                 "best_crps_model": best,
                 "realised_volatility": window_volatility(window),
                 "qrw_crps_gap": gap,
+                # Expressed as a fraction of what the best rival scored, so
+                # windows of wildly different CRPS scale are comparable.
+                "qrw_crps_gap_relative": gap / best_rival if best_rival > 0 else float("nan"),
             }
         )
         print(
@@ -321,7 +332,7 @@ def main() -> None:
     else:
         verdict += (
             f" The volatility story is NOT supported at this sample size: "
-            f"Spearman between realised volatility and the QRW's CRPS gap is "
+            f"Spearman between realised volatility and the QRW's relative CRPS gap is "
             f"{volatility_test['spearman']:+.2f} (p={volatility_test['p_value']:.3f}, "
             f"{volatility_test['windows_used']} windows)."
         )
