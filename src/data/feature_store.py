@@ -32,6 +32,30 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 
+def _read_column(
+    handle: pq.ParquetFile, path: Path, name: str, max_rows: int
+) -> pa.ChunkedArray:
+    """Read ``name``, stopping once ``max_rows`` rows are in hand.
+
+    Reading the column whole and slicing afterwards does not bound anything:
+    the slice is a view onto the full-length array, so a 100M-row cap on a
+    227M-row store still costs all 227M rows. Row groups are the smallest unit
+    parquet lets us stop at, so the overshoot is at most one of them.
+    """
+    if not max_rows:
+        return pq.read_table(path, columns=[name]).column(0)
+
+    blocks = []
+    rows = 0
+    for index in range(handle.metadata.num_row_groups):
+        block = handle.read_row_group(index, columns=[name])
+        blocks.append(block)
+        rows += block.num_rows
+        if rows >= max_rows:
+            break
+    return pa.concat_tables(blocks).column(0)
+
+
 def load_feature_columns(
     path: str | Path,
     columns: Sequence[str],
@@ -61,13 +85,17 @@ def load_feature_columns(
 
     data: dict[str, np.ndarray] = {}
     for name in wanted:
-        column = pq.read_table(path, columns=[name]).column(0)
+        column = _read_column(handle, path, name, max_rows)
         dtype = casts.get(name)
         if dtype is not None:
             column = column.cast(pa.type_for_alias(dtype))
         values = column.to_numpy(zero_copy_only=False)
         del column
         if max_rows and len(values) > max_rows:
+            # Only the tail of one row group, so the view's base is at most a
+            # row group larger than the slice. Slicing a *fully* read column
+            # would not free anything: a numpy slice keeps its base alive, so
+            # the cap would shrink the visible length and nothing else.
             values = values[:max_rows]
         data[name] = values
         gc.collect()

@@ -96,6 +96,43 @@ def test_max_rows_takes_a_prefix(tmp_path) -> None:
     np.testing.assert_array_equal(frame["price"], expected["price"].to_numpy()[:100])
 
 
+def test_a_capped_read_does_not_keep_the_whole_column_alive(tmp_path) -> None:
+    """Slicing after a full read bounds the length and nothing else.
+
+    A numpy slice keeps its base array alive, so capping a 227M-row store at
+    100M rows still cost all 227M -- the frame reported the capped length while
+    holding the full column behind it.
+    """
+    path = tmp_path / "features.parquet"
+    frame_in = pd.DataFrame(
+        {
+            "timestamp": np.arange(10_000, dtype=np.int64),
+            "price": np.arange(10_000, dtype=np.float64),
+        }
+    )
+    pq.write_table(
+        pa.Table.from_pandas(frame_in, preserve_index=False), path, row_group_size=500
+    )
+
+    frame = load_feature_columns(path, ["timestamp", "price"], max_rows=1_000)
+
+    assert len(frame) == 1_000
+    for name in ("timestamp", "price"):
+        values = frame[name].to_numpy()
+        base = values.base if values.base is not None else values
+        # At most one row group of overshoot, not the other 9,000 rows.
+        assert base.size <= 1_000 + 500, f"{name} still holds {base.size} rows"
+
+
+def test_a_cap_larger_than_the_store_returns_everything(tmp_path) -> None:
+    path = tmp_path / "features.parquet"
+    _store(path, rows=500)
+
+    frame = load_feature_columns(path, ["timestamp", "price"], max_rows=10_000)
+
+    assert len(frame) == 500
+
+
 def test_an_unordered_store_is_sorted(tmp_path) -> None:
     path = tmp_path / "features.parquet"
     _store(path, shuffled=True)
