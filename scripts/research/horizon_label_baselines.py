@@ -52,6 +52,7 @@ from scripts.research.horizon_feasibility import (
     FEE_SCENARIOS,
     breakeven_accuracy,
     measure_half_spread,
+    roll_half_spread,
     round_trip_cost,
     seconds_per_tick as measure_seconds_per_tick,
 )
@@ -268,7 +269,11 @@ def evaluate_models(events: dict[str, np.ndarray], train_fraction: float) -> dic
 def analyse(
     frame: pd.DataFrame, horizons: tuple[int, ...], train_fraction: float
 ) -> dict[str, Any]:
-    half_spread = measure_half_spread(frame)
+    # Roll, not the |price - mid| statistic: mid_price is a trailing VWAP,
+    # so that quantity is price dispersion and overstates the spread by
+    # 28-109x here. Both studies must charge the same costs.
+    half_spread = roll_half_spread(frame)
+    vwap_deviation = measure_half_spread(frame)
     costs = {
         name: round_trip_cost(scenario, half_spread)
         for name, scenario in FEE_SCENARIOS.items()
@@ -351,6 +356,8 @@ def analyse(
 
     return {
         "half_spread": half_spread,
+        "half_spread_estimator": "roll_1984",
+        "vwap_deviation_superseded": vwap_deviation,
         "seconds_per_tick": seconds_per_tick,
         "round_trip_costs": costs,
         "horizons": rows,

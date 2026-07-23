@@ -109,8 +109,75 @@ def _load(path: Path, max_rows: int) -> pd.DataFrame:
     return load_feature_columns(path, NEEDED_COLUMNS, max_rows=max_rows)
 
 
+def roll_half_spread(frame: pd.DataFrame, chunk: int = 10_000_000) -> float | None:
+    """Roll (1984) effective half-spread as a fraction of price.
+
+    Bid-ask bounce makes consecutive trade-price changes negatively correlated:
+    a trade at the ask followed by one at the bid moves the price down by the
+    spread and back up again. Roll shows the full spread is
+    ``2 * sqrt(-cov(dp_t, dp_{t-1}))``, so on log prices the half-spread is
+    simply ``sqrt(-cov)``. It needs only trade prices, which is what this
+    project has -- there is no order book here to read a quoted spread from.
+
+    Returns ``None`` when the covariance is non-negative. That happens when
+    trending dominates bouncing and the estimator has no real root; reporting
+    nothing is correct, and inventing a spread from a positive covariance is
+    not.
+
+    Differences are taken within a segment only, and a pair is used only when
+    all three prices behind it lie in the same segment, so no gap is crossed.
+    """
+    price_column = frame["price"].to_numpy()
+    rows = len(price_column)
+    if rows < 4:
+        return None
+    segment_column = (
+        frame["segment_id"].to_numpy() if "segment_id" in frame.columns else None
+    )
+
+    count = 0
+    sum_x = sum_y = sum_xy = 0.0
+    # Overlap by two rows so pairs straddling a chunk edge are still formed.
+    step = max(chunk, 3)
+    for begin in range(0, rows - 1, step - 2):
+        stop = min(begin + step, rows)
+        if stop - begin < 3:
+            break
+        price = price_column[begin:stop].astype(np.float64, copy=False)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            log_price = np.log(price)
+        difference = np.diff(log_price)
+        current, previous = difference[1:], difference[:-1]
+        usable = np.isfinite(current) & np.isfinite(previous)
+        if segment_column is not None:
+            segment = segment_column[begin:stop]
+            usable &= (segment[2:] == segment[1:-1]) & (segment[1:-1] == segment[:-2])
+        if not usable.any():
+            continue
+        x, y = current[usable], previous[usable]
+        count += x.size
+        sum_x += float(x.sum())
+        sum_y += float(y.sum())
+        sum_xy += float((x * y).sum())
+
+    if count < 3:
+        return None
+    covariance = (sum_xy - sum_x * sum_y / count) / (count - 1)
+    if covariance >= 0.0:
+        return None
+    return float(np.sqrt(-covariance))
+
+
 def measure_half_spread(frame: pd.DataFrame, chunk: int = 10_000_000) -> float | None:
     """Mean ``|price - mid| / mid`` as a fraction, or None when unavailable.
+
+    NOTE: despite the name this is **not** a bid-ask half-spread, and it is no
+    longer used as one. ``mid_price`` in these feature stores is a trailing
+    100-trade VWAP, not an order-book mid, so this measures how far a trade
+    price sits from a lagging average of recent trade prices -- short-horizon
+    price dispersion. On BTCUSDT it reads 0.28bps, about 175 ticks, where Roll
+    puts the half-spread at 0.0085bps. It is kept and reported because the
+    published cost model used it, so the correction has to be auditable.
 
     Accumulated in chunks. Doing it in one shot casts both columns to float64
     at full length and then takes a boolean-indexed copy of each, which on a
@@ -232,7 +299,14 @@ def breakeven_accuracy(cost: float, expected_move: float) -> float:
 
 
 def analyse(frame: pd.DataFrame, horizons: tuple[int, ...]) -> dict[str, Any]:
-    half_spread = measure_half_spread(frame)
+    # The spread term comes from Roll, which inverts bid-ask bounce in the
+    # trade prices themselves. The earlier |price - mid| statistic is still
+    # computed and reported, but only so the correction is auditable: mid_price
+    # is a trailing 100-trade VWAP, so that quantity is price dispersion over
+    # the averaging window and overstates the spread by 28-109x across these
+    # three assets.
+    half_spread = roll_half_spread(frame)
+    vwap_deviation = measure_half_spread(frame)
     per_tick = seconds_per_tick(frame)
     costs = {
         name: round_trip_cost(scenario, half_spread)
@@ -277,6 +351,8 @@ def analyse(frame: pd.DataFrame, horizons: tuple[int, ...]) -> dict[str, Any]:
 
     return {
         "half_spread": half_spread,
+        "half_spread_estimator": "roll_1984",
+        "vwap_deviation_superseded": vwap_deviation,
         "seconds_per_tick": per_tick,
         "round_trip_costs": costs,
         "accuracy_ceiling": PLAUSIBLE_ACCURACY_CEILING,
@@ -311,8 +387,19 @@ def render_markdown(audit: dict[str, Any]) -> str:
     half_spread = analysis["half_spread"]
     if half_spread is not None:
         lines.append(
-            f"- Half-spread **đo được** từ dữ liệu: {half_spread * 1e4:.3f} bps "
-            "(|price − mid| / mid)"
+            f"- Half-spread **ước lượng Roll (1984)**: {half_spread * 1e4:.4f} bps "
+            "— nghịch đảo bid-ask bounce trong chính chuỗi giá khớp"
+        )
+    else:
+        lines.append(
+            "- Half-spread: **không ước lượng được** (hiệp phương sai chuỗi không âm)"
+        )
+    deviation = analysis.get("vwap_deviation_superseded")
+    if deviation is not None and half_spread:
+        lines.append(
+            f"- *(Đã thay thế)* |price − mid| / mid = {deviation * 1e4:.3f} bps, "
+            f"**gấp {deviation / half_spread:.0f}×** — `mid_price` là VWAP trượt "
+            "100 lệnh nên đại lượng này đo độ phân tán giá, không phải spread"
         )
     per_tick = analysis["seconds_per_tick"]
     if per_tick:
@@ -454,8 +541,16 @@ def main() -> None:
     analysis = analyse(frame, horizons)
 
     half_spread = analysis["half_spread"]
+    deviation = analysis.get("vwap_deviation_superseded")
     if half_spread is not None:
-        print(f"[horizon] half-spread đo được: {half_spread * 1e4:.3f} bps")
+        print(f"[horizon] half-spread (Roll 1984): {half_spread * 1e4:.4f} bps")
+        if deviation is not None:
+            print(
+                f"[horizon]   (|price-mid| cu: {deviation * 1e4:.3f} bps, "
+                f"gap {deviation / half_spread:.0f}x — da thay the)"
+            )
+    else:
+        print("[horizon] half-spread: khong uoc luong duoc (cov khong am)")
     for row in analysis["horizons"]:
         taker = row["scenarios"]["taker_repo_5bps"]["breakeven_accuracy"]
         maker = row["scenarios"]["maker_futures_2bps"]["breakeven_accuracy"]

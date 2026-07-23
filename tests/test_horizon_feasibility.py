@@ -126,3 +126,88 @@ def test_loading_a_capped_frame_reads_only_what_the_cap_needs(tmp_path) -> None:
     assert len(frame) == 2_500
     assert frame["timestamp"].is_monotonic_increasing
     assert list(frame.columns) == [c for c in hf.NEEDED_COLUMNS]
+
+
+def _bounce_frame(n: int = 200_000, spread: float = 0.0004, seed: int = 7) -> pd.DataFrame:
+    """A random walk observed through a bid-ask bounce of known width.
+
+    The efficient price drifts; each trade prints at the efficient price plus
+    or minus half the spread depending on which side the taker hits. This is
+    exactly the process Roll's estimator inverts.
+    """
+    rng = np.random.default_rng(seed)
+    efficient = 100.0 * np.exp(np.cumsum(rng.normal(0.0, 2e-6, n)))
+    side = rng.choice([-1.0, 1.0], size=n)
+    price = efficient * (1.0 + side * spread / 2.0)
+    return pd.DataFrame(
+        {
+            "timestamp": np.arange(n) * 50_000_000 + 1_783_099_484_231_822_000,
+            "price": price,
+            "mid_price": efficient,
+            "segment_id": np.zeros(n, dtype=np.int32),
+        }
+    )
+
+
+def test_roll_recovers_a_known_bid_ask_spread() -> None:
+    frame = _bounce_frame(spread=0.0004)
+
+    half = hf.roll_half_spread(frame)
+
+    # The true half-spread is 2bps; recovery within 5% is ample for the use.
+    assert half == pytest.approx(0.0002, rel=0.05)
+
+
+def test_roll_is_unchanged_by_the_chunk_size() -> None:
+    frame = _bounce_frame(50_000, spread=0.0004)
+
+    whole = hf.roll_half_spread(frame, chunk=len(frame))
+    split = hf.roll_half_spread(frame, chunk=5_000)
+    uneven = hf.roll_half_spread(frame, chunk=3_331)
+
+    assert split == pytest.approx(whole, rel=1e-9)
+    assert uneven == pytest.approx(whole, rel=1e-9)
+
+
+def test_roll_returns_none_when_the_covariance_is_not_negative() -> None:
+    """A trending series has no bounce to invert; inventing a spread is wrong."""
+    n = 10_000
+    frame = pd.DataFrame(
+        {
+            "timestamp": np.arange(n) * 50_000_000 + 1_783_099_484_231_822_000,
+            "price": 100.0 * np.exp(np.cumsum(np.full(n, 1e-6))),
+            "mid_price": np.full(n, 100.0),
+            "segment_id": np.zeros(n, dtype=np.int32),
+        }
+    )
+
+    assert hf.roll_half_spread(frame) is None
+
+
+def test_roll_never_pairs_price_changes_across_a_segment_break() -> None:
+    frame = _bounce_frame(20_000, spread=0.0004)
+    frame.loc[10_000:, "segment_id"] = 1
+    frame.loc[10_000:, "price"] *= 1.5  # a jump a gap would produce
+
+    half = hf.roll_half_spread(frame)
+
+    # The 50% jump would swamp the estimate if it were differenced across.
+    assert half == pytest.approx(0.0002, rel=0.10)
+
+
+def test_the_vwap_deviation_is_not_reported_as_a_spread() -> None:
+    """mid_price is a trailing VWAP, so |price - mid| is dispersion, not spread.
+
+    In a real market the spread is far narrower than the drift accumulated over
+    the 100 trades the VWAP averages, so the deviation is dominated by drift
+    and overstates the spread badly -- by a factor of 33 on BTCUSDT. That is
+    why the cost model no longer uses it.
+    """
+    frame = _bounce_frame(200_000, spread=2e-6)
+    frame["mid_price"] = frame["price"].rolling(100, min_periods=1).mean().shift(1).bfill()
+
+    deviation = hf.measure_half_spread(frame)
+    roll = hf.roll_half_spread(frame)
+
+    assert roll == pytest.approx(1e-6, rel=0.05), "Roll should recover the true half"
+    assert deviation > 5 * roll, "the deviation is drift, and is the larger quantity"
