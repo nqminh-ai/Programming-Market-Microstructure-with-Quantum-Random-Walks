@@ -147,8 +147,8 @@ bằng 0,0006 (BTC) lần chi phí một vòng giao dịch:
 
 | Horizon | BTC | Lớp đa số | Cửa sổ | Lãi ròng/lệnh |
 |---|---:|---:|---:|---:|
-| 1.000 (~26 giây) | **64,4%** [64,0–64,8] | 50,0% | 68.001 | **−2,72 bps** |
-| 50.000 (~22 phút) | 50,3% *(= hằng số)* | 50,3% | 1.365 | vẫn âm |
+| 1.000 (~26 giây) | **64,4%** [64,0–64,8] | 50,0% | 68.001 | **−5,58 bps** |
+| 50.000 (~22 phút) | 50,3% *(= hằng số)* | 50,3% | 1.365 | **−6,28 bps** |
 
 **Order flow có sức dự báo thật, và nó lặp lại được.** Lần chạy đầu trên 32,4M
 dòng cho 65,7%; sau khi nâng dữ liệu lên **gấp 7 lần** (227,6M dòng, 68.001 cửa
@@ -156,7 +156,7 @@ sổ) con số là 64,4% với khoảng tin cậy chỉ ±0,4 điểm. Hiệu �
 không sống sót qua phép nhân bảy như vậy.
 
 Nhưng ở horizon đó giá chưa dịch đủ để trả phí — ngưỡng hoà vốn của BTC tại
-h=1.000 là **121,1%**, vẫn vượt 100% ngay cả ở phí maker. Kéo dài ra tới khi
+h=1.000 là **163,9%**, vẫn vượt 100% ngay cả ở phí maker. Kéo dài ra tới khi
 biên độ đủ lớn thì kỹ năng biến mất. **Không horizon nào, trên bất kỳ tài sản
 nào, vượt được ngưỡng hoà vốn.**
 
@@ -180,6 +180,15 @@ lệch mua–bán. Trên BTCUSDT nó bằng 175 tick, cho một cặp có spread
 tick. Thay bằng ước lượng **Roll (1984)**: 0,0073 bps thay vì 0,239 — phóng đại
 **33× (BTC), 22× (ETH), 30× (BNB)**. Sửa xong, mọi ngưỡng hoà vốn đều tăng và ô
 sát ngưỡng duy nhất biến mất.
+
+**Và giả định lớn nhất cũng đã được kiểm chứng.** Mô hình ghi có cho lệnh chờ
+khoản spread ở cả hai chiều — chỉ đúng nếu luồng lệnh không mang thông tin. Đo
+phần bên thụ động thực sự giữ được sau `h` tick: **âm ~1,2 bps ở cả ba asset**.
+Lệnh chờ không ăn spread, nó **trả tiền**, và trả nhiều hơn hai bậc độ lớn so
+với khoản đang được ghi có. Đây chính là mặt trái của cùng một hiện tượng:
+order flow dự báo được hướng (64,4%) thì bên thụ động tất yếu bị "nhặt". Hệ quả:
+lợi thế của maker so với taker **gần như biến mất**, và ngưỡng hoà vốn ở
+h=1.000 lên 163,9% (BTC).
 
 Phần này cũng phát hiện **ba lỗi đo lường** khiến chiến lược demo trông có lãi:
 số lệnh bị thổi phồng 15–34×, một t-statistic bị gọi nhầm là "Sharpe", và bộ dò
@@ -264,7 +273,7 @@ tiêu cực **đáng tin**: chúng tôi không hạ chuẩn đối thủ.
 | 3 | Dữ liệu trải trên khoảng thời gian ngắn | Đã nâng lên **69 ngày trùng khớp cho cả ba asset** (493,7M tick, 2026-05-13 → 07-20); vẫn là hai tháng rưỡi, chưa phủ nhiều chế độ thị trường |
 | 4 | Windowing CRPS trong-file mỏng hơn chuẩn day-cluster | Đã ghi rõ trong §5d báo cáo cuối |
 | 5 | Model không mô hình hoá volatility | Giải thích trực tiếp thất bại ở window biến động cao (§3.5) |
-| 6 | Phân tích giao dịch **chưa có adverse selection** | Khi spread thu được lớn hơn phí, công thức hoà vốn kết luận có lãi ở *mọi* độ chính xác — đó là ảo giác. Cần L2 thật để mô hình hoá hàng đợi lệnh (#1) |
+| 6 | Adverse selection **đã đo và tính vào chi phí**, nhưng chưa đủ | Realised half-spread âm ~1,2 bps ở cả ba asset: lệnh chờ **trả tiền** chứ không ăn spread. Còn thiếu mô hình *xác suất khớp* và vị trí hàng đợi — cần L2 thật (#1). Con số hiện tại là **cận dưới** của chi phí maker |
 | 7 | Khử chồng lấp làm cỡ mẫu tụt còn **323–68.001 cửa sổ** | Đã hẹp lại nhiều sau khi mở rộng dữ liệu, nhưng ô nhỏ nhất (BNB h=50.000, 323 cửa sổ) vẫn có khoảng tin cậy ±5 điểm; §3.6 vẫn là exploratory |
 
 Không hạn chế nào ở trên được phát hiện bởi người ngoài — tất cả do chính pipeline

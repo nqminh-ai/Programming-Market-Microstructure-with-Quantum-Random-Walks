@@ -355,9 +355,12 @@ và không kỹ thuật mô hình hoá nào cứu được.
 
 Half-spread được **ước lượng bằng Roll (1984)** trên toàn bộ 69 ngày: 0,0073 bps
 (BTC), 0,0210 (ETH), 0,0316 (BNB) — xem "Sửa: half-spread cũ không phải spread"
-bên dưới. Nó nhỏ hơn phí sàn **ba bậc độ lớn**, nên **phí gần như là toàn bộ chi
-phí**. Đặt lệnh chờ (maker 2bps/chiều) trở nên khả thi từ ~22 phút (BTC),
-~23 phút (ETH), ~18 phút (BNB).
+bên dưới. Nó nhỏ hơn phí sàn **ba bậc độ lớn**.
+
+Nhưng con số quyết định chi phí maker **không phải** spread niêm yết mà là phần
+lệnh chờ *còn giữ được* sau khi giá đã chạy — xem "Adverse selection" bên dưới.
+Sau khi tính khoản đó, đặt lệnh chờ (maker 2bps/chiều) chỉ khả thi từ **~87 phút
+(BTC), ~47 phút (ETH), ~1,5 giờ (BNB)**.
 Script: [horizon_feasibility.py](../scripts/research/horizon_feasibility.py).
 
 ### Có kỹ năng thật, nhưng không ở nơi có tiền
@@ -376,7 +379,8 @@ nhất, kèm khoảng tin cậy Wilson 95% và cỡ mẫu kiểm định:
 | 5.000 | 56,4% [55,5–57,2] n=13.636 | 53,8% [52,9–54,7] n=12.691 | 52,9% [51,2–54,6] n=3.230 |
 | 10.000 | 55,5% [54,3–56,7] n=6.823 | 52,6% [51,3–53,8] n=6.347 | 51,9% [49,4–54,3] n=1.618 |
 | 50.000 | 50,3% *(= hằng số)* n=1.365 | 51,0% *(thua hằng số 51,3%)* n=1.271 | 53,6% [48,1–58,9] n=323 |
-| **Ngưỡng hoà vốn maker 2bps ở h=50.000** | 59,6% | 57,0% | 54,3% |
+| **Ngưỡng hoà vốn maker 2bps ở h=50.000** | 65,5% | 61,5% | 57,3% |
+| **Ngưỡng ở h=1.000** | 163,9% | 132,3% | 97,3% |
 
 **Order flow có sức dự báo thật, và nó lặp lại được.** Ở lần chạy trước trên
 32,4M dòng, BTC h=1.000 đạt 65,7% với 9.695 cửa sổ. Trên **7 lần** lượng dữ liệu
@@ -384,7 +388,7 @@ nhất, kèm khoảng tin cậy Wilson 95% và cỡ mẫu kiểm định:
 hiệu ứng giả do cỡ mẫu nhỏ sẽ không sống sót qua phép nhân bảy này.
 
 Nhưng ở horizon đó giá chưa dịch đủ để trả phí — ngưỡng hoà vốn của BTC tại
-h=1.000 là **121,1%** và của ETH là **100,2%**, tức vượt 100% ngay cả ở phí
+h=1.000 là **163,9%** và của ETH là **132,3%**, tức vượt 100% ngay cả ở phí
 maker: dự đoán đúng *hoàn hảo* vẫn lỗ. Kéo horizon ra tới khi biên độ đủ lớn thì
 **kỹ năng biến mất**: BTC ở h=50.000 rơi đúng bằng hằng số, ETH còn *thua* hằng
 số. Câu hỏi mà việc mở rộng dữ liệu nhằm trả lời — liệu h=50.000 của ETH, trước
@@ -395,7 +399,8 @@ số. Câu hỏi mà việc mở rộng dữ liệu nhằm trả lời — liệ
 maker, và sau khi sửa ước lượng spread thì **không còn ô nào sát ngưỡng**. Ô duy
 nhất từng vượt (BNB h=50.000) đã được xử lý hai lần độc lập: kiểm định nhị thức
 cho p = 0,345 với khoảng tin cậy [48,1%–58,9%] chứa cả mức tung đồng xu; và
-spread đo đúng đẩy ngưỡng của nó từ 52,3% lên 54,3%, cao hơn 53,6% đạt được.
+spread đo đúng đẩy ngưỡng của nó từ 52,3% lên 54,3%, và tính thêm adverse
+selection thì lên **57,3%** — bỏ xa 53,6% đạt được, lãi ròng **−3,43 bps**.
 Script vẫn gắn dấu `⚠ p=…` thay vì dấu tick cho bất kỳ ô nào vượt ngưỡng mà
 không qua kiểm định, để lần chạy sau không tuyên bố nhầm.
 
@@ -406,6 +411,41 @@ chiếu với các cửa sổ tương lai **rời nhau** cho thấy tương quan
 xuống +0,011 ngay ở cửa sổ kế tiếp, tức tác động flow ngắn hạn **thật**; rò rỉ
 thì sẽ duy trì qua mọi cửa sổ. Script:
 [horizon_label_baselines.py](../scripts/research/horizon_label_baselines.py).
+
+### Adverse selection: lệnh chờ không ăn spread, mà trả tiền
+
+Mô hình chi phí ghi có cho lệnh chờ khoản half-spread ở cả hai chiều. Giả định
+đó chỉ đúng nếu luồng lệnh **không mang thông tin**. Đo trực tiếp bằng phần mà
+bên thụ động còn giữ được sau `h` tick — `d·(P_t − P_{t+h})/P_t`, với `d = +1`
+khi taker mua:
+
+| | Roll effective | realised (h=1.000) | adverse selection |
+|---|---:|---:|---:|
+| BTC | 0,0073 bps | **−1,192 bps** | 1,199 |
+| ETH | 0,0210 | **−1,245** | 1,266 |
+| BNB | 0,0316 | **−1,042** | 1,074 |
+
+Realised half-spread **âm ở mọi horizon và mọi asset**. Người đặt lệnh chờ không
+những không thu được spread, mà **mất khoảng 1,2 bps** — lớn hơn hai bậc độ lớn
+so với cái spread mà mô hình đang ghi có cho họ. Adverse selection còn **tăng
+theo horizon và không hoàn lại** (BNB: 1,07 bps ở h=1.000 → 1,43 ở h=200.000),
+tức đây là tác động giá **vĩnh viễn**, không phải dao động tạm thời.
+
+Kết quả này khớp với §5e ở trên từ hướng ngược lại: chính thứ order flow cho BTC
+64,4% độ chính xác dự báo hướng là thứ khiến bên thụ động bị "nhặt". Hai phép đo
+độc lập, cùng một hiện tượng.
+
+Hệ quả nặng nhất: **lợi thế của maker gần như biến mất**. Trước đây maker khả thi
+sớm hơn taker nhiều; nay với BTC cả hai cùng khả thi từ h=200.000 (~87 phút), và
+với BNB cả hai cùng từ ~1,5 giờ. Đặt lệnh chờ không còn là cách né phí — nó chỉ
+đổi phí sàn lấy adverse selection.
+
+**Giới hạn của chính phép đo này:** tham chiếu là giá khớp ở `t+h`, mà giá đó
+mang bid-ask bounce của chính nó. Vì dấu lệnh có autocorr 0,965, bounce không tự
+triệt tiêu ở horizon ngắn — con số ở h=1 (−0,006 bps với BTC) chủ yếu là tạo tác
+đó chứ không phải price impact. Các horizon dài, nơi dấu lệnh đã hết tương quan,
+mới là phần có ý nghĩa. Mô hình hàng đợi lệnh đầy đủ vẫn cần **L2 thật**
+(§8 hạn chế #1).
 
 ### Sửa: half-spread cũ không phải spread
 
@@ -457,11 +497,15 @@ gấp bảy lần không lật được kết quả nào, chỉ làm các khoả
 
 Khử chồng lấp làm cỡ mẫu tụt còn **323–68.001 cửa sổ**, và ở horizon dài nhất
 của BNB (323 cửa sổ) khoảng tin cậy vẫn rộng hơn ±5 điểm — không kết luận nào ở
-riêng ô đó là dứt khoát. Phân tích cũng **chưa có số hạng
-adverse selection**: khi spread thu được lớn hơn phí, công thức hoà vốn kết luận
-có lãi ở *mọi* độ chính xác — đó là ảo giác, vì lệnh chờ có xu hướng được khớp
-đúng lúc thị trường đi ngược lại. Muốn dùng kịch bản maker phải mô hình hoá hàng
-đợi lệnh bằng **L2 thật** (§8 hạn chế #1).
+riêng ô đó là dứt khoát.
+
+Adverse selection **nay đã được đo và tính vào chi phí** (mục ở trên), nhưng chỉ
+ở mức dữ liệu giao dịch cho phép: nó ước lượng bên thụ động *mất bao nhiêu khi
+đã khớp*, chứ không mô hình hoá **khi nào thì khớp**. Xác suất khớp, vị trí
+trong hàng đợi, và việc lệnh bị huỷ trước khi tới lượt đều cần **L2 thật**
+(§8 hạn chế #1). Nói cách khác: con số hiện tại là **cận dưới** của chi phí thực
+mà một chiến lược maker phải chịu, vì nó bỏ qua chi phí cơ hội của những lần
+không được khớp.
 
 ## 6. AIC/BIC và scorecard
 

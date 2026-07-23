@@ -1,8 +1,8 @@
 {
   "kind": "horizon_feasibility",
   "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
-  "generated_utc": "2026-07-23T00:50:49.787122+00:00",
-  "git_commit": "bfe50182c2da57ceac78b42ed95960a5148c8268",
+  "generated_utc": "2026-07-23T02:10:00.294418+00:00",
+  "git_commit": "2cef6a187e665bca3d1143b6861453abf40cd969",
   "python": "3.14.5",
   "label": "BNBUSDT",
   "feature_path": "data/assets/bnbusdt/features/features_BNBUSDT_69d.parquet",
@@ -52,6 +52,8 @@
         "pairs": 54096779,
         "expected_abs_move": 3.948535283745466e-06,
         "seconds": 0.11020247123197482,
+        "realised_half_spread": -1.3562578626108101e-06,
+        "adverse_selection": 4.51604346916974e-06,
         "scenarios": {
           "taker_repo_5bps": {
             "round_trip_cost": 0.001006319571213118,
@@ -68,17 +70,17 @@
             "tradable": false
           },
           "maker_futures_2bps": {
-            "round_trip_cost": 0.0003936804287868822,
-            "move_to_cost_ratio": 0.0100297982704215,
-            "breakeven_accuracy": 50.351451297333774,
+            "round_trip_cost": 0.00040271251572522165,
+            "move_to_cost_ratio": 0.009804848693700957,
+            "breakeven_accuracy": 51.49517755141095,
             "requires_adverse_selection_model": false,
             "tradable": false
           },
           "maker_rebate_0bps": {
-            "round_trip_cost": -6.31957121311786e-06,
-            "move_to_cost_ratio": Infinity,
-            "breakeven_accuracy": 0.5,
-            "requires_adverse_selection_model": true,
+            "round_trip_cost": 2.7125157252216203e-06,
+            "move_to_cost_ratio": 1.4556727716012998,
+            "breakeven_accuracy": 0.8434837895950884,
+            "requires_adverse_selection_model": false,
             "tradable": false
           }
         }
@@ -88,6 +90,8 @@
         "pairs": 54096770,
         "expected_abs_move": 2.7928536013619254e-05,
         "seconds": 1.1020247123197482,
+        "realised_half_spread": -2.015882165279174e-05,
+        "adverse_selection": 2.331860725935067e-05,
         "scenarios": {
           "taker_repo_5bps": {
             "round_trip_cost": 0.001006319571213118,
@@ -104,17 +108,17 @@
             "tradable": false
           },
           "maker_futures_2bps": {
-            "round_trip_cost": 0.0003936804287868822,
-            "move_to_cost_ratio": 0.0709421499556898,
-            "breakeven_accuracy": 7.547996153377056,
+            "round_trip_cost": 0.0004403176433055835,
+            "move_to_cost_ratio": 0.06342815564680122,
+            "breakeven_accuracy": 8.382934556449076,
             "requires_adverse_selection_model": false,
             "tradable": false
           },
           "maker_rebate_0bps": {
-            "round_trip_cost": -6.31957121311786e-06,
-            "move_to_cost_ratio": Infinity,
-            "breakeven_accuracy": 0.5,
-            "requires_adverse_selection_model": true,
+            "round_trip_cost": 4.031764330558348e-05,
+            "move_to_cost_ratio": 0.6927125130290417,
+            "breakeven_accuracy": 1.2218001560468963,
+            "requires_adverse_selection_model": false,
             "tradable": false
           }
         }
@@ -124,6 +128,8 @@
         "pairs": 54096680,
         "expected_abs_move": 0.0001744244049657068,
         "seconds": 11.020247123197482,
+        "realised_half_spread": -8.626996190211377e-05,
+        "adverse_selection": 8.94297475086727e-05,
         "scenarios": {
           "taker_repo_5bps": {
             "round_trip_cost": 0.001006319571213118,
@@ -140,17 +146,17 @@
             "tradable": false
           },
           "maker_futures_2bps": {
-            "round_trip_cost": 0.0003936804287868822,
-            "move_to_cost_ratio": 0.443060899682496,
-            "breakeven_accuracy": 1.6285130336671718,
+            "round_trip_cost": 0.0005725399238042275,
+            "move_to_cost_ratio": 0.3046502046647649,
+            "breakeven_accuracy": 2.1412265356926206,
             "requires_adverse_selection_model": false,
             "tradable": false
           },
           "maker_rebate_0bps": {
-            "round_trip_cost": -6.31957121311786e-06,
-            "move_to_cost_ratio": Infinity,
-            "breakeven_accuracy": 0.5,
-            "requires_adverse_selection_model": true,
+            "round_trip_cost": 0.00017253992380422754,
+            "move_to_cost_ratio": 1.010922000658917,
+            "breakeven_accuracy": 0.9945980003146642,
+            "requires_adverse_selection_model": false,
             "tradable": false
           }
         }
@@ -160,6 +166,8 @@
         "pairs": 54095780,
         "expected_abs_move": 0.0006377040448582626,
         "seconds": 110.20247123197483,
+        "realised_half_spread": -0.00010421567557978645,
+        "adverse_selection": 0.00010737546118634539,
         "scenarios": {
           "taker_repo_5bps": {
             "round_trip_cost": 0.001006319571213118,
@@ -176,17 +184,17 @@
             "tradable": false
           },
           "maker_futures_2bps": {
-            "round_trip_cost": 0.0003936804287868822,
-            "move_to_cost_ratio": 1.6198520379164745,
-            "breakeven_accuracy": 0.8086701675809367,
+            "round_trip_cost": 0.000608431351159573,
+            "move_to_cost_ratio": 1.0481117444768429,
+            "breakeven_accuracy": 0.9770483706864398,
             "requires_adverse_selection_model": false,
             "tradable": false
           },
           "maker_rebate_0bps": {
-            "round_trip_cost": -6.31957121311786e-06,
-            "move_to_cost_ratio": Infinity,
-            "breakeven_accuracy": 0.5,
-            "requires_adverse_selection_model": true,
+            "round_trip_cost": 0.0002084313511595729,
+            "move_to_cost_ratio": 3.05953994593665,
+            "breakeven_accuracy": 0.6634232625934647,
+            "requires_adverse_selection_model": false,
             "tradable": false
           }
         }
@@ -196,6 +204,8 @@
         "pairs": 54091780,
         "expected_abs_move": 0.0014510892773192585,
         "seconds": 551.0123561598741,
+        "realised_half_spread": -0.00011113524499683056,
+        "adverse_selection": 0.0001142950306033895,
         "scenarios": {
           "taker_repo_5bps": {
             "round_trip_cost": 0.001006319571213118,
@@ -212,18 +222,18 @@
             "tradable": false
           },
           "maker_futures_2bps": {
-            "round_trip_cost": 0.0003936804287868822,
-            "move_to_cost_ratio": 3.6859573684949467,
-            "breakeven_accuracy": 0.6356499682480485,
+            "round_trip_cost": 0.0006222704899936612,
+            "move_to_cost_ratio": 2.3319268720810467,
+            "breakeven_accuracy": 0.7144149569981122,
             "requires_adverse_selection_model": false,
             "tradable": false
           },
           "maker_rebate_0bps": {
-            "round_trip_cost": -6.31957121311786e-06,
-            "move_to_cost_ratio": Infinity,
-            "breakeven_accuracy": 0.5,
-            "requires_adverse_selection_model": true,
-            "tradable": false
+            "round_trip_cost": 0.00022227048999366112,
+            "move_to_cost_ratio": 6.528483728814571,
+            "breakeven_accuracy": 0.5765874620768625,
+            "requires_adverse_selection_model": false,
+            "tradable": true
           }
         }
       },
@@ -232,6 +242,8 @@
         "pairs": 54086780,
         "expected_abs_move": 0.0020555983399962213,
         "seconds": 1102.0247123197482,
+        "realised_half_spread": -0.00011280726400690597,
+        "adverse_selection": 0.0001159670496134649,
         "scenarios": {
           "taker_repo_5bps": {
             "round_trip_cost": 0.001006319571213118,
@@ -248,18 +260,18 @@
             "tradable": false
           },
           "maker_futures_2bps": {
-            "round_trip_cost": 0.0003936804287868822,
-            "move_to_cost_ratio": 5.221489791429317,
-            "breakeven_accuracy": 0.5957581111851856,
+            "round_trip_cost": 0.000625614528013812,
+            "move_to_cost_ratio": 3.2857266702585894,
+            "breakeven_accuracy": 0.6521733394703368,
             "requires_adverse_selection_model": false,
-            "tradable": true
+            "tradable": false
           },
           "maker_rebate_0bps": {
-            "round_trip_cost": -6.31957121311786e-06,
-            "move_to_cost_ratio": Infinity,
-            "breakeven_accuracy": 0.5,
-            "requires_adverse_selection_model": true,
-            "tradable": false
+            "round_trip_cost": 0.00022561452801381194,
+            "move_to_cost_ratio": 9.111108039418363,
+            "breakeven_accuracy": 0.5548780672819152,
+            "requires_adverse_selection_model": false,
+            "tradable": true
           }
         }
       },
@@ -268,6 +280,8 @@
         "pairs": 54046780,
         "expected_abs_move": 0.0046468114869419545,
         "seconds": 5510.123561598742,
+        "realised_half_spread": -0.00013306597157890506,
+        "adverse_selection": 0.00013622575718546398,
         "scenarios": {
           "taker_repo_5bps": {
             "round_trip_cost": 0.001006319571213118,
@@ -284,18 +298,18 @@
             "tradable": true
           },
           "maker_futures_2bps": {
-            "round_trip_cost": 0.0003936804287868822,
-            "move_to_cost_ratio": 11.803511546817312,
-            "breakeven_accuracy": 0.5423602754160748,
+            "round_trip_cost": 0.0006661319431578101,
+            "move_to_cost_ratio": 6.975812426759875,
+            "breakeven_accuracy": 0.5716762391835469,
             "requires_adverse_selection_model": false,
             "tradable": true
           },
           "maker_rebate_0bps": {
-            "round_trip_cost": -6.31957121311786e-06,
-            "move_to_cost_ratio": Infinity,
-            "breakeven_accuracy": 0.5,
-            "requires_adverse_selection_model": true,
-            "tradable": false
+            "round_trip_cost": 0.0002661319431578101,
+            "move_to_cost_ratio": 17.460555211091297,
+            "breakeven_accuracy": 0.5286359737107552,
+            "requires_adverse_selection_model": false,
+            "tradable": true
           }
         }
       },
@@ -304,6 +318,8 @@
         "pairs": 53996780,
         "expected_abs_move": 0.0065832712717482245,
         "seconds": 11020.247123197483,
+        "realised_half_spread": -0.00013506087447631417,
+        "adverse_selection": 0.0001382206600828731,
         "scenarios": {
           "taker_repo_5bps": {
             "round_trip_cost": 0.001006319571213118,
@@ -320,18 +336,18 @@
             "tradable": true
           },
           "maker_futures_2bps": {
-            "round_trip_cost": 0.0003936804287868822,
-            "move_to_cost_ratio": 16.722373758925315,
-            "breakeven_accuracy": 0.5299000612716919,
+            "round_trip_cost": 0.0006701217489526283,
+            "move_to_cost_ratio": 9.823992852101274,
+            "breakeven_accuracy": 0.5508958025038724,
             "requires_adverse_selection_model": false,
             "tradable": true
           },
           "maker_rebate_0bps": {
-            "round_trip_cost": -6.31957121311786e-06,
-            "move_to_cost_ratio": Infinity,
-            "breakeven_accuracy": 0.5,
-            "requires_adverse_selection_model": true,
-            "tradable": false
+            "round_trip_cost": 0.00027012174895262833,
+            "move_to_cost_ratio": 24.371496546554432,
+            "breakeven_accuracy": 0.5205157692735405,
+            "requires_adverse_selection_model": false,
+            "tradable": true
           }
         }
       },
@@ -340,6 +356,8 @@
         "pairs": 53896780,
         "expected_abs_move": 0.009359627673007673,
         "seconds": 22040.494246394966,
+        "realised_half_spread": -0.0001399344832386369,
+        "adverse_selection": 0.00014309426884519583,
         "scenarios": {
           "taker_repo_5bps": {
             "round_trip_cost": 0.001006319571213118,
@@ -356,18 +374,18 @@
             "tradable": true
           },
           "maker_futures_2bps": {
-            "round_trip_cost": 0.0003936804287868822,
-            "move_to_cost_ratio": 23.774683699286665,
-            "breakeven_accuracy": 0.5210307740083626,
+            "round_trip_cost": 0.0006798689664772738,
+            "move_to_cost_ratio": 13.766811157015121,
+            "breakeven_accuracy": 0.5363192313962422,
             "requires_adverse_selection_model": false,
             "tradable": true
           },
           "maker_rebate_0bps": {
-            "round_trip_cost": -6.31957121311786e-06,
-            "move_to_cost_ratio": Infinity,
-            "breakeven_accuracy": 0.5,
-            "requires_adverse_selection_model": true,
-            "tradable": false
+            "round_trip_cost": 0.0002798689664772738,
+            "move_to_cost_ratio": 33.44289218921921,
+            "breakeven_accuracy": 0.5149508600264299,
+            "requires_adverse_selection_model": false,
+            "tradable": true
           }
         }
       }
@@ -375,9 +393,9 @@
     "minimum_viable_horizon": {
       "taker_repo_5bps": 100000,
       "taker_futures_4bps": 50000,
-      "maker_futures_2bps": 10000,
-      "maker_rebate_0bps": null
+      "maker_futures_2bps": 50000,
+      "maker_rebate_0bps": 5000
     }
   },
-  "verdict": "\u1ede horizon 1 tick, bi\u1ebfn \u0111\u1ed9ng trung b\u00ecnh ch\u1ec9 b\u1eb1ng **0.0039 l\u1ea7n** chi ph\u00ed m\u1ed9t v\u00f2ng taker \u2014 ngh\u0129a l\u00e0 **m\u1ed9t m\u00f4 h\u00ecnh d\u1ef1 \u0111o\u00e1n \u0111\u00fang 100% v\u1eabn l\u1ed7**. \u0110\u00e2y l\u00e0 gi\u1edbi h\u1ea1n c\u1ee7a horizon, kh\u00f4ng ph\u1ea3i c\u1ee7a m\u00f4 h\u00ecnh. \u0110\u1eb7t l\u1ec7nh ch\u1edd (maker, 2bps/chi\u1ec1u) tr\u1edf n\u00ean kh\u1ea3 thi t\u1eeb **10,000 tick (~18.4 ph\u00fat)**. Giao d\u1ecbch ch\u1ee7 \u0111\u1ed9ng (taker, 5bps/chi\u1ec1u) c\u1ea7n t\u1edbi **100,000 tick (~3.1 gi\u1edd)**. C\u1ea7n nh\u1ea5n m\u1ea1nh: v\u01b0\u1ee3t ng\u01b0\u1ee1ng chi ph\u00ed l\u00e0 \u0111i\u1ec1u ki\u1ec7n **c\u1ea7n, kh\u00f4ng \u0111\u1ee7**. B\u1ea3ng n\u00e0y ch\u1ec9 n\u00f3i bi\u1ebfn \u0111\u1ed9ng \u0111\u1ee7 l\u1edbn \u0111\u1ec3 tr\u1ea3 ph\u00ed; n\u00f3 **kh\u00f4ng** n\u00f3i d\u1ef1 \u00e1n c\u00f3 kh\u1ea3 n\u0103ng d\u1ef1 \u0111o\u00e1n \u0111\u00fang h\u01b0\u1edbng \u1edf horizon \u0111\u00f3 \u2014 \u0111i\u1ec1u ch\u01b0a t\u1eebng \u0111\u01b0\u1ee3c ch\u1ee9ng minh."
+  "verdict": "\u1ede horizon 1 tick, bi\u1ebfn \u0111\u1ed9ng trung b\u00ecnh ch\u1ec9 b\u1eb1ng **0.0039 l\u1ea7n** chi ph\u00ed m\u1ed9t v\u00f2ng taker \u2014 ngh\u0129a l\u00e0 **m\u1ed9t m\u00f4 h\u00ecnh d\u1ef1 \u0111o\u00e1n \u0111\u00fang 100% v\u1eabn l\u1ed7**. \u0110\u00e2y l\u00e0 gi\u1edbi h\u1ea1n c\u1ee7a horizon, kh\u00f4ng ph\u1ea3i c\u1ee7a m\u00f4 h\u00ecnh. \u0110\u1eb7t l\u1ec7nh ch\u1edd (maker, 2bps/chi\u1ec1u) tr\u1edf n\u00ean kh\u1ea3 thi t\u1eeb **50,000 tick (~1.5 gi\u1edd)**. Giao d\u1ecbch ch\u1ee7 \u0111\u1ed9ng (taker, 5bps/chi\u1ec1u) c\u1ea7n t\u1edbi **100,000 tick (~3.1 gi\u1edd)**. C\u1ea7n nh\u1ea5n m\u1ea1nh: v\u01b0\u1ee3t ng\u01b0\u1ee1ng chi ph\u00ed l\u00e0 \u0111i\u1ec1u ki\u1ec7n **c\u1ea7n, kh\u00f4ng \u0111\u1ee7**. B\u1ea3ng n\u00e0y ch\u1ec9 n\u00f3i bi\u1ebfn \u0111\u1ed9ng \u0111\u1ee7 l\u1edbn \u0111\u1ec3 tr\u1ea3 ph\u00ed; n\u00f3 **kh\u00f4ng** n\u00f3i d\u1ef1 \u00e1n c\u00f3 kh\u1ea3 n\u0103ng d\u1ef1 \u0111o\u00e1n \u0111\u00fang h\u01b0\u1edbng \u1edf horizon \u0111\u00f3 \u2014 \u0111i\u1ec1u ch\u01b0a t\u1eebng \u0111\u01b0\u1ee3c ch\u1ee9ng minh."
 }

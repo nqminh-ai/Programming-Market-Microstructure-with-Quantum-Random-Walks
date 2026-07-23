@@ -3,7 +3,7 @@
 **Status:** `EXPLORATORY_ONLY_NOT_CONFIRMATORY` — phân tích khả thi chi phí, không phải bằng chứng có lợi nhuận.
 
 - Feature file: `features_ETHUSDT_69d.parquet` (211,995,471 dòng)
-- Git commit: `bfe50182c2da57ceac78b42ed95960a5148c8268` · Python 3.14.5
+- Git commit: `2cef6a187e665bca3d1143b6861453abf40cd969` · Python 3.14.5
 - Half-spread **ước lượng Roll (1984)**: 0.0210 bps — nghịch đảo bid-ask bounce trong chính chuỗi giá khớp
 - *(Đã thay thế)* |price − mid| / mid = 0.454 bps, **gấp 22×** — `mid_price` là VWAP trượt 100 lệnh nên đại lượng này đo độ phân tán giá, không phải spread
 - Nhịp giao dịch: 35.6 tick/giây
@@ -23,15 +23,15 @@
 
 | Horizon | Thời gian | E\|biến động\| | Taker 5bps | Taker 4bps | Maker 2bps | Maker 0bps |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 0.0 giây | 1.25e-06 | — | — | — | ⚠ spread |
-| 10 | 0.3 giây | 1.06e-05 | — | — | — | ⚠ spread |
-| 100 | 2.8 giây | 8.77e-05 | — | — | — | ⚠ spread |
-| 1,000 | 28.1 giây | 3.92e-04 | — | — | — | ⚠ spread |
-| 5,000 | 2.3 phút | 9.05e-04 | — | 94.4% | 71.9% | ⚠ spread |
-| 10,000 | 4.7 phút | 1.29e-03 | 89.0% | 81.3% | 65.4% | ⚠ spread |
-| 50,000 | 23.4 phút | 2.84e-03 | 67.7% | 64.2% | 57.0% ✅ | ⚠ spread |
-| 100,000 | 46.9 phút | 4.00e-03 | 62.5% | 60.0% | 54.9% ✅ | ⚠ spread |
-| 200,000 | 1.6 giờ | 5.67e-03 | 58.9% ✅ | 57.1% ✅ | 53.5% ✅ | ⚠ spread |
+| 1 | 0.0 giây | 1.25e-06 | — | — | — | — |
+| 10 | 0.3 giây | 1.06e-05 | — | — | — | — |
+| 100 | 2.8 giây | 8.77e-05 | — | — | — | — |
+| 1,000 | 28.1 giây | 3.92e-04 | — | — | — | 81.8% |
+| 5,000 | 2.3 phút | 9.05e-04 | — | 94.4% | 86.0% | 63.9% |
+| 10,000 | 4.7 phút | 1.29e-03 | 89.0% | 81.3% | 75.4% | 59.9% ✅ |
+| 50,000 | 23.4 phút | 2.84e-03 | 67.7% | 64.2% | 61.4% | 54.4% ✅ |
+| 100,000 | 46.9 phút | 4.00e-03 | 62.5% | 60.0% | 58.3% ✅ | 53.3% ✅ |
+| 200,000 | 1.6 giờ | 5.67e-03 | 58.9% ✅ | 57.1% ✅ | 55.6% ✅ | 52.1% ✅ |
 
 ## Horizon nhỏ nhất còn giao dịch được
 
@@ -39,9 +39,9 @@
 |---|---:|---:|
 | Taker, 5bps/chiều (mức signal engine đang dùng) | 200,000 tick | 1.6 giờ |
 | Taker, 4bps/chiều (Binance futures base) | 200,000 tick | 1.6 giờ |
-| Maker, 2bps/chiều (đặt lệnh chờ, ăn spread) | 50,000 tick | 23.4 phút |
-| Maker, 0bps/chiều (bậc phí ưu đãi nhất) | không có | — |
+| Maker, 2bps/chiều (đặt lệnh chờ, ăn spread) | 100,000 tick | 46.9 phút |
+| Maker, 0bps/chiều (bậc phí ưu đãi nhất) | 10,000 tick | 4.7 phút |
 
 ## Kết luận
 
-Ở horizon 1 tick, biến động trung bình chỉ bằng **0.0012 lần** chi phí một vòng taker — nghĩa là **một mô hình dự đoán đúng 100% vẫn lỗ**. Đây là giới hạn của horizon, không phải của mô hình. Đặt lệnh chờ (maker, 2bps/chiều) trở nên khả thi từ **50,000 tick (~23.4 phút)**. Giao dịch chủ động (taker, 5bps/chiều) cần tới **200,000 tick (~1.6 giờ)**. Cần nhấn mạnh: vượt ngưỡng chi phí là điều kiện **cần, không đủ**. Bảng này chỉ nói biến động đủ lớn để trả phí; nó **không** nói dự án có khả năng dự đoán đúng hướng ở horizon đó — điều chưa từng được chứng minh.
+Ở horizon 1 tick, biến động trung bình chỉ bằng **0.0012 lần** chi phí một vòng taker — nghĩa là **một mô hình dự đoán đúng 100% vẫn lỗ**. Đây là giới hạn của horizon, không phải của mô hình. Đặt lệnh chờ (maker, 2bps/chiều) trở nên khả thi từ **100,000 tick (~46.9 phút)**. Giao dịch chủ động (taker, 5bps/chiều) cần tới **200,000 tick (~1.6 giờ)**. Cần nhấn mạnh: vượt ngưỡng chi phí là điều kiện **cần, không đủ**. Bảng này chỉ nói biến động đủ lớn để trả phí; nó **không** nói dự án có khả năng dự đoán đúng hướng ở horizon đó — điều chưa từng được chứng minh.

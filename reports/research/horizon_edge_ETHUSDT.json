@@ -1,8 +1,8 @@
 {
   "kind": "horizon_label_baselines",
   "status": "EXPLORATORY_ONLY_NOT_CONFIRMATORY",
-  "generated_utc": "2026-07-23T00:54:59.122814+00:00",
-  "git_commit": "bfe50182c2da57ceac78b42ed95960a5148c8268",
+  "generated_utc": "2026-07-23T02:14:46.597281+00:00",
+  "git_commit": "2cef6a187e665bca3d1143b6861453abf40cd969",
   "python": "3.14.5",
   "label": "ETHUSDT",
   "feature_path": "data/assets/ethusdt/features/features_ETHUSDT_69d.parquet",
@@ -25,17 +25,25 @@
         "horizon_ticks": 1000,
         "seconds": 28.121340996347705,
         "expected_abs_move": 0.00039415866352445687,
+        "realised_half_spread": -0.00012449561832123462,
+        "adverse_selection": 0.0001265935443307747,
+        "round_trip_cost": {
+          "taker_repo_5bps": 0.0010041958520190801,
+          "taker_futures_4bps": 0.0008041958520190802,
+          "maker_futures_2bps": 0.0006489912366424693,
+          "maker_rebate_0bps": 0.00024899123664246924
+        },
         "breakeven_accuracy": {
           "taker_repo_5bps": 1.773847240905275,
           "taker_futures_4bps": 1.5201423011081188,
-          "maker_futures_2bps": 1.0020873376748205,
-          "maker_rebate_0bps": 0.5
+          "maker_futures_2bps": 1.3232614131062992,
+          "maker_rebate_0bps": 0.815851533511986
         },
         "net_edge_per_trade": {
           "taker_repo_5bps": -0.0009370147428942209,
           "taker_futures_4bps": -0.000737014742894221,
-          "maker_futures_2bps": -0.0003286230388560606,
-          "maker_rebate_0bps": 7.13769611439394e-05
+          "maker_futures_2bps": -0.0005818101275176101,
+          "maker_rebate_0bps": -0.00018181012751761
         },
         "best_model": "OrderFlow AR(5)",
         "best_accuracy": 0.5852208962301431,
@@ -48,19 +56,19 @@
           "taker_repo_5bps": false,
           "taker_futures_4bps": false,
           "maker_futures_2bps": false,
-          "maker_rebate_0bps": true
+          "maker_rebate_0bps": false
         },
         "clears_breakeven_p_value": {
           "taker_repo_5bps": null,
           "taker_futures_4bps": null,
           "maker_futures_2bps": null,
-          "maker_rebate_0bps": 0.0
+          "maker_rebate_0bps": 1.0
         },
         "clears_breakeven_significant": {
           "taker_repo_5bps": false,
           "taker_futures_4bps": false,
           "maker_futures_2bps": false,
-          "maker_rebate_0bps": true
+          "maker_rebate_0bps": false
         },
         "n_windows": 210881,
         "n_train": 147616,
@@ -92,17 +100,25 @@
         "horizon_ticks": 5000,
         "seconds": 140.60670498173852,
         "expected_abs_move": 0.0009061686787916486,
+        "realised_half_spread": -0.00012583797282897583,
+        "adverse_selection": 0.0001279358988385159,
+        "round_trip_cost": {
+          "taker_repo_5bps": 0.0010041958520190801,
+          "taker_futures_4bps": 0.0008041958520190802,
+          "maker_futures_2bps": 0.0006516759456579517,
+          "maker_rebate_0bps": 0.00025167594565795166
+        },
         "breakeven_accuracy": {
           "taker_repo_5bps": 1.0540888112344315,
           "taker_futures_4bps": 0.943734081104775,
-          "maker_futures_2bps": 0.7183942996731657,
-          "maker_rebate_0bps": 0.5
+          "maker_futures_2bps": 0.8595776155753606,
+          "maker_rebate_0bps": 0.6388681553160471
         },
         "net_edge_per_trade": {
           "taker_repo_5bps": -0.0009351496687087402,
           "taker_futures_4bps": -0.0007351496687087403,
-          "maker_futures_2bps": -0.00032675796467057996,
-          "maker_rebate_0bps": 7.324203532942008e-05
+          "maker_futures_2bps": -0.0005826297623476118,
+          "maker_rebate_0bps": -0.00018262976234761176
         },
         "best_model": "Logistic L2 + Pairwise",
         "best_accuracy": 0.5380978646284769,
@@ -115,19 +131,19 @@
           "taker_repo_5bps": false,
           "taker_futures_4bps": false,
           "maker_futures_2bps": false,
-          "maker_rebate_0bps": true
+          "maker_rebate_0bps": false
         },
         "clears_breakeven_p_value": {
           "taker_repo_5bps": null,
           "taker_futures_4bps": 1.0,
           "maker_futures_2bps": 1.0,
-          "maker_rebate_0bps": 4.785277623051954e-18
+          "maker_rebate_0bps": 1.0
         },
         "clears_breakeven_significant": {
           "taker_repo_5bps": false,
           "taker_futures_4bps": false,
           "maker_futures_2bps": false,
-          "maker_rebate_0bps": true
+          "maker_rebate_0bps": false
         },
         "n_windows": 42302,
         "n_train": 29611,
@@ -159,17 +175,25 @@
         "horizon_ticks": 10000,
         "seconds": 281.21340996347703,
         "expected_abs_move": 0.0012867942498121406,
+        "realised_half_spread": -0.00012703278974365208,
+        "adverse_selection": 0.00012913071575319215,
+        "round_trip_cost": {
+          "taker_repo_5bps": 0.0010041958520190801,
+          "taker_futures_4bps": 0.0008041958520190802,
+          "maker_futures_2bps": 0.0006540655794873042,
+          "maker_rebate_0bps": 0.00025406557948730416
+        },
         "breakeven_accuracy": {
           "taker_repo_5bps": 0.8901928580135026,
           "taker_futures_4bps": 0.8124803565669045,
-          "maker_futures_2bps": 0.6537946521126836,
-          "maker_rebate_0bps": 0.5
+          "maker_futures_2bps": 0.7541453614603855,
+          "maker_rebate_0bps": 0.5987203585671894
         },
         "net_edge_per_trade": {
           "taker_repo_5bps": -0.0009383051743463299,
           "taker_futures_4bps": -0.00073830517434633,
-          "maker_futures_2bps": -0.00032991347030816967,
-          "maker_rebate_0bps": 7.008652969183038e-05
+          "maker_futures_2bps": -0.0005881749018145539,
+          "maker_rebate_0bps": -0.00018817490181455396
         },
         "best_model": "Logistic L2 + Pairwise",
         "best_accuracy": 0.5256026469198046,
@@ -182,19 +206,19 @@
           "taker_repo_5bps": false,
           "taker_futures_4bps": false,
           "maker_futures_2bps": false,
-          "maker_rebate_0bps": true
+          "maker_rebate_0bps": false
         },
         "clears_breakeven_p_value": {
           "taker_repo_5bps": 1.0,
           "taker_futures_4bps": 1.0,
           "maker_futures_2bps": 1.0,
-          "maker_rebate_0bps": 2.3739223215742887e-05
+          "maker_rebate_0bps": 1.0
         },
         "clears_breakeven_significant": {
           "taker_repo_5bps": false,
           "taker_futures_4bps": false,
           "maker_futures_2bps": false,
-          "maker_rebate_0bps": true
+          "maker_rebate_0bps": false
         },
         "n_windows": 21155,
         "n_train": 14808,
@@ -226,17 +250,25 @@
         "horizon_ticks": 50000,
         "seconds": 1406.0670498173852,
         "expected_abs_move": 0.0028286197097716604,
+        "realised_half_spread": -0.0001239130576041793,
+        "adverse_selection": 0.00012601098361371939,
+        "round_trip_cost": {
+          "taker_repo_5bps": 0.0010041958520190801,
+          "taker_futures_4bps": 0.0008041958520190802,
+          "maker_futures_2bps": 0.0006478261152083587,
+          "maker_rebate_0bps": 0.0002478261152083586
+        },
         "breakeven_accuracy": {
           "taker_repo_5bps": 0.6775063379057313,
           "taker_futures_4bps": 0.6421534059953218,
-          "maker_futures_2bps": 0.5699641854671357,
-          "maker_rebate_0bps": 0.5
+          "maker_futures_2bps": 0.6145127627037312,
+          "maker_rebate_0bps": 0.5438068988829121
         },
         "net_edge_per_trade": {
           "taker_repo_5bps": -0.0009485581708670016,
           "taker_futures_4bps": -0.0007485581708670017,
-          "maker_futures_2bps": -0.0003401664668288413,
-          "maker_rebate_0bps": 5.983353317115873e-05
+          "maker_futures_2bps": -0.0005921884340562802,
+          "maker_rebate_0bps": -0.00019218843405628005
         },
         "best_model": "Logistic L2 (5F)",
         "best_accuracy": 0.5098347757671126,
@@ -249,13 +281,13 @@
           "taker_repo_5bps": false,
           "taker_futures_4bps": false,
           "maker_futures_2bps": false,
-          "maker_rebate_0bps": true
+          "maker_rebate_0bps": false
         },
         "clears_breakeven_p_value": {
           "taker_repo_5bps": 1.0,
           "taker_futures_4bps": 1.0,
-          "maker_futures_2bps": 0.9999928707443829,
-          "maker_rebate_0bps": 0.25042050409423566
+          "maker_futures_2bps": 0.9999999999999852,
+          "maker_rebate_0bps": 0.9929845248732583
         },
         "clears_breakeven_significant": {
           "taker_repo_5bps": false,
@@ -291,5 +323,5 @@
       }
     ]
   },
-  "verdict": "\u0110\u00e1nh gi\u00e1 4 horizon tr\u00ean c\u00e1c c\u1eeda s\u1ed5 **kh\u00f4ng ch\u1ed3ng l\u1ea5p**. C\u00f3 3/4 horizon m\u00e0 m\u00f4 h\u00ecnh t\u1ed1t nh\u1ea5t v\u01b0\u1ee3t baseline \u0111a s\u1ed1; cao nh\u1ea5t l\u00e0 h=1,000 (OrderFlow AR(5), 58.5% so v\u1edbi 50.1%). **Kh\u00f4ng horizon n\u00e0o v\u01b0\u1ee3t ng\u01b0\u1ee1ng ho\u00e0 v\u1ed1n** k\u1ec3 c\u1ea3 \u1edf m\u1ee9c ph\u00ed maker 2bps. \u0110i\u1ec3m c\u1ed1t l\u00f5i: **k\u1ef9 n\u0103ng d\u1ef1 b\u00e1o v\u00e0 kh\u1ea3 n\u0103ng sinh l\u1eddi n\u1eb1m \u1edf hai \u0111\u1ea7u \u0111\u1ed1i l\u1eadp c\u1ee7a thang horizon**. \u1ede h=1,000 \u0111\u1ed9 ch\u00ednh x\u00e1c cao nh\u1ea5t (58.5%) nh\u01b0ng bi\u00ean \u0111\u1ed9 gi\u00e1 qu\u00e1 nh\u1ecf n\u00ean l\u00e3i r\u00f2ng v\u1eabn l\u00e0 **-3.29 bps/l\u1ec7nh**; \u1edf horizon d\u00e0i, bi\u00ean \u0111\u1ed9 \u0111\u1ee7 l\u1edbn th\u00ec k\u1ef9 n\u0103ng l\u1ea1i bi\u1ebfn m\u1ea5t. C\u1ee1 m\u1eabu ki\u1ec3m \u0111\u1ecbnh nh\u1ecf nh\u1ea5t ch\u1ec9 1271 c\u1eeda s\u1ed5 \u2014 m\u1ecdi con s\u1ed1 \u1edf \u0111\u00e2y c\u00f3 kho\u1ea3ng tin c\u1eady r\u1ea5t r\u1ed9ng v\u00e0 kh\u00f4ng \u0111\u01b0\u1ee3c coi l\u00e0 k\u1ebft lu\u1eadn."
+  "verdict": "\u0110\u00e1nh gi\u00e1 4 horizon tr\u00ean c\u00e1c c\u1eeda s\u1ed5 **kh\u00f4ng ch\u1ed3ng l\u1ea5p**. C\u00f3 3/4 horizon m\u00e0 m\u00f4 h\u00ecnh t\u1ed1t nh\u1ea5t v\u01b0\u1ee3t baseline \u0111a s\u1ed1; cao nh\u1ea5t l\u00e0 h=1,000 (OrderFlow AR(5), 58.5% so v\u1edbi 50.1%). **Kh\u00f4ng horizon n\u00e0o v\u01b0\u1ee3t ng\u01b0\u1ee1ng ho\u00e0 v\u1ed1n** k\u1ec3 c\u1ea3 \u1edf m\u1ee9c ph\u00ed maker 2bps. \u0110i\u1ec3m c\u1ed1t l\u00f5i: **k\u1ef9 n\u0103ng d\u1ef1 b\u00e1o v\u00e0 kh\u1ea3 n\u0103ng sinh l\u1eddi n\u1eb1m \u1edf hai \u0111\u1ea7u \u0111\u1ed1i l\u1eadp c\u1ee7a thang horizon**. \u1ede h=1,000 \u0111\u1ed9 ch\u00ednh x\u00e1c cao nh\u1ea5t (58.5%) nh\u01b0ng bi\u00ean \u0111\u1ed9 gi\u00e1 qu\u00e1 nh\u1ecf n\u00ean l\u00e3i r\u00f2ng v\u1eabn l\u00e0 **-5.82 bps/l\u1ec7nh**; \u1edf horizon d\u00e0i, bi\u00ean \u0111\u1ed9 \u0111\u1ee7 l\u1edbn th\u00ec k\u1ef9 n\u0103ng l\u1ea1i bi\u1ebfn m\u1ea5t. C\u1ee1 m\u1eabu ki\u1ec3m \u0111\u1ecbnh nh\u1ecf nh\u1ea5t ch\u1ec9 1271 c\u1eeda s\u1ed5 \u2014 m\u1ecdi con s\u1ed1 \u1edf \u0111\u00e2y c\u00f3 kho\u1ea3ng tin c\u1eady r\u1ea5t r\u1ed9ng v\u00e0 kh\u00f4ng \u0111\u01b0\u1ee3c coi l\u00e0 k\u1ebft lu\u1eadn."
 }
