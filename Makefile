@@ -1,4 +1,4 @@
-.PHONY: all full data simulate test report clean rebuild_data
+.PHONY: all full data simulate test report verify research clean rebuild_data
 
 # Default target: assumes `data`/`simulate` outputs already exist under
 # results/. On a fresh clone (or after changing raw input data), run
@@ -28,6 +28,18 @@ test:
 # Phase 6: Visualization and reporting
 report:
 	python -m scripts.pipelines.phase6_pipeline
+
+# Verify the shipped research artifacts are present, provenanced and honestly
+# labelled exploratory -- seconds, no reruns. See REPRODUCE.md (level 1).
+verify:
+	python -m scripts.operations.reproduce
+	python -m pytest tests/test_report_numbers.py tests/test_reproduce.py -q
+
+# Print the exact commands that regenerate the §5b-5e research artifacts the
+# report's conclusions rest on. These are not run automatically: some take
+# hours over hundreds of millions of rows. See REPRODUCE.md (level 3).
+research:
+	python -m scripts.operations.reproduce --commands
 
 # Clean up results and reports (caution). Requires a POSIX shell (Git Bash,
 # WSL); on native Windows PowerShell, run the underlying `python -m

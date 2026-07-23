@@ -42,6 +42,18 @@ file nằm ngoài Git.
 python -m pytest tests/ -v
 ```
 
+## Tái lập
+
+Mọi con số headline truy ngược được về một artifact có provenance. Xác minh
+nhanh (vài giây, không chạy lại nghiên cứu):
+
+```powershell
+python -m scripts.operations.reproduce      # hoặc: make verify
+```
+
+Xem [REPRODUCE.md](REPRODUCE.md) cho ba mức kiểm chứng, kể cả lệnh chính xác tạo
+lại các artifact §5b–5e mà kết luận dựa vào (`make research`).
+
 ## Cấu trúc dự án
 
 ```text

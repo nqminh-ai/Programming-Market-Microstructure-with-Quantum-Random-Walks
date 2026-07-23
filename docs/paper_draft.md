@@ -17,7 +17,9 @@ classical random walk, GARCH(1,1) và GBM dưới cùng một giao thức thời
 Kết luận chính: **không có bằng chứng cho một lợi thế dự báo bền vững của QRW, và
 cơ chế lượng tử (pha) đóng góp bằng 0.** Tham số pha `alpha_phase` hội tụ về ≈ 0
 (bậc 10⁻⁵) trên cả ba tài sản, nên bất kỳ phần "không thua" nào cũng đến từ hệ số
-decoherence thấp và windowing cổ điển, không phải giao thoa lượng tử.
+decoherence thấp và windowing cổ điển, không phải giao thoa lượng tử. Vì lợi thế
+quan sát được không đến từ giao thoa pha, nghiên cứu này **chưa hỗ trợ tuyên bố
+QRW vượt trội** nhờ cơ chế lượng tử.
 
 QRW tạo ra phân phối biên fixed-origin tại từng horizon; các draw giữa horizon
 không phải trajectory chung. Vì vậy đánh giá QRW chỉ dùng proper marginal scores
@@ -91,6 +93,11 @@ Không có bằng chứng hợp lệ cho khoảng tail index 1,1–2,5, cải th
 scorecard hay tính bền vững theo Diebold–Mariano.
 
 ## Phạm vi bằng chứng và điều kiện confirmatory
+
+Các file theo ngày của cả ba tài sản tồn tại trong workspace, nhưng benchmark
+cross-asset trước đây chỉ chấm ngày cuối. **Không được mô tả kết quả đó là kiểm
+định 31 ngày.** Một nghiên cứu confirmatory cần ít nhất 20 ngày UTC untouched cho
+mỗi tài sản, L2 LOB đồng bộ, và protocol đóng băng trước khi mở nhãn holdout.
 
 Toàn bộ Phase 1–6 là **exploratory**. Protocol confirmatory đã viết, đóng băng và
 pre-register (endpoint chính, chia train/val/test theo ngày UTC, xử lý gap), có
