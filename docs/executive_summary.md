@@ -322,6 +322,27 @@ Lịch sử commit của chuỗi nghiên cứu này:
 
 ---
 
+## 6b. Hướng phát triển
+
+Roadmap đầy đủ: [huong_phat_trien.md](huong_phat_trien.md). Mỗi hướng bám vào một
+kết quả đã xác lập và một giới hạn cụ thể, và **nêu rõ khả năng ra thêm một kết
+quả "không"** — đúng tính cách của dự án.
+
+| Tầng | Hướng | Mở khóa | Trạng thái hạ tầng |
+|---|---|---|---|
+| **0** | Đóng vòng confirmatory (thu 20+ ngày L2) | #1, #2, #6 | **Sẵn sàng** — chỉ chờ thời gian thu |
+| 1 | Vi cấu trúc L2 thật + xác suất khớp lệnh | #1, #6 | Một phần (cần dữ liệu Tầng 0) |
+| 2 | Bản đồ horizon × chi phí | Vùng khả thi giao dịch | **Phần lớn đã có** |
+| 3 | Toán tử heavy-tail unitary + chế độ pha | Câu hỏi lượng tử (pha = 0 có phổ quát?) | Prototype cổ điển cần thay |
+| 4 | Đa chế độ thị trường + benchmark hiện đại | Độ bền của kết luận | Cần dữ liệu + model mới |
+| 5 | Đóng gói bộ máy tự kiểm thành framework | Đóng góp methods publishable | **Sẵn sàng** |
+
+Ưu tiên đi từ **gần và chắc** (Tầng 0, hạ tầng sẵn sàng) tới **xa và mở** (Tầng 3,
+câu hỏi lượng tử chưa ngã ngũ). Bước kế tiếp rõ ràng nhất là **Tầng 0** — thứ duy
+nhất chặn nó là 20 ngày thu dữ liệu thời gian thực, không rút ngắn được.
+
+---
+
 ## 7. Điều chúng tôi muốn hội đồng đánh giá
 
 Dự án này **không** trình bày một model lượng tử thắng thị trường. Nó trình bày

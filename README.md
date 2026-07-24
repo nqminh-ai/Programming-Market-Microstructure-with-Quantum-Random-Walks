@@ -101,3 +101,11 @@ commit, feature path hoặc SHA-256 không khớp. Phase 6 tạo
 Pre-registration nằm tại [docs/data_collection_todo.md](docs/data_collection_todo.md):
 tối thiểu 20 ngày UTC tương lai cho mỗi tài sản, trade/L2 LOB đồng bộ và không
 mở nhãn holdout trước khi đóng băng protocol.
+
+## Hướng phát triển
+
+Roadmap phân tầng ở [docs/huong_phat_trien.md](docs/huong_phat_trien.md): từ đóng
+vòng confirmatory (Tầng 0, hạ tầng sẵn sàng) tới câu hỏi lượng tử thật sự (toán
+tử heavy-tail unitary, chế độ pha) và đóng gói bộ máy tự kiểm thành framework tái
+dùng. Mỗi hướng bám vào một kết quả đã xác lập và nêu rõ khả năng ra thêm kết quả
+"không".
