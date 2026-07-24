@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Quantum — Quantum Random Walk cho Vi cấu trúc Thị trường</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- KaTeX CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(18, 26, 43, 0.7);
+            --border-card: rgba(255, 255, 255, 0.08);
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+            --cyan: #06b6d4;
+            --cyan-glow: rgba(6, 182, 212, 0.35);
+            --emerald: #10b981;
+            --rose: #f43f5e;
+            --amber: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-title: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        /* Ambient Glow Background Effects */
+        .ambient-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .glow-1 {
+            position: absolute;
+            top: -10%;
+            left: 15%;
+            width: 45vw;
+            height: 45vw;
+            background: radial-gradient(circle, var(--primary-glow) 0%, rgba(0,0,0,0) 70%);
+            filter: blur(80px);
+            opacity: 0.6;
+        }
+
+        .glow-2 {
+            position: absolute;
+            bottom: -15%;
+            right: 10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, var(--cyan-glow) 0%, rgba(0,0,0,0) 70%);
+            filter: blur(100px);
+            opacity: 0.5;
+        }
+
+        /* Slide Deck Layout */
+        .deck-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide {
+            position: absolute;
+            width: 90vw;
+            max-width: 1300px;
+            height: 82vh;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 24px;
+            padding: 48px 56px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.96) translateY(20px);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1) translateY(0);
+        }
+
+        /* Slide Header */
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 16px;
+        }
+
+        .slide-title-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .slide-number-badge {
+            background: linear-gradient(135deg, var(--primary), var(--cyan));
+            color: #fff;
+            font-family: var(--font-title);
+            font-weight: 700;
+            font-size: 14px;
+            padding: 6px 14px;
+            border-radius: 30px;
+            letter-spacing: 1px;
+        }
+
+        .slide-header h2 {
+            font-family: var(--font-title);
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .project-tag {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        /* Slide Content Area */
+        .slide-body {
+            flex: 1;
+            display: flex;
+            gap: 32px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .slide-body::-webkit-scrollbar {
+            width: 4px;
+        }
+        .slide-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        /* Typography Helpers */
+        p.lead {
+            font-size: 18px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            width: 100%;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .icon-purple { background: rgba(99, 102, 241, 0.15); color: var(--primary); }
+        .icon-cyan { background: rgba(6, 182, 212, 0.15); color: var(--cyan); }
+        .icon-emerald { background: rgba(16, 185, 129, 0.15); color: var(--emerald); }
+        .icon-rose { background: rgba(244, 63, 94, 0.15); color: var(--rose); }
+        .icon-amber { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+
+        .card h3 {
+            font-family: var(--font-title);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .card p, .card ul {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .card ul {
+            list-style: none;
+            margin-top: 8px;
+        }
+
+        .card ul li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+        }
+
+        .card ul li::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        /* Metric Pill & Badges */
+        .metric-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .badge-red { background: rgba(244, 63, 94, 0.15); color: var(--rose); border: 1px solid rgba(244, 63, 94, 0.3); }
+        .badge-green { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-blue { background: rgba(6, 182, 212, 0.15); color: var(--cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
+
+        /* Formula Box */
+        .formula-box {
+            background: rgba(10, 15, 26, 0.8);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin: 14px 0;
+            font-family: var(--font-mono);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #7dd3fc;
+            font-size: 16px;
+        }
+
+        /* Tables */
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .styled-table th {
+            background: rgba(255, 255, 255, 0.05);
+            text-align: left;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .styled-table td {
+            padding: 12px 16px;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .styled-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-main);
+        }
+
+        /* Hero Title Slide */
+        .hero-slide {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100%;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 30px;
+            color: #a5b4fc;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .hero-title {
+            font-family: var(--font-title);
+            font-size: 52px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: var(--text-muted);
+            max-width: 800px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .hero-tags {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .tag-pill {
+            padding: 8px 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Controls & Navigation */
+        .controls {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-card);
+            padding: 8px 20px;
+            border-radius: 40px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .slide-counter {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-muted);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--cyan));
+            transition: width 0.3s ease;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Keyboard Hints */
+        .key-hint {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            font-size: 12px;
+            color: var(--text-muted);
+            opacity: 0.6;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .key-cap {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-bg">
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+    </div>
+
+    <div class="deck-container">
+
+        <!-- SLIDE 1: Title Hero -->
+        <div class="slide active" id="slide-1">
+            <div class="hero-slide">
+                <div class="hero-badge">
+                    <i class="fa-solid fa-atom"></i> AI Quantum Research Project
+                </div>
+                <h1 class="hero-title">Quantum Random Walk trong Vi cấu trúc Thị trường</h1>
+                <p class="hero-subtitle">
+                    Nghiên cứu thăm dò cơ chế lượng tử trên dữ liệu giao dịch tần suất cao (HFT), quy trình tự kiểm toán kết quả âm & phát minh toán tử Lévy Unitary Shift.
+                </p>
+                <div class="hero-tags">
+                    <div class="tag-pill"><i class="fa-solid fa-shield-halved" style="color: var(--emerald);"></i> Anti-Self-Deception Framework</div>
+                    <div class="tag-pill"><i class="fa-solid fa-calculator" style="color: var(--cyan);"></i> Lévy Unitary Shift (FFT)</div>
+                    <div class="tag-pill"><i class="fa-solid fa-database" style="color: var(--amber);"></i> 493M+ Ticks Evaluated</div>
+                    <div class="tag-pill"><i class="fa-solid fa-square-check" style="color: var(--primary);"></i> Pre-registered Protocol</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Vấn đề & Bối cảnh -->
+        <div class="slide" id="slide-2">
+            <div class="slide-header">
+                <div class="slide-title-group">
+                    <span class="slide-number-badge">02</span>
+                    <h2>Vấn đề & Bối cảnh Nghiên cứu</h2>
+                </div>
+                <span class="project-tag">AI Quantum Project</span>
+            </div>
+            <div class="slide-body">
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-rose"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <h3>Thực trạng "Lợi thế Lượng tử Ảo"</h3>
+                        </div>
+                        <p>Hàng loạt nghiên cứu Quantum Machine Learning (QML) trong tài chính báo cáo kết quả "vượt trội", nhưng khi đưa vào thực tế đều thất bại hoàn toàn vì các cạm bẫy hệ thống:</p>
+                        <ul style="margin-top: 12px;">
+                            <li>So sánh với baseline cổ điển ngô nghê (Random Walk đơn giản).</li>
+                            <li>Bị rò rỉ dữ liệu (Data Leakage) hoặc bug fit/predict lệch công thức.</li>
+                            <li>Bỏ qua chi phí giao dịch & Adverse Selection trong HFT.</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-purple"><i class="fa-solid fa-bullseye"></i></div>
+                            <h3>Câu hỏi Khoa học Cốt lõi</h3>
+                        </div>
+                        <p class="lead" style="font-size: 16px; margin-bottom: 14px; color: #a5b4fc;">
+                            "Cơ chế lượng tử trong Quantum Random Walk thực sự mang lại lợi thế dự báo trên dữ liệu vi cấu trúc thị trường hay không?"
+                        </p>
+                        <p>Dự án này được thiết kế với tư duy <strong>Falsifiability (Tính có thể bị bác bỏ)</strong>: Đặt một câu hỏi có thể trả lời SAI, và dùng bằng chứng số liệu cứng để kiểm chứng.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Hạ tầng Kỹ thuật Chống Tự lừa dối -->
+        <div class="slide" id="slide-3">
+            <div class="slide-header">
+                <div class="slide-title-group">
+                    <span class="slide-number-badge">03</span>
+                    <h2>Hạ tầng Chống Tự lừa dối (Anti-Self-Deception)</h2>
+                </div>
+                <span class="project-tag">Engineering Infrastructure</span>
+            </div>
+            <div class="slide-body">
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-cyan"><i class="fa-solid fa-lock"></i></div>
+                            <h3>Pre-registration Engine</h3>
+                        </div>
+                        <p>Script <code>collect_confirmatory.py</code> ép buộc protocol bằng code:</p>
+                        <ul>
+                            <li>Hard-code <code>obi_source = "lob"</code> (không thể tự tiện rơi về trade proxy).</li>
+                            <li>Phân đoạn theo ngày UTC trọn vẹn, chống rò rỉ dữ liệu.</li>
+                            <li>Mã hash SHA-256 bất biến trên từng ngày thu thập.</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-emerald"><i class="fa-solid fa-code-commit"></i></div>
+                            <h3>Fail-Closed Provenance</h3>
+                        </div>
+                        <p>Mọi pipeline từ Phase 2 đến Phase 6 đều kiểm tra nghiêm ngặt:</p>
+                        <ul>
+                            <li>Ghi dấu Git commit, Python version, exact dependency lock.</li>
+                            <li>Pipeline lập tức dừng (Hard-fail) nếu mã hash đầu vào bị lệch.</li>
+                            <li>Script <code>reproduce.py</code> xác minh 21 artifact chính.</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-amber"><i class="fa-solid fa-vial-circle-check"></i></div>
+                            <h3>Test Giằng số liệu Báo cáo</h3>
+                        </div>
+                        <p>Khắc phục lỗi gõ nhầm số khi viết báo cáo:</p>
+                        <ul>
+                            <li>244 unit & integration testcases tự động.</li>
+                            <li>Script <code>test_report_numbers.py</code> đối soát 100% từng chữ số giữa văn bản báo cáo và kết quả JSON.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Đóng góp Toán học: Lévy Unitary Shift -->
+        <div class="slide" id="slide-4">
+            <div class="slide-header">
+                <div class="slide-title-group">
+                    <span class="slide-number-badge">04</span>
+                    <h2>Đóng góp Toán học: Lévy Unitary Shift</h2>
+                </div>
+                <span class="project-tag">Mathematical Innovation</span>
+            </div>
+            <div class="slide-body">
+                <div class="grid-2">
+                    <div>
+                        <p class="lead" style="font-size: 15px;">
+                            Walk lượng tử thông thường có phân phối dạng bimodal/compact support, không khớp với đặc trưng <strong>Đuôi nặng (Fat tails)</strong> của giá tài chính. Mô hình <code>LevyUnitaryQRW</code> giải quyết triệt để bài toán này.
+                        </p>
+                        <div class="formula-box">
+                            $$\phi_\alpha(k) = \text{sign}(k) \cdot |k|^\alpha, \quad k \in [-\pi, \pi)$$
+                        </div>
+                        <div class="card" style="margin-top: 16px;">
+                            <div class="card-header">
+                                <div class="card-icon icon-purple"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                                <h3>Tính chất Đột phá</h3>
+                            </div>
+                            <ul>
+                                <li><strong>Unitary Cấu trúc 100%:</strong> Modulus mọi trị riêng $|e^{-i \phi_\alpha(k)}| = 1$, bảo toàn xác suất tuyệt đối.</li>
+                                <li><strong>Tính Tổng quát:</strong> $\alpha = 1 \implies \phi_1(k) = k$ (trở về bước dịch $\pm 1$ thông thường).</li>
+                                <li><strong>Lévy Flight thuần lượng tử:</strong> $\alpha < 1$ tạo biến đổi Fourier phai mũ lũy thừa $\sim |x|^{-(1+\alpha)}$, sinh bước nhảy xa không dùng sampling cổ điển.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-cyan"><i class="fa-solid fa-bolt"></i></div>
+                            <h3>Thực thi qua FFT $O(N \log N)$</h3>
+                        </div>
+                        <p style="font-size: 13px; margin-bottom: 12px;">So sánh tỷ lệ đuôi $q_{99.9}/q_{75}$ (horizon 50 tick, lattice 16.001):</p>
+                        <table class="styled-table">
+                            <thead>
+                                <tr>
+                                    <th>Tài sản</th>
+                                    <th>Thị trường thật</th>
+                                    <th>Walk thường</th>
+                                    <th>Lévy Unitary</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>BTCUSDT</strong></td>
+                                    <td>5,07</td>
+                                    <td><span class="metric-badge badge-red">1,15</span></td>
+                                    <td><span class="metric-badge badge-green">7,74 ($\alpha=0,7$)</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ETHUSDT</strong></td>
+                                    <td>3,09</td>
+                                    <td><span class="metric-badge badge-red">1,15</span></td>
+                                    <td><span class="metric-badge badge-green">3,10 ($\alpha=0,9$)</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>BNBUSDT</strong></td>
+                                    <td>4,00</td>
+                                    <td><span class="metric-badge badge-red">1,15</span></td>
+                                    <td><span class="metric-badge badge-green">3,10 ($\alpha=0,9$)</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Bằng chứng Chốt: Kết quả Âm Trung thực -->
+        <div class="slide" id="slide-5">
+            <div class="slide-header">
+                <div class="slide-title-group">
+                    <span class="slide-number-badge">05</span>
+                    <h2>Bằng chứng Chốt: Thua Baseline Cổ điển</h2>
+                </div>
+                <span class="project-tag">Empirical Findings</span>
+            </div>
+            <div class="slide-body">
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-rose"><i class="fa-solid fa-chart-line-down"></i></div>
+                            <h3>Bảng Xếp hạng Brier Score (Chi tiết)</h3>
+                        </div>
+                        <table class="styled-table">
+                            <thead>
+                                <tr>
+                                    <th>Tài sản</th>
+                                    <th>Hạng QRW</th>
+                                    <th>Model thắng</th>
+                                    <th>Khoảng cách Brier</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>BTCUSDT</strong></td>
+                                    <td><span class="metric-badge badge-red">4 / 7</span></td>
+                                    <td>Logistic L2 + Pairwise</td>
+                                    <td>+0,052277</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ETHUSDT</strong></td>
+                                    <td><span class="metric-badge badge-red">7 / 7</span></td>
+                                    <td>OrderFlow AR(5)</td>
+                                    <td>+0,034438</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>BNBUSDT</strong></td>
+                                    <td><span class="metric-badge badge-red">4 / 7</span></td>
+                                    <td>OrderFlow AR(5)</td>
+                                    <td>+0,030078</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p style="font-size: 13px; margin-top: 12px; color: var(--rose);">
+                            <i class="fa-solid fa-circle-exclamation"></i> OrderFlow AR(5) — một hồi quy 5 hệ số — đánh bại QRW trên cả 3 tài sản.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-amber"><i class="fa-solid fa-microscope"></i></div>
+                            <h3>Pha Lượng tử Đóng góp = 0</h3>
+                        </div>
+                        <p style="font-size: 14px; margin-bottom: 10px;">Khi bật/tắt công tắc pha (<code>alpha_phase = 0</code>):</p>
+                        <ul>
+                            <li>BTCUSDT: Đóng góp riêng pha $\Delta\text{Brier} = -0,000000$ (bằng 0).</li>
+                            <li>ETHUSDT: $\Delta\text{Brier} = -1,09 \times 10^{-5}$ (nhỏ hơn ngưỡng 9 lần).</li>
+                            <li>BNBUSDT: $\Delta\text{Brier} = +3,15 \times 10^{-7}$ (nhỏ hơn 300 lần).</li>
+                        </ul>
+                        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 10px; border-radius: 8px; font-size: 13px; margin-top: 10px;">
+                            <strong>Kết luận:</strong> Hiệu ứng giao thoa lượng tử không mang lại bất kỳ lợi thế dự báo nào trên dữ liệu HFT.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: Khả thi Giao dịch: Ngưỡng Hòa vốn & Chi phí -->
+        <div class="slide" id="slide-6">
+            <div class="slide-header">
+                <div class="slide-title-group">
+                    <span class="slide-number-badge">06</span>
+                    <h2>Khả thi Giao dịch (Trading Feasibility)</h2>
+                </div>
+                <span class="project-tag">Market Microstructure</span>
+            </div>
+            <div class="slide-body">
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-rose"><i class="fa-solid fa-coins"></i></div>
+                            <h3>Rào cản Phí Giao dịch ở Horizon $h=1$</h3>
+                        </div>
+                        <p class="lead" style="font-size: 15px; color: var(--rose);">
+                            Ngưỡng hòa vốn vượt 100%. Một mô hình đoán đúng 100% vẫn lỗ!
+                        </p>
+                        <p style="font-size: 13px;">
+                            Ở horizon 1-tick, biến động giá trung bình nhỏ hơn chi phí giao dịch một vòng tới <strong>1.610 lần</strong> (BTC). Chi phí nuốt trọn hoàn toàn mọi lợi thế dự báo.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-cyan"><i class="fa-solid fa-scale-unbalanced"></i></div>
+                            <h3>Adverse Selection & Thảm họa Maker</h3>
+                        </div>
+                        <p style="font-size: 13px; margin-bottom: 10px;">
+                            Giả định "lệnh chờ Maker ăn được spread" bị bác bỏ bởi thực tế:
+                        </p>
+                        <ul>
+                            <li>Realised Half-Spread của lệnh chờ bị <strong>âm $\sim -1,2\text{ bps}$</strong> trên cả 3 tài sản.</li>
+                            <li>Lệnh chờ không được ăn spread mà phải <strong>trả tiền</strong> do liên tục bị các lệnh market thông minh "nhặt".</li>
+                            <li>Ở $h=1.000$ tick (~26 giây), độ chính xác đạt $64,4\%$, nhưng ngưỡng hòa vốn lên tới $163,9\%$ $\implies$ Vẫn lỗ ròng.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Đóng góp & Tái lập Nghiên cứu -->
+        <div class="slide" id="slide-7">
+            <div class="slide-header">
+                <div class="slide-title-group">
+                    <span class="slide-number-badge">07</span>
+                    <h2>Đóng góp & Tái lập Nghiên cứu</h2>
+                </div>
+                <span class="project-tag">Reproducibility & Framework</span>
+            </div>
+            <div class="slide-body">
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-emerald"><i class="fa-solid fa-arrows-rotate"></i></div>
+                            <h3>Quy trình Tái lập trong 1 Dòng lệnh</h3>
+                        </div>
+                        <p style="font-size: 13px; margin-bottom: 12px;">Mọi con số trong báo cáo đều có thể kiểm tra lại nhanh chóng:</p>
+                        <div class="formula-box" style="font-size: 13px; justify-content: flex-start;">
+                            <code>python -m scripts.operations.reproduce</code>
+                        </div>
+                        <p style="font-size: 13px; margin-top: 12px;">
+                            Lệnh này kiểm tra sự tồn tại, tính hợp lệ JSON, Git commit ID, SHA-256 hash của 21 headline artifacts mà không cần chạy lại hàng giờ tính toán.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-purple"><i class="fa-solid fa-box-archive"></i></div>
+                            <h3>Giá trị Đóng góp Đáng giữ lại</h3>
+                        </div>
+                        <ul>
+                            <li><strong>Lévy Unitary Shift Operator:</strong> Giải pháp toán học thuần lượng tử cho phân phối đuôi nặng.</li>
+                            <li><strong>Hạ tầng Pre-registration:</strong> Quy trình thu L2 LOB cưỡng chế bằng code.</li>
+                            <li><strong>Bộ Baseline Cổ điển Đa dạng:</strong> Công cụ đối chứng trung thực cho nghiên cứu AI/Quant.</li>
+                            <li><strong>Framework Kiểm toán Kết quả Âm:</strong> Bộ máy ngăn ngừa tự lừa dối cho các dự án QML.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: Định hướng Phát triển (Roadmap) -->
+        <div class="slide" id="slide-8">
+            <div class="slide-header">
+                <div class="slide-title-group">
+                    <span class="slide-number-badge">08</span>
+                    <h2>Roadmap & Định hướng Tương lai</h2>
+                </div>
+                <span class="project-tag">Future Horizons</span>
+            </div>
+            <div class="slide-body">
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Tầng</th>
+                            <th>Hướng phát triển</th>
+                            <th>Mục tiêu giải quyết</th>
+                            <th>Trạng thái Hạ tầng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Tầng 0</strong></td>
+                            <td>Đóng vòng Confirmatory (Thu 20+ ngày L2)</td>
+                            <td>Xác lập kết luận Confirmatory chính thức</td>
+                            <td><span class="metric-badge badge-green">Sẵn sàng (0 ngày đã thu)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tầng 1</strong></td>
+                            <td>Vi cấu trúc L2 thật + Xác suất khớp lệnh</td>
+                            <td>Đo lường chi phí Maker chính xác</td>
+                            <td><span class="metric-badge badge-blue">Một phần</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tầng 2</strong></td>
+                            <td>Bản đồ Horizon $\times$ Chi phí</td>
+                            <td>Tìm vùng horizon khả thi giao dịch</td>
+                            <td><span class="metric-badge badge-green">Phần lớn đã có</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tầng 3</strong></td>
+                            <td>Toán tử Heavy-tail Unitary + Chế độ pha</td>
+                            <td>Tấn công giả thuyết pha ở chế độ cực đoan</td>
+                            <td><span class="metric-badge badge-blue">Prototype sẵn có</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tầng 5</strong></td>
+                            <td>Đóng gói Framework Kiểm toán Kết quả Âm</td>
+                            <td>Xuất bản Methods Paper cho cộng đồng</td>
+                            <td><span class="metric-badge badge-green">Sẵn sàng</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Slide Deck Navigation Controls -->
+    <div class="controls">
+        <button class="nav-btn" id="prev-btn" title="Slide trước (Mũi tên trái)"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="slide-counter" id="slide-counter">1 / 8</span>
+        <button class="nav-btn" id="next-btn" title="Slide tiếp (Mũi tên phải/Space)"><i class="fa-solid fa-chevron-right"></i></button>
+        <button class="nav-btn" id="fullscreen-btn" title="Toàn màn hình"><i class="fa-solid fa-expand"></i></button>
+    </div>
+
+    <div class="progress-bar" id="progress-bar"></div>
+
+    <div class="key-hint">
+        <span class="key-cap">←</span> <span class="key-cap">→</span> / <span class="key-cap">Space</span> chuyển slide
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const slideCounter = document.getElementById('slide-counter');
+            const progressBar = document.getElementById('progress-bar');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+
+            function updateDeck() {
+                slides.forEach((slide, index) => {
+                    if (index === currentSlide) {
+                        slide.classList.add('active');
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
+
+                slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+                const progressPercent = ((currentSlide + 1) / totalSlides) * 100;
+                progressBar.style.width = `${progressPercent}%`;
+
+                // Re-render KaTeX if needed
+                if (window.renderMathInElement) {
+                    renderMathInElement(slides[currentSlide], {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ],
+                        throwOnError: false
+                    });
+                }
+            }
+
+            function nextSlide() {
+                if (currentSlide < totalSlides - 1) {
+                    currentSlide++;
+                    updateDeck();
+                }
+            }
+
+            function prevSlide() {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateDeck();
+                }
+            }
+
+            nextBtn.addEventListener('click', nextSlide);
+            prevBtn.addEventListener('click', prevSlide);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                    e.preventDefault();
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                    e.preventDefault();
+                    prevSlide();
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    currentSlide = 0;
+                    updateDeck();
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    currentSlide = totalSlides - 1;
+                    updateDeck();
+                }
+            });
+
+            fullscreenBtn.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                    });
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            });
+
+            updateDeck();
+        });
+    </script>
+</body>
+</html>
