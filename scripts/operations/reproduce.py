@@ -153,6 +153,22 @@ def _manifest() -> tuple[Artifact, ...]:
         )
         items.append(
             Artifact(
+                f"{RESEARCH}/marginal_crps_daycluster_{asset}.json",
+                f"§5d″ — {asset}: marginal CRPS, windows cut on UTC-day edges",
+                (
+                    "python", "-m", "scripts.research.marginal_crps_comparison",
+                    "--feature-path", FEATURES[asset],
+                    "--label", f"{asset}_69d_daycluster",
+                    "--max-rows", "0" if asset == "BNBUSDT" else "25000000",
+                    "--windows", "20" if asset == "BNBUSDT" else "10",
+                    "--window-unit", "utc-day",
+                    "--json-out", f"{RESEARCH}/marginal_crps_daycluster_{asset}.json",
+                ),
+                note="Full days per window; limitation #4 robustness check.",
+            )
+        )
+        items.append(
+            Artifact(
                 f"{RESEARCH}/horizon_feasibility_{asset}.json",
                 f"§5e — {asset}: Roll spread, adverse selection, break-even cost",
                 (

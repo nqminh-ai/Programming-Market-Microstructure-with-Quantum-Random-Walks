@@ -220,6 +220,39 @@ def test_the_window_count_the_claim_was_retested_on_is_stated(
 
 
 # ---------------------------------------------------------------------------
+# Day-cluster windowing (§5d″, limitation #4)
+# ---------------------------------------------------------------------------
+
+QRW = "QRW Adaptive"
+# The pre-registered §5d ranks the day-cluster run has to reproduce.
+FIVE_D_RANKS = {"BNBUSDT": 4, "ETHUSDT": 1, "BTCUSDT": 3}
+
+
+def test_day_cluster_windowing_reproduces_the_pre_registered_ranks(
+    report: str,
+) -> None:
+    """The whole point of §5d″: proper UTC-day windows must land the same ranks
+    §5d reported, or limitation #4 is not closed."""
+    for asset, expected in FIVE_D_RANKS.items():
+        audit = _artifact(f"marginal_crps_daycluster_{asset}.json")
+        rank = audit["ranked_by_mean_crps"].index(QRW) + 1
+        assert rank == expected, f"{asset}: day-cluster rank {rank}, §5d says {expected}"
+        assert audit["window_unit"] == "utc-day"
+
+
+def test_the_report_states_the_ranks_replicated(report: str) -> None:
+    """§5d″ claims 4/6, 1/6, 3/6 replicate; the claim must be in the prose."""
+    assert "§5d″" in report or "5d″" in report
+    for rank in ("4/6", "1/6", "3/6"):
+        assert rank in report
+
+
+def test_limitation_four_is_marked_addressed_not_just_noted(summary: str) -> None:
+    """It moved from 'documented' to a checked, closed result."""
+    assert "tái lập chính xác" in summary
+
+
+# ---------------------------------------------------------------------------
 # Self-refutation count -- quoted in three places, easy to leave stale
 # ---------------------------------------------------------------------------
 

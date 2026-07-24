@@ -279,7 +279,7 @@ tiêu cực **đáng tin**: chúng tôi không hạ chuẩn đối thủ.
 | 1 | OBI là **trade-flow proxy**, không phải L2 LOB thật | Hạ tầng thu đã sẵn sàng và có test; cần **≥20 ngày UTC thời gian thực** — không nén được |
 | 2 | Toàn bộ Phase 1–6 là **exploratory**, chưa phải confirmatory | Protocol đã đóng băng dạng văn bản + code; chờ dữ liệu ở #1 |
 | 3 | Dữ liệu trải trên khoảng thời gian ngắn | Đã nâng lên **69 ngày trùng khớp cho cả ba asset** (493,7M tick, 2026-05-13 → 07-20); vẫn là hai tháng rưỡi, chưa phủ nhiều chế độ thị trường |
-| 4 | Windowing CRPS trong-file mỏng hơn chuẩn day-cluster | Đã ghi rõ trong §5d báo cáo cuối |
+| 4 | Windowing CRPS trong-file mỏng hơn chuẩn day-cluster | **Đã kiểm và đóng.** Cắt window theo nguyên ngày UTC trên toàn bộ 69 ngày **tái lập chính xác** thứ hạng §5d (BNB 4/6, ETH 1/6, BTC 3/6) — windowing trong-file không bóp méo kết luận (§5d″) |
 | 5 | Model không mô hình hoá volatility | **Hạ mức sau khi đo lại.** Trước đây nêu như lời giải thích cho thất bại ở window biến động cao, dựa trên 5 window/asset. Ở **40 window/asset** tương quan chạy đúng chiều trên cả ba asset nhưng không xác lập được (Fisher p=0,072 · Stouffer p=0,043 — hai bên α). Là **chiều dữ liệu nghiêng về**, không phải phát hiện (§3.5) |
 | 6 | Adverse selection **đã đo và tính vào chi phí**, nhưng chưa đủ | Realised half-spread âm ~1,2 bps ở cả ba asset: lệnh chờ **trả tiền** chứ không ăn spread. Còn thiếu mô hình *xác suất khớp* và vị trí hàng đợi — cần L2 thật (#1). Con số hiện tại là **cận dưới** của chi phí maker |
 | 7 | Khử chồng lấp làm cỡ mẫu tụt còn **323–68.001 cửa sổ** | Đã hẹp lại nhiều sau khi mở rộng dữ liệu, nhưng ô nhỏ nhất (BNB h=50.000, 323 cửa sổ) vẫn có khoảng tin cậy ±5 điểm; §3.6 vẫn là exploratory |

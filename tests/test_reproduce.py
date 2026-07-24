@@ -155,6 +155,12 @@ def test_every_manifest_entry_is_a_headline_section() -> None:
 
 
 def test_the_manifest_covers_all_three_assets_for_the_per_asset_studies() -> None:
-    for stem in ("strong_baseline", "horizon_feasibility", "horizon_edge", "marginal_crps_vol"):
+    for stem in (
+        "strong_baseline",
+        "horizon_feasibility",
+        "horizon_edge",
+        "marginal_crps_vol",
+        "marginal_crps_daycluster",
+    ):
         covered = {a.path for a in MANIFEST if stem in a.path}
         assert len(covered) == 3, f"{stem}: {covered}"

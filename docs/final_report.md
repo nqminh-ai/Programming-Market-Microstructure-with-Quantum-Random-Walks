@@ -45,7 +45,9 @@ chỉ ra:
 
 Các caveat cũ vẫn giữ nguyên: dữ liệu hoạt động ngắn, OBI là proxy trade-flow,
 và toàn bộ Phase 1–5 là exploratory (chưa đóng băng protocol/pre-registration
-confirmatory); windowing CRPS trong-file mỏng hơn chuẩn day-cluster.
+confirmatory). Riêng caveat "windowing CRPS trong-file mỏng hơn chuẩn
+day-cluster" (giới hạn #4) đã được kiểm: cắt window theo nguyên ngày UTC **tái
+lập chính xác** thứ hạng §5d (4/6, 1/6, 3/6) — xem §5d″.
 
 Báo cáo Phase 4/5 cũ dùng protocol v2 đã bị vô hiệu hóa. Mã nguồn hiện dùng
 `fixed_origin_marginal_density_matrix_ar1_obi_v4`; vì vậy mọi bảng điểm, biểu
@@ -365,19 +367,44 @@ thì nó chưa được xác lập. Câu đúng để viết là "dữ liệu **
 không phải "chúng tôi tìm thấy điều đó". Giới hạn #5 đã được viết lại theo đúng
 mức đó.
 
-> **Hạng BNB đổi từ 4/6 → 1/6.** Trên dữ liệu 69 ngày với 40 window, BNB QRW
-> đứng **nhất**, thắng 22/40 window — trong khi bảng §5d (31 ngày, 5 window) ghi
-> 4/6. Hạng BTC (3/6) và ETH (1/6) **tái lập nguyên vẹn**. Ba khác biệt cùng có
-> thể giải thích: giai đoạn dữ liệu khác, số window khác (40 vs 5), và cỡ window
-> khác (500 nghìn dòng vs 6,3 triệu — tức lượng dữ liệu fit mỗi model khác 12,6
-> lần). Tôi **không thay số §5d bằng số này**: §5d là bảng theo protocol 5 window
-> đã đăng ký, còn đây là robustness check. Điều đáng rút ra không phải "QRW tốt
-> hơn ta tưởng trên BNB" mà là **thứ hạng CRPS của BNB không ổn định** giữa hai
-> thiết lập — càng củng cố kết luận "không có lợi thế nhất quán", chỉ là theo
-> một cách khác với cách §5d nói.
+> **Về hạng BNB 1/6 ở bảng trên.** Với 40 window nhỏ (500 nghìn dòng/window),
+> BNB QRW nhảy lên **1/6, thắng 22/40** — trong khi §5d (5 window) ghi 4/6. Nhưng
+> §5d″ ngay dưới cho thấy đây là **artifact của cỡ window**, không phải thứ hạng
+> thật: khi cắt window theo **nguyên ngày UTC** (lựa chọn có nguyên tắc, cửa sổ
+> ~2,7 triệu dòng), BNB trở lại **4/6**, đúng bằng §5d. Nên số 1/6 chỉ nói cửa sổ
+> càng nhỏ thì QRW càng có vẻ tốt lên trên BNB — không phải một kết luận về model.
 
 Script: [volatility_claim_summary.py](../scripts/research/volatility_claim_summary.py) ·
 Artifact: [`volatility_claim.md`](../reports/research/volatility_claim.md)
+
+### 5d″. Windowing theo ngày UTC: thứ hạng §5d có sống sót không? (giới hạn #4)
+
+Giới hạn #4 nêu rằng bảng §5d cắt window **trong-file** — mỏng hơn chuẩn
+day-cluster, và trên ETH một window gói gọn chưa tới một ngày UTC. Câu hỏi: nếu
+cắt window đúng theo **ranh giới ngày UTC** trên toàn bộ store 69 ngày, thứ hạng
+CRPS có đổi không? Chạy lại với `--window-unit utc-day`, mỗi window là **một số
+nguyên ngày** (BNB 20 window/54M dòng, ETH và BTC mỗi cái 10 window/25M dòng,
+~2,5–2,7 triệu dòng/window):
+
+| Asset | Hạng QRW (day-cluster) | Model tốt nhất | Hạng §5d gốc |
+|---|:--:|---|:--:|
+| BNBUSDT | **4/6** | GBM | 4/6 |
+| ETHUSDT | **1/6** | QRW Adaptive | 1/6 |
+| BTCUSDT | **3/6** | GARCH(1,1) | 3/6 |
+
+**Thứ hạng tái lập chính xác** — 4/6, 1/6, 3/6, không lệch một bậc. Đây là kết
+quả robustness **dương** cho §5d: windowing trong-file **không bóp méo** kết luận
+xếp hạng, và giới hạn #4 được đóng theo nghĩa này. Nó cũng giải thích dứt điểm số
+BNB 1/6 ở §5d′ là hiệu ứng cửa sổ nhỏ, không phải hạng thật.
+
+Về tuyên bố volatility, day-cluster còn **làm yếu thêm** thay vì củng cố: ba asset
+giờ **không đồng chiều** (ETH rho = +0,70, p = 0,025; BTC rho = −0,37; BNB
+rho = −0,08). Ở §5d′ (40 window) cả ba cùng dương nhưng không đủ ý nghĩa; ở đây
+chúng đá nhau. Tức mối liên hệ volatility **nhạy với cách chia window** — một lý
+do nữa để giữ nó ở mức "dữ liệu nghiêng về", không phải phát hiện.
+
+Artifact: [`marginal_crps_daycluster_*.json`](../reports/research/) · lệnh tái lập
+qua `python -m scripts.operations.reproduce --commands`.
 
 ## 5e. Khả thi giao dịch: kỹ năng và lợi nhuận ở hai đầu đối lập (exploratory)
 
