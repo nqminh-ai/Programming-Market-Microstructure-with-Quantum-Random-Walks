@@ -11,6 +11,85 @@ khoa học chưa ngã ngũ).
 
 ---
 
+## Tính ứng dụng thực tiễn
+
+Câu hỏi thẳng: "chứng minh QRW không thắng thị trường thì **dùng được vào việc
+gì**?" Trả lời trung thực: giá trị ứng dụng **không** đến từ "QRW dự báo được thị
+trường" (nó không), mà từ **các bộ phận đã xây và các kết luận đã đo** — nhiều
+thứ trong đó chạy được **ngay bây giờ**, độc lập với việc QRW thắng hay thua.
+
+Xếp theo mức "sẵn sàng dùng", cao nhất trước:
+
+### 1. Bộ lọc khả thi giao dịch — *chạy được ngay*
+
+**Ai dùng:** bất kỳ ai định xây một tín hiệu giao dịch. **Vấn đề nó giải:**
+người ta tốn hàng tháng xây tín hiệu cho một horizon mà **không độ chính xác nào**
+— kể cả 100% — đủ vượt phí. Đây đúng là cái bẫy mà chính dự án từng sa vào ở §5e
+và phải sửa.
+
+Công cụ [`scripts/tools/tradeability.py`](../scripts/tools/tradeability.py) biến
+kết luận §5e thành một máy tính: nhập bien độ giá kỳ vọng ở horizon của bạn + bậc
+phí của bạn, nó trả về **độ chính xác hòa vốn** và cảnh báo khi con số đó vượt
+100%. Dùng cost model **nhập trực tiếp** từ nghiên cứu (`horizon_feasibility`),
+nên không thể lệch số với báo cáo.
+
+```powershell
+# Kich ban rieng cua ban
+python -m scripts.tools.tradeability --move-bps 0.0062 --fee-bps 5 --taker
+#   => cost/move 1613x, hoa von >100%: KHONG THE — du bao hoan hao van lo
+
+# Quet moi horizon tu du lieu do that
+python -m scripts.tools.tradeability --from-artifact reports/research/horizon_feasibility_BTCUSDT.json
+```
+
+**Giá trị:** một quyết định "đừng xây tín hiệu ở đây" **tiết kiệm vốn và thời
+gian** — ứng dụng cổ điển của một kết quả âm. Nó là **điều kiện cần** (loại bỏ ô
+vô vọng), việc chứng minh tín hiệu đạt độ chính xác còn lại thuộc Tầng 2.
+
+### 2. Đo chi phí giao dịch thật (TCA) — *đã xây*
+
+**Ai dùng:** bàn execution, quỹ định lượng. **Cung cấp:** effective spread bằng
+estimator Roll (1984), adverse selection, và phát hiện **lệnh chờ trả tiền chứ
+không ăn spread** (realised half-spread âm ~1,2 bps). Đây chính là những gì một
+Transaction Cost Analysis cần — và [`horizon_feasibility.py`](../scripts/research/horizon_feasibility.py)
+đã đo trên 493,7M tick.
+
+### 3. Bộ máy tự kiểm / tái lập — *chạy được ngay*
+
+**Ai dùng:** quỹ, hội đồng rủi ro, tạp chí — bất kỳ ai cần **xác minh một tuyên
+bố chiến lược có tái lập được không** trước khi rót vốn hay chấp nhận. Vấn đề
+"backtest đẹp nhưng không tái lập" tốn tiền cả ngành. Bộ máy của dự án
+([`reproduce.py`](../scripts/operations/reproduce.py) 21 artifact, provenance
+SHA-256, chuỗi lệnh→artifact→prose ép bằng test, pre-registration cưỡng chế bằng
+code) là câu trả lời trực tiếp — và là hạt nhân của **Tầng 5**.
+
+```powershell
+make verify   # vai giay: moi con so headline co artifact, co provenance, dung nhan
+```
+
+### 4. Ước lượng volatility cho quản trị rủi ro — *đã xây*
+
+**Ai dùng:** quản trị rủi ro, sizing vị thế, định giá quyền chọn. Ngay cả khi QRW
+không dự báo được **hướng**, phương sai của nó là một proxy volatility dùng được —
+tab Volatility trong dashboard đã trình diễn. Ước lượng volatility có giá trị độc
+lập với bài toán directional.
+
+### 5. Tín hiệu directional thật (OrderFlow AR(5)) — *đã đo, cần Tầng 2*
+
+**Ai dùng:** nghiên cứu tín hiệu vi cấu trúc. Mô hình **thực sự thắng** trong dự
+án không phải QRW mà là OrderFlow AR(5) — một logistic trên hướng tick trễ, đánh
+bại QRW ở cả ba tài sản. Nó là một tín hiệu directional triển khai được. **Cảnh
+báo trung thực:** ở 1-tick nó vẫn chưa vượt chi phí; liệu ở horizon dài hơn có
+không là câu hỏi của Tầng 2.
+
+> **Điểm mấu chốt cho hội đồng:** ứng dụng thực tiễn của dự án là các **công cụ
+> chạy được** (bộ lọc khả thi, TCA, bộ máy tái lập, ước lượng volatility) cộng
+> với một **kết luận tiết kiệm vốn** (đừng theo đuổi QRW-forecasting ở HFT). Không
+> cái nào đòi QRW phải thắng — nên chúng đứng vững ngay cả khi kết luận khoa học
+> là "không".
+
+---
+
 ## Tầng 0 — Đóng vòng confirmatory *(ưu tiên cao nhất, hạ tầng đã sẵn sàng)*
 
 **Vì sao:** Toàn bộ Phase 1–6 mang nhãn `EXPLORATORY_ONLY_NOT_CONFIRMATORY`. Ba

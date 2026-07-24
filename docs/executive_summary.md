@@ -322,11 +322,22 @@ Lịch sử commit của chuỗi nghiên cứu này:
 
 ---
 
-## 6b. Hướng phát triển
+## 6b. Hướng phát triển & tính ứng dụng thực tiễn
 
 Roadmap đầy đủ: [huong_phat_trien.md](huong_phat_trien.md). Mỗi hướng bám vào một
 kết quả đã xác lập và một giới hạn cụ thể, và **nêu rõ khả năng ra thêm một kết
 quả "không"** — đúng tính cách của dự án.
+
+**Ứng dụng thực tiễn không đòi QRW phải thắng.** Nó đến từ các bộ phận đã xây và
+các kết luận đã đo, nhiều thứ chạy được **ngay**:
+
+- **Bộ lọc khả thi giao dịch** ([`scripts/tools/tradeability.py`](../scripts/tools/tradeability.py)):
+  nhập horizon + phí của bạn → biết ngay có độ chính xác nào sinh lời không. Chặn
+  việc xây tín hiệu vô vọng — đúng cái bẫy §5e. Chạy được ngay.
+- **Đo chi phí giao dịch thật (TCA):** Roll spread + adverse selection, đã đo trên 493,7M tick.
+- **Bộ máy tái lập** (`make verify`): xác minh một tuyên bố chiến lược có tái lập được không.
+- **Ước lượng volatility** cho quản trị rủi ro (tab Volatility dashboard).
+- **Kết luận tiết kiệm vốn:** đừng theo đuổi QRW-forecasting ở HFT.
 
 | Tầng | Hướng | Mở khóa | Trạng thái hạ tầng |
 |---|---|---|---|

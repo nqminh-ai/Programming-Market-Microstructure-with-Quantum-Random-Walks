@@ -102,10 +102,21 @@ Pre-registration nằm tại [docs/data_collection_todo.md](docs/data_collection
 tối thiểu 20 ngày UTC tương lai cho mỗi tài sản, trade/L2 LOB đồng bộ và không
 mở nhãn holdout trước khi đóng băng protocol.
 
-## Hướng phát triển
+## Hướng phát triển & ứng dụng thực tiễn
 
 Roadmap phân tầng ở [docs/huong_phat_trien.md](docs/huong_phat_trien.md): từ đóng
 vòng confirmatory (Tầng 0, hạ tầng sẵn sàng) tới câu hỏi lượng tử thật sự (toán
 tử heavy-tail unitary, chế độ pha) và đóng gói bộ máy tự kiểm thành framework tái
 dùng. Mỗi hướng bám vào một kết quả đã xác lập và nêu rõ khả năng ra thêm kết quả
 "không".
+
+Tính ứng dụng **không đòi QRW phải thắng** — nhiều công cụ chạy được ngay:
+
+```powershell
+# Bo loc kha thi giao dich: horizon + phi cua ban co sinh loi khong?
+python -m scripts.tools.tradeability --from-artifact reports/research/horizon_feasibility_BTCUSDT.json
+```
+
+Cùng với TCA (Roll spread + adverse selection), bộ máy tái lập (`make verify`),
+ước lượng volatility, và kết luận tiết kiệm vốn "đừng theo đuổi QRW-forecasting ở
+HFT". Chi tiết trong roadmap.
