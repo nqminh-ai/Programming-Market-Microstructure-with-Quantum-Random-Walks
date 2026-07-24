@@ -80,7 +80,26 @@
       "Bash(python -m scripts.research.strong_baseline_comparison --max-rows 200000 --label SMOKE --bootstrap-samples 300 --json-out reports/research/_strong_smoke.json --md-out reports/research/_strong_smoke.md)",
       "Bash(python -m pytest tests/test_phase6_artifacts.py::test_vietnamese_report_and_readme_satisfy_release_markers -q)",
       "Bash(awk -F/ '{print $1\"/\"$2}')",
-      "Bash(grep -iE \"key|secret|credential|\\\\.env$|token|password\")"
+      "Bash(grep -iE \"key|secret|credential|\\\\.env$|token|password\")",
+      "Bash(python -c \"import pandas as pd; df=pd.read_parquet\\('data/assets/btcusdt/features/features_BTCUSDT_multiday.parquet', columns=['timestamp']\\); print\\(f'multiday rows: {len\\(df\\):,}'\\); print\\('span:', pd.to_datetime\\(df.timestamp.min\\(\\), unit=\\\\\"ms\\\\\"\\) if df.timestamp.iloc[0] > 1e12 else df.timestamp.min\\(\\), '->', df.timestamp.max\\(\\)\\)\")",
+      "Bash(python -c \"import psutil; print\\(round\\(psutil.virtual_memory\\(\\).available/1e9,1\\)\\)\")",
+      "Bash(wmic OS get FreePhysicalMemory)",
+      "Bash(python -m py_compile scripts/research/full_dataset_confirmation.py)",
+      "Bash(python -m scripts.research.full_dataset_confirmation --feature-path \"data/assets/btcusdt/features/features_BTCUSDT_recent_subset.parquet\" --max-rows 500000 --folds \"2,3\" --bootstrap-samples 300 --label SMOKE --json-out reports/research/_full_smoke.json --md-out reports/research/_full_smoke.md)",
+      "Bash(python -m py_compile scripts/research/marginal_crps_comparison.py)",
+      "Bash(python -m scripts.research.marginal_crps_comparison --max-rows 300000 --windows 2 --n-steps 100 --n-paths 500 --label SMOKE --json-out reports/research/_crps_smoke.json --md-out reports/research/_crps_smoke.md)",
+      "Bash(python -m pytest tests/test_heavy_tail_unitary.py -q)",
+      "Bash(python -m py_compile scripts/research/heavy_tail_unitary_evaluation.py)",
+      "Bash(python -m scripts.research.heavy_tail_unitary_evaluation --max-rows 1000000 --horizon 50 --label BTCUSDT)",
+      "Bash(python -m scripts.research.heavy_tail_unitary_evaluation --max-rows 1000000 --horizon 50 --n-positions 16001 --label BTCUSDT)",
+      "Bash(python -m pytest tests/test_collect_confirmatory.py -q)",
+      "Bash(python -)",
+      "Bash(grep -i \"path\\\\|dir\\\\|/\\\\|write\\\\|save\")",
+      "Bash(icacls \".test-cache\\\\audit\")",
+      "Bash(git rm *)",
+      "Bash(python -m scripts.operations.combine_features --help)",
+      "PowerShell(Get-PSDrive -Name D | Select-Object Name,@{n='UsedGB';e={[math]::Round\\($_.Used/1GB,1\\)}},@{n='FreeGB';e={[math]::Round\\($_.Free/1GB,1\\)}})",
+      "Bash(python -m scripts.operations.combine_features --symbol BNBUSDT --input-dir data/assets/bnbusdt/features --output data/assets/bnbusdt/features/features_BNBUSDT_multiday.parquet --days 31)"
     ]
   }
 }
