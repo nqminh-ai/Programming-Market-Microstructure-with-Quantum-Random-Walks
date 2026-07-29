@@ -28,6 +28,7 @@ data/assets/*/raw/
 data/assets/*/processed/
 data/assets/*/features/
 data/assets/*/live/
+data/assets/*/ml/
 !data/README.md
 
 # Generated research outputs
@@ -48,6 +49,7 @@ SSI Fast Connect API/
 # Scratch artifacts that scripts used to drop in the repository root
 /test_params.json
 /test_*.parquet
+/Bai_du_thi_AI_Quantum.zip
 
 # Temp files
 *.tmp

@@ -61,3 +61,18 @@ python -m scripts.pipelines.phase4_pipeline --feature-path data/assets/btcusdt/f
 The live collector subscribes to Binance trade and partial-depth streams over one
 combined WebSocket. Trades are persisted only after the first LOB snapshot so the
 feature join begins with contemporaneous order-book information.
+
+## Exploratory ML datasets
+
+The frozen `ml_directional_v7` research protocol derives causal, non-overlapping
+horizon datasets from the 69-day feature stores. Generated files are written to
+`assets/<symbol>/ml/` and are not committed.
+
+```text
+python -m scripts.research.build_ml_dataset --asset BNBUSDT --max-days 1
+python -m scripts.research.build_ml_dataset --asset BTCUSDT --official
+```
+
+The first command is a development smoke run and cannot support claims. An
+official run requires the registered 69 consecutive UTC days, a clean source
+tree and hashes the source, configuration and output datasets.

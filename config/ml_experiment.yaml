@@ -1,0 +1,298 @@
+protocol_version: ml_directional_v7
+status: exploratory_only_not_confirmatory
+frozen_at_utc: "2026-07-29"
+random_seed: 2026
+
+change_control:
+  policy: bump_protocol_version_before_changing_frozen_fields
+  frozen_fields:
+    - assets
+    - target
+    - sampling
+    - split
+    - features
+    - models
+    - model_selection
+    - metrics
+    - robustness
+    - release
+    - economic_evaluation
+
+assets:
+  BTCUSDT:
+    feature_path: data/assets/btcusdt/features/features_BTCUSDT_69d.parquet
+  ETHUSDT:
+    feature_path: data/assets/ethusdt/features/features_ETHUSDT_69d.parquet
+  BNBUSDT:
+    feature_path: data/assets/bnbusdt/features/features_BNBUSDT_69d.parquet
+
+target:
+  kind: binary_direction
+  definition: price_t_plus_h_greater_than_price_t
+  zero_return_policy: exclude
+  prediction_skill_horizons_ticks:
+    - 1000
+    - 5000
+    - 10000
+    - 50000
+  economic_horizons_ticks:
+    - 50000
+    - 100000
+    - 200000
+  evaluation_horizons_ticks:
+    - 1000
+    - 5000
+    - 10000
+    - 50000
+    - 100000
+    - 200000
+
+sampling:
+  anchor_stride: horizon
+  require_same_segment: true
+  require_same_utc_day: true
+  overlapping_labels: forbidden
+  ordering: chronological
+
+split:
+  unit: utc_day
+  expected_complete_days: 69
+  train_days: 45
+  selection_days: 10
+  calibration_days: 5
+  test_days: 9
+  purge_ticks: 200000
+  fit_preprocessors_on: train
+  fit_model_on: train
+  select_hyperparameters_on: selection
+  fit_probability_calibrator_on: calibration
+  test_access: once_after_model_and_calibrator_are_frozen
+
+features:
+  base:
+    - obi
+    - tick_direction
+    - obi_change
+    - abs_obi
+    - log_trade_intensity
+    - price_mid_deviation
+  tick_direction_lags:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 10
+  signed_volume_windows_ticks:
+    - 10
+    - 50
+    - 100
+    - 500
+  return_windows_ticks:
+    - 10
+    - 100
+    - 1000
+  realised_volatility_windows_ticks:
+    - 100
+    - 1000
+    - 10000
+  additional:
+    - time_since_previous_event
+  causality: trailing_only_at_or_before_anchor
+  normalization: fit_on_train_only
+
+models:
+  reference:
+    - Majority Class
+    - QRW Directional Link
+    - Logistic L2 (5F)
+    - Logistic L2 + Pairwise
+    - Nonlinear Calibrated
+    - OrderFlow AR(5)
+    - Marked Hawkes Logit
+    - Windowed-QRW (density matrix)
+  phase_2_candidate:
+    - Histogram Gradient Boosting
+  phase_2_hist_gradient_boosting:
+    backend: sklearn.ensemble.HistGradientBoostingClassifier
+    loss: log_loss
+    early_stopping: false
+    max_bins: 255
+    grid:
+      learning_rate:
+        - 0.03
+        - 0.07
+      max_iter:
+        - 200
+      max_leaf_nodes:
+        - 15
+        - 31
+      min_samples_leaf:
+        - 20
+        - 100
+      l2_regularization:
+        - 0.0
+        - 1.0
+    probability_calibrators:
+      - identity
+      - platt
+      - isotonic
+  phase_5_candidate:
+    - Temporal Convolutional Network
+  phase_5_temporal_convolutional:
+    backend: torch
+    loss: binary_cross_entropy_with_logits
+    residual_channels:
+      - 16
+      - 16
+      - 16
+      - 16
+      - 16
+      - 16
+    kernel_size: 3
+    dilations:
+      - 1
+      - 2
+      - 4
+      - 8
+      - 16
+      - 32
+    dropout: 0.1
+    pooling: last_timestep
+    optimizer: AdamW
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    batch_size: 256
+    max_epochs: 30
+    early_stopping_patience: 6
+    gradient_clip_norm: 1.0
+    probability_calibrators:
+      - identity
+      - platt
+      - isotonic
+    device_policy: cpu_default_explicit_override
+  phase_4_sequence_dataset:
+    sequence_length: 128
+    layout: channels_first
+    dtype: float32
+    shard_unit: utc_day
+    channels:
+      - obi
+      - obi_valid
+      - tick_direction
+      - log_trade_intensity
+      - signed_log_quantity
+      - one_tick_log_return
+      - price_mid_deviation
+      - inter_event_seconds
+    normalization: train_fold_statistics_only
+  phase_7_neural_adaptive_qrw:
+    backend: torch_complex_amplitude
+    qrw_steps: 8
+    anchor_signal_channel: obi
+    theta_bounds_radians:
+      - 0.3926990817
+      - 1.1780972451
+    gamma_bounds:
+      - 0.0
+      - 0.35
+    fixed_theta_radians: 0.7853981634
+    fixed_gamma: 0.05
+    hybrid_neural_weight: 0.5
+    variants:
+      - neural_only
+      - fixed_qrw_only
+      - adaptive_qrw_only
+      - hybrid_fixed_qrw
+      - hybrid_adaptive_qrw
+    training_policy: inherit_phase_5_optimizer_and_early_stopping
+    probability_calibrators:
+      - identity
+      - platt
+      - isotonic
+    test_access: forbidden
+
+model_selection:
+  primary_metric: brier
+  tie_break_metric: log_loss
+  probability_calibration: calibration_fold_selected_identity_platt_or_isotonic
+  calibration_choice_metric: brier
+  early_stopping_fold: selection
+  test_set_may_not_select_models: true
+
+metrics:
+  primary:
+    - brier
+  secondary:
+    - log_loss
+    - expected_calibration_error
+    - accuracy
+    - net_return_after_costs
+    - inference_latency
+    - peak_memory
+  uncertainty:
+    method: paired_block_bootstrap
+    unit: utc_day
+    resamples: 2000
+    confidence_level: 0.95
+  common_sample_for_all_models: true
+  test_access_gate: explicit_open_test_flag
+
+robustness:
+  phase: phase_6_pretest
+  status: exploratory_diagnostics_only
+  seeds:
+    - 2026
+    - 2027
+    - 2028
+  evaluation_folds:
+    - selection
+    - calibration
+  regime_threshold_source: train_fold_tertiles
+  regime_channels:
+    volatility: one_tick_log_return
+    liquidity: inter_event_seconds
+  minimum_group_rows: 20
+  cross_asset_policy: refit_per_asset_equal_weight_summary
+  test_access: forbidden
+
+release:
+  phase: phase_8
+  status: pretest_release_candidate
+  scope: single_asset_single_horizon
+  required_artifact_roles:
+    phase1_dataset_metadata: ml_directional_dataset
+    phase4_sequence_manifest: causal_sequence_dataset
+    phase2_hgb_training: histogram_gradient_boosting_training
+    phase5_tcn_training: temporal_convolutional_network_training
+    phase6_tcn_robustness: tcn_pretest_robustness
+    phase7_hybrid_ablation: neural_adaptive_qrw_ablation
+  optional_artifact_roles:
+    phase6_cross_asset: tcn_cross_asset_pretest_robustness
+  test_policy: closed_no_test_metrics
+  dashboard_policy: read_only_manifest_no_recompute
+  reproduction_shell: powershell
+  hash_algorithm: sha256
+  official_requires_clean_source_tree: true
+
+economic_evaluation:
+  fee_scenarios_source: scripts.research.horizon_feasibility.FEE_SCENARIOS
+  require_spread_and_fees: true
+  require_adverse_selection_scenario: true
+  profitability_is_secondary_to_brier: true
+  live_trading_authorized: false
+
+artifacts:
+  output_directory: reports/research
+  include:
+    - protocol_version
+    - code_commit
+    - feature_path
+    - feature_sha256
+    - config_sha256
+    - random_seed
+    - model_parameters
+    - split_dates
+    - sample_timestamps
+    - metrics
+  official_run_requires_clean_source_tree: true
