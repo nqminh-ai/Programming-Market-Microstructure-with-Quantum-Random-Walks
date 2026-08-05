@@ -10,6 +10,8 @@ PyYAML==6.0.3
 requests==2.34.2
 scikit-learn==1.9.0
 scipy==1.17.1
+ssi-fc-data==2.2.2
+statsmodels==0.14.6
 streamlit==1.58.0
 sympy==1.14.0
 torch==2.12.0
